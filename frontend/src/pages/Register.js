@@ -45,7 +45,13 @@ const Register = () => {
     if (result.success) {
       setSuccess('Registration successful! Please check your email to verify your account.');
     } else {
-      setError(result.message);
+      // Handle validation errors specifically
+      if (result.errors && Array.isArray(result.errors)) {
+        const errorMessages = result.errors.map(err => err.msg).join(', ');
+        setError(errorMessages);
+      } else {
+        setError(result.message);
+      }
     }
     
     setLoading(false);
@@ -101,6 +107,9 @@ const Register = () => {
                 value={formData.name}
                 onChange={handleChange}
               />
+              <small className="text-gray-500 text-xs mt-1 block">
+                Name must be 2-50 characters with letters and spaces only
+              </small>
             </div>
             
             <div>
@@ -138,6 +147,9 @@ const Register = () => {
               >
                 {showPassword ? <FaEyeSlash className="h-5 w-5 text-gray-400" /> : <FaEye className="h-5 w-5 text-gray-400" />}
               </button>
+              <small className="text-gray-500 text-xs mt-1 block">
+                Password must be at least 6 characters with uppercase, lowercase, and number
+              </small>
             </div>
             
             <div className="relative">

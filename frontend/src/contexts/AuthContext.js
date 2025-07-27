@@ -36,8 +36,10 @@ export const AuthProvider = ({ children }) => {
   const storeToken = (token) => {
     try {
       if (token) {
+        console.log('Storing access token:', token ? '***' : 'null');
         localStorage.setItem(TOKEN_KEY, btoa(token));
       } else {
+        console.log('Removing access token');
         localStorage.removeItem(TOKEN_KEY);
       }
     } catch (error) {
@@ -60,8 +62,10 @@ export const AuthProvider = ({ children }) => {
   const storeRefreshToken = (token) => {
     try {
       if (token) {
+        console.log('Storing refresh token:', token ? '***' : 'null');
         localStorage.setItem(REFRESH_KEY, btoa(token));
       } else {
+        console.log('Removing refresh token');
         localStorage.removeItem(REFRESH_KEY);
       }
     } catch (error) {
@@ -179,8 +183,10 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (userData) => {
     try {
+      console.log('Sending registration data:', userData);
       const response = await authAPI.register(userData);
       const data = response.data;
+      console.log('Registration response:', data);
 
       if (data.success) {
         if (data.accessToken) {
@@ -199,7 +205,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Registration error:', error);
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Registration failed. Please try again.'
+        message: error.response?.data?.message || 'Registration failed. Please try again.',
+        errors: error.response?.data?.errors
       };
     }
   };

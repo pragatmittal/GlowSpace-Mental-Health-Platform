@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import Dashboard from './components/Dashboard/Dashboard';
 import Chat from './components/Chat';
 import EmotionDetector from './components/EmotionDetector';
+import Community from './pages/Community';
 
 // Components
 import Navbar from './components/Navbar';
@@ -57,6 +58,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <EmotionDetector />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/community"
+                  element={
+                    <ProtectedRoute>
+                      <Community />
                     </ProtectedRoute>
                   }
                 />

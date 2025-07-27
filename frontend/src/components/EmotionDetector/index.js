@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import * as faceapi from '@vladmandic/face-api';
 import Webcam from 'react-webcam';
@@ -28,10 +28,103 @@ ChartJS.register(
   Legend
 );
 
+// Request Manager Class for handling API calls
+class RequestManager {
+  constructor() {
+    this.pendingRequest = false;
+    this.requestQueue = [];
+    this.lastRequestTime = 0;
+    this.rateLimitWindow = 10000; // 10 seconds
+    this.maxRequests = 5;
+    this.requestHistory = [];
+  }
+
+  canMakeRequest() {
+    const now = Date.now();
+    // Clean old requests from history
+    this.requestHistory = this.requestHistory.filter(time => now - time < this.rateLimitWindow);
+    
+    return !this.pendingRequest && this.requestHistory.length < this.maxRequests;
+  }
+
+  async makeRequest(requestFn) {
+    if (!this.canMakeRequest()) {
+      console.log('Rate limit reached or request pending, skipping');
+      return false;
+    }
+
+    this.pendingRequest = true;
+    this.lastRequestTime = Date.now();
+    this.requestHistory.push(this.lastRequestTime);
+
+    try {
+      await requestFn();
+      return true;
+    } catch (error) {
+      console.error('Request failed:', error);
+      if (error.response?.status === 429) {
+        // Remove the failed request from history to allow retry
+        this.requestHistory = this.requestHistory.filter(time => time !== this.lastRequestTime);
+      }
+      throw error;
+    } finally {
+      this.pendingRequest = false;
+    }
+  }
+
+  reset() {
+    this.pendingRequest = false;
+    this.requestQueue = [];
+    this.requestHistory = [];
+  }
+}
+
+// Frame Buffer Class for collecting emotion data
+class FrameBuffer {
+  constructor() {
+    this.buffer = [];
+    this.lastSendTime = 0;
+    this.sendInterval = 5000; // 5 seconds
+  }
+
+  addFrame(emotions, score) {
+    this.buffer.push({
+      emotions,
+      score,
+      timestamp: new Date()
+    });
+  }
+
+  shouldSend() {
+    const now = Date.now();
+    return this.buffer.length > 0 && (now - this.lastSendTime >= this.sendInterval);
+  }
+
+  getBatch() {
+    if (this.buffer.length === 0) return null;
+    
+    const batch = [...this.buffer];
+    this.buffer = [];
+    this.lastSendTime = Date.now();
+    return batch;
+  }
+
+  reset() {
+    this.buffer = [];
+    this.lastSendTime = 0;
+  }
+}
+
 const EmotionDetector = () => {
   const { user } = useAuth();
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
+  
+  // Request and buffer managers
+  const requestManager = useRef(new RequestManager());
+  const frameBuffer = useRef(new FrameBuffer());
+  
+  // State management
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [showVideo, setShowVideo] = useState(true);
@@ -40,6 +133,12 @@ const EmotionDetector = () => {
   const [emotions, setEmotions] = useState({});
   const [emotionHistory, setEmotionHistory] = useState([]);
   const [wellnessScore, setWellnessScore] = useState(0);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [requestCount, setRequestCount] = useState(0);
+  const [bufferSize, setBufferSize] = useState(0);
+  
+  // Frame counter ref for accurate counting
+  const frameCounter = useRef(0);
 
   // Load face-api models
   useEffect(() => {
@@ -77,11 +176,56 @@ const EmotionDetector = () => {
       if (chartInstance) {
         chartInstance.destroy();
       }
+      
+      // Reset managers
+      requestManager.current.reset();
+      frameBuffer.current.reset();
     };
   }, []);
 
+  // Update request count and buffer size when they change
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRequestCount(requestManager.current.requestHistory.length);
+      setBufferSize(frameBuffer.current.buffer.length);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Send emotion data with proper rate limiting
+  const sendEmotionData = useCallback(async (batchData) => {
+    try {
+      const success = await requestManager.current.makeRequest(async () => {
+        console.log('Sending emotion data batch:', batchData.readings.length, 'readings');
+        await emotionAPI.analyzeEmotion(batchData);
+        console.log('Emotion data sent successfully');
+      });
+
+      if (success) {
+        setIsRateLimited(false);
+        setRequestCount(requestManager.current.requestHistory.length);
+        if (error && error.includes('rate limit')) {
+          setError(null);
+        }
+      }
+    } catch (err) {
+      console.error('Error saving emotion data:', err);
+      if (err.response?.status === 429) {
+        setError('Sending data too frequently. Please wait a moment...');
+        setIsRateLimited(true);
+        setTimeout(() => {
+          setError(null);
+          setIsRateLimited(false);
+        }, 3000);
+      } else {
+        setError('Failed to save emotion data');
+      }
+    }
+  }, [error]);
+
   // Handle frame processing
-  const processFrame = async () => {
+  const processFrame = useCallback(async () => {
     if (!webcamRef.current || !canvasRef.current || !isModelLoaded) return;
 
     try {
@@ -116,29 +260,49 @@ const EmotionDetector = () => {
         
         Object.entries(expressions).forEach(([emotion, score]) => {
           normalizedEmotions[emotion] = Math.round((score / totalScore) * 100);
-      });
+        });
 
-      // Update state
+        // Update state
         setEmotions(normalizedEmotions);
         
-        // Add to history
+        // Calculate wellness score
+        const score = calculateWellnessScore(normalizedEmotions);
+        setWellnessScore(score);
+
+        // Add to frame buffer
+        frameBuffer.current.addFrame(normalizedEmotions, score);
+        
+        // Update emotion history for display
         setEmotionHistory(prev => [...prev, {
           timestamp: new Date(),
           emotions: normalizedEmotions
-        }].slice(-30)); // Keep last 30 readings
-
-      // Calculate wellness score
-        const score = calculateWellnessScore(normalizedEmotions);
-        setWellnessScore(score);
+        }].slice(-30));
 
         // Draw face detection results
         const resizedDetection = faceapi.resizeResults(detection, displaySize);
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
         faceapi.draw.drawFaceExpressions(canvas, resizedDetection);
 
-        // Send data to backend every 5 seconds
-        if (emotionHistory.length % 5 === 0) {
-          await sendEmotionData(normalizedEmotions, score);
+        // Check if we should send data
+        if (frameBuffer.current.shouldSend()) {
+          const batch = frameBuffer.current.getBatch();
+          if (batch && batch.length > 0) {
+            const batchData = {
+              sessionId: sessionId || uuidv4(),
+              readings: batch.map(reading => ({
+                emotions: reading.emotions,
+                wellnessScore: reading.score,
+                timestamp: reading.timestamp
+              })),
+              metadata: {
+                deviceInfo: navigator.userAgent,
+                frameRate: 15,
+                resolution: `${webcamRef.current?.video?.width}x${webcamRef.current?.video?.height}`
+              }
+            };
+            
+            await sendEmotionData(batchData);
+          }
         }
       } else {
         setError('No face detected');
@@ -147,7 +311,7 @@ const EmotionDetector = () => {
       setError('Error processing video frame');
       console.error('Frame processing error:', err);
     }
-  };
+  }, [isModelLoaded, sessionId, sendEmotionData]);
 
   // Calculate wellness score
   const calculateWellnessScore = (emotions) => {
@@ -169,57 +333,6 @@ const EmotionDetector = () => {
     return Math.max(0, Math.min(100, Math.round(score)));
   };
 
-  // Send emotion data to backend
-  const sendEmotionData = async (emotions, score) => {
-    try {
-      // Add to batch
-      const currentBatch = {
-        emotions,
-        timestamp: new Date(),
-        score
-      };
-      
-      setEmotionHistory(prev => {
-        const newHistory = [...prev, currentBatch];
-        
-        // Send batch every 10 readings or when stopping
-        if (newHistory.length >= 10 || !isDetecting) {
-          const batchData = {
-        sessionId: sessionId || uuidv4(),
-            readings: newHistory.map(reading => ({
-              emotions: reading.emotions,
-              wellnessScore: reading.score,
-              timestamp: reading.timestamp
-            })),
-            metadata: {
-              deviceInfo: navigator.userAgent,
-              frameRate: 30,
-              resolution: `${webcamRef.current?.video?.width}x${webcamRef.current?.video?.height}`
-            }
-          };
-
-          emotionAPI.analyzeEmotion(batchData)
-            .catch(err => {
-              console.error('Error saving emotion data:', err);
-              if (err.response?.status !== 429) { // Don't show error for rate limiting
-                setError('Failed to save emotion data');
-              }
-            });
-
-          // Keep only the last 30 readings for display
-          return newHistory.slice(-30);
-        }
-        
-        return newHistory;
-      });
-    } catch (err) {
-      console.error('Error processing emotion data:', err);
-      if (err.response?.status !== 429) { // Don't show error for rate limiting
-        setError('Failed to process emotion data');
-      }
-    }
-  };
-
   // Start detection
   const startDetection = async () => {
     if (!isModelLoaded) {
@@ -231,9 +344,17 @@ const EmotionDetector = () => {
     setSessionId(uuidv4());
     setIsDetecting(true);
     setEmotionHistory([]);
+    setIsRateLimited(false);
+    
+    // Reset managers
+    requestManager.current.reset();
+    frameBuffer.current.reset();
+    frameCounter.current = 0;
+    setRequestCount(0);
+    setBufferSize(0);
 
-    // Process frames at 30 FPS
-    const interval = setInterval(processFrame, 1000 / 30);
+    // Process frames at 15 FPS
+    const interval = setInterval(processFrame, 1000 / 15);
     window.emotionDetectionInterval = interval;
   };
 
@@ -243,6 +364,31 @@ const EmotionDetector = () => {
     if (window.emotionDetectionInterval) {
       clearInterval(window.emotionDetectionInterval);
     }
+    
+    // Send any remaining data in buffer
+    const remainingBatch = frameBuffer.current.getBatch();
+    if (remainingBatch && remainingBatch.length > 0) {
+      const batchData = {
+        sessionId: sessionId || uuidv4(),
+        readings: remainingBatch.map(reading => ({
+          emotions: reading.emotions,
+          wellnessScore: reading.score,
+          timestamp: reading.timestamp
+        })),
+        metadata: {
+          deviceInfo: navigator.userAgent,
+          frameRate: 15,
+          resolution: `${webcamRef.current?.video?.width}x${webcamRef.current?.video?.height}`
+        }
+      };
+      
+      sendEmotionData(batchData);
+    }
+    
+    // Clear rate limiting state
+    setIsRateLimited(false);
+    setRequestCount(0);
+    setBufferSize(0);
   };
 
   // Download session data
@@ -290,8 +436,19 @@ const EmotionDetector = () => {
           {error && (
             <div className="error-message">
               <p>{error}</p>
-                </div>
-              )}
+            </div>
+          )}
+          
+          {isRateLimited && (
+            <div className="rate-limit-indicator">
+              <p>⏳ Rate limited - waiting for cooldown</p>
+            </div>
+          )}
+          
+          <div className="status-indicator">
+            <p>📊 API Calls: {requestCount}/5 (10s window)</p>
+            <p>🔄 Buffer: {bufferSize} frames</p>
+          </div>
             </div>
 
         <div className="controls">

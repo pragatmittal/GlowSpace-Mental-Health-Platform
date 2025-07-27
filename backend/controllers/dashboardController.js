@@ -7,11 +7,37 @@ const Appointment = require('../models/Appointment');
 const getDashboardData = async (req, res) => {
     try {
         const userId = req.user.id;
+        console.log('Fetching dashboard data for user:', userId);
+        
         // Initialize with empty arrays/objects in case of no data
-        const moodTrends = await MoodEntry.getMoodTrends(userId, 7) || [];
-        const emotionTrends = await EmotionData.getEmotionTrends(userId, 7) || [];
-        const recentAppointments = await Appointment.getUserAppointments(userId, 5) || [];
-        const recentActivities = await getRecentActivitiesData(userId) || {};
+        let moodTrends = [];
+        let emotionTrends = [];
+        let recentAppointments = [];
+        let recentActivities = {};
+        
+        try {
+            moodTrends = await MoodEntry.getMoodTrends(userId, 7) || [];
+        } catch (error) {
+            console.log('No mood data available for user');
+        }
+        
+        try {
+            emotionTrends = await EmotionData.getEmotionTrends(userId, 7) || [];
+        } catch (error) {
+            console.log('No emotion data available for user');
+        }
+        
+        try {
+            recentAppointments = await Appointment.getUserAppointments(userId, 5) || [];
+        } catch (error) {
+            console.log('No appointment data available for user');
+        }
+        
+        try {
+            recentActivities = await getRecentActivitiesData(userId) || {};
+        } catch (error) {
+            console.log('No activity data available for user');
+        }
 
         // --- NEW: Get latest emotion session ---
         let latestSession = null;
@@ -20,42 +46,53 @@ const getDashboardData = async (req, res) => {
         let latestSessionSummary = null;
         let recommendations = [];
 
-        // Find the most recent EmotionData entry for the user
-        const latestEmotion = await EmotionData.findOne({ userId }).sort({ createdAt: -1 });
-        if (latestEmotion) {
-            latestSessionId = latestEmotion.sessionId;
-            latestSessionData = await EmotionData.find({ userId, sessionId: latestSessionId }).sort({ createdAt: 1 });
-            // Aggregate session data
-            if (latestSessionData.length > 0) {
-                // Calculate average wellness score and emotion progression
-                const totalScore = latestSessionData.reduce((sum, d) => sum + (d.wellnessScore || 0), 0);
-                const avgWellnessScore = Math.round(totalScore / latestSessionData.length);
-                const emotionProgression = latestSessionData.map(d => ({
-                    timestamp: d.createdAt,
-                    dominantEmotion: d.dominantEmotion,
-                    confidence: d.confidence,
-                    wellnessScore: d.wellnessScore
-                }));
-                // Use the last entry for recommendations
-                recommendations = latestSessionData[latestSessionData.length - 1].generateRecommendations();
-                latestSessionSummary = {
-                    sessionId: latestSessionId,
-                    totalReadings: latestSessionData.length,
-                    averageWellnessScore: avgWellnessScore,
-                    emotionProgression,
-                    recommendations
-                };
-                latestSession = {
-                    sessionId: latestSessionId,
-                    summary: latestSessionSummary,
-                    data: emotionProgression
-                };
+        try {
+            // Find the most recent EmotionData entry for the user
+            const latestEmotion = await EmotionData.findOne({ userId }).sort({ createdAt: -1 });
+            if (latestEmotion) {
+                latestSessionId = latestEmotion.sessionId;
+                latestSessionData = await EmotionData.find({ userId, sessionId: latestSessionId }).sort({ createdAt: 1 });
+                // Aggregate session data
+                if (latestSessionData.length > 0) {
+                    // Calculate average wellness score and emotion progression
+                    const totalScore = latestSessionData.reduce((sum, d) => sum + (d.wellnessScore || 0), 0);
+                    const avgWellnessScore = Math.round(totalScore / latestSessionData.length);
+                    const emotionProgression = latestSessionData.map(d => ({
+                        timestamp: d.createdAt,
+                        dominantEmotion: d.dominantEmotion,
+                        confidence: d.confidence,
+                        wellnessScore: d.wellnessScore
+                    }));
+                    // Use the last entry for recommendations
+                    recommendations = latestSessionData[latestSessionData.length - 1].generateRecommendations();
+                    latestSessionSummary = {
+                        sessionId: latestSessionId,
+                        totalReadings: latestSessionData.length,
+                        averageWellnessScore: avgWellnessScore,
+                        emotionProgression,
+                        recommendations
+                    };
+                    latestSession = {
+                        sessionId: latestSessionId,
+                        summary: latestSessionSummary,
+                        data: emotionProgression
+                    };
+                }
             }
+        } catch (error) {
+            console.log('No emotion session data available for user');
         }
 
         res.status(200).json({
             success: true,
             data: {
+                user: {
+                    id: req.user._id,
+                    name: req.user.name,
+                    email: req.user.email,
+                    isVerified: req.user.isVerified,
+                    mentalHealthData: req.user.mentalHealthData
+                },
                 moodTrends,
                 emotionTrends,
                 recentAppointments,

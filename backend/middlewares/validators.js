@@ -344,6 +344,136 @@ exports.validateEmotionAnalysis = [
   handleValidationErrors
 ];
 
+// Community validation
+exports.validateCommunity = [
+  body('name')
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Community name must be between 3 and 100 characters')
+    .matches(/^[a-zA-Z0-9\s\-_]+$/)
+    .withMessage('Community name can only contain letters, numbers, spaces, hyphens, and underscores'),
+  
+  body('description')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Description must be between 10 and 500 characters'),
+  
+  body('category')
+    .optional()
+    .isIn(['general', 'anxiety', 'depression', 'stress', 'relationships', 'self-care', 'therapy', 'meditation', 'fitness', 'nutrition'])
+    .withMessage('Invalid category'),
+  
+  body('type')
+    .optional()
+    .isIn(['public', 'private', 'moderated'])
+    .withMessage('Invalid community type'),
+  
+  body('tags')
+    .optional()
+    .isArray({ max: 10 })
+    .withMessage('Tags must be an array with maximum 10 items'),
+  
+  body('tags.*')
+    .optional()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Each tag must be between 1 and 20 characters'),
+  
+  handleValidationErrors
+];
+
+// Community message validation
+exports.validateCommunityMessage = [
+  body('content')
+    .trim()
+    .isLength({ min: 1, max: 2000 })
+    .withMessage('Message content must be between 1 and 2000 characters'),
+  
+  body('messageType')
+    .optional()
+    .isIn(['text', 'image', 'file', 'audio', 'emoji', 'system', 'announcement', 'poll'])
+    .withMessage('Invalid message type'),
+  
+  body('attachments')
+    .optional()
+    .isArray()
+    .withMessage('Attachments must be an array'),
+  
+  body('replyTo')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid reply message ID'),
+  
+  body('poll')
+    .optional()
+    .isObject()
+    .withMessage('Poll must be an object'),
+  
+  body('poll.question')
+    .optional()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Poll question must be between 1 and 200 characters'),
+  
+  body('poll.options')
+    .optional()
+    .isArray({ min: 2, max: 10 })
+    .withMessage('Poll must have between 2 and 10 options'),
+  
+  body('poll.options.*.text')
+    .optional()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Poll option text must be between 1 and 100 characters'),
+  
+  body('poll.expiresAt')
+    .optional()
+    .isISO8601()
+    .withMessage('Invalid expiration date'),
+  
+  body('poll.allowMultipleVotes')
+    .optional()
+    .isBoolean()
+    .withMessage('Allow multiple votes must be a boolean'),
+  
+  handleValidationErrors
+];
+
+// Reaction validation
+exports.validateReaction = [
+  body('reaction')
+    .trim()
+    .isLength({ min: 1, max: 10 })
+    .withMessage('Reaction must be between 1 and 10 characters'),
+  
+  handleValidationErrors
+];
+
+// Report validation
+exports.validateReport = [
+  body('reason')
+    .isIn(['spam', 'inappropriate', 'harassment', 'misinformation', 'other'])
+    .withMessage('Invalid report reason'),
+  
+  body('description')
+    .optional()
+    .isLength({ min: 1, max: 500 })
+    .withMessage('Description must be between 1 and 500 characters'),
+  
+  handleValidationErrors
+];
+
+// Moderation validation
+exports.validateModeration = [
+  body('action')
+    .isIn(['warn', 'hide', 'delete', 'ban'])
+    .withMessage('Invalid moderation action'),
+  
+  body('reason')
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage('Reason must be between 1 and 500 characters'),
+  
+  handleValidationErrors
+];
+
 // Custom validation for complex objects
 exports.validateComplexObject = (schema) => {
   return (req, res, next) => {

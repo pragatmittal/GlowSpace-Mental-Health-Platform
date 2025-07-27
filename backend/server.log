@@ -1,0 +1,25 @@
+MongoDB connected successfully
+Server running on port 5001
+Socket.IO server ready for connections
+::1 - - [27/Jul/2025:16:42:40 +0000] "GET /api/auth/register HTTP/1.1" 401 65 "-" "curl/8.7.1"
+Registration data received: {
+  name: 'Test User',
+  email: 'test4@example.com',
+  password: '***',
+  mentalHealthData: undefined
+}
+Email sending failed: Error: Missing credentials for "PLAIN"
+    at SMTPConnection._formatError (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+    at SMTPConnection.login (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:454:38)
+    at /Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-transport/index.js:375:32
+    at SMTPConnection.<anonymous> (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:215:17)
+    at Object.onceWrapper (node:events:621:28)
+    at SMTPConnection.emit (node:events:507:28)
+    at SMTPConnection._actionEHLO (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:1371:14)
+    at SMTPConnection._processResponse (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+    at SMTPConnection._onData (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+    at SMTPConnection._onSocketData (/Users/piyush/Projects/GlowSpace-Mental-Health-Platform/backend/node_modules/nodemailer/lib/smtp-connection/index.js:195:44) {
+  code: 'EAUTH',
+  command: 'API'
+}
+::1 - - [27/Jul/2025:16:42:47 +0000] "POST /api/auth/register HTTP/1.1" 201 647 "-" "curl/8.7.1"

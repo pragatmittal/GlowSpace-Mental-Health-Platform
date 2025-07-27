@@ -20,6 +20,8 @@ const dashboardRoutes = require('./routes/dashboard');
 const emotionsRoutes = require('./routes/emotions');
 const chatRoutes = require('./routes/chat');
 const assessmentRoutes = require('./routes/assessments');
+const communityRoutes = require('./routes/community');
+const appointmentRoutes = require('./routes/appointments');
 
 // Create Express app
 const app = express();
@@ -58,15 +60,25 @@ const defaultLimiter = rateLimit({
 
 const emotionsLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 300, // 5 requests per second average
+  max: 60, // 1 request per second average (more reasonable for real-time)
   message: {
     success: false,
     message: 'Too many emotion analysis requests, please try again later'
   }
 });
 
+const emotionAnalysisLimiter = rateLimit({
+  windowMs: 10 * 1000, // 10 seconds
+  max: 5, // Allow 5 requests per 10 seconds (1 every 2 seconds)
+  message: {
+    success: false,
+    message: 'Please wait a moment before sending more emotion data'
+  }
+});
+
 // Apply rate limiting
-app.use('/api/emotions/analyze', emotionsLimiter); // Specific limit for emotion analysis
+app.use('/api/emotions/analyze', emotionAnalysisLimiter); // Stricter limit for emotion analysis
+app.use('/api/emotions', emotionsLimiter); // General limit for other emotion routes
 app.use('/api/', defaultLimiter); // Default limit for other routes
 
 // Mount routes
@@ -75,6 +87,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/emotions', emotionsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/assessments', assessmentRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // Root route
 app.get('/', (req, res) => {

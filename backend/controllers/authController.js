@@ -73,6 +73,7 @@ exports.register = async (req, res) => {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Registration validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -81,6 +82,7 @@ exports.register = async (req, res) => {
     }
 
     const { name, email, password, mentalHealthData } = req.body;
+    console.log('Registration data received:', { name, email, password: password ? '***' : 'undefined', mentalHealthData });
 
     // Check if user already exists
     const existingUser = await User.findByEmail(email);
@@ -113,17 +115,8 @@ exports.register = async (req, res) => {
     try {
       await sendVerificationEmail(user.email, name, verificationToken);
 
-      res.status(201).json({
-        success: true,
-        message: 'User registered successfully. Please check your email to verify your account.',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isVerified: user.isVerified,
-          mentalHealthData: user.mentalHealthData
-        }
-      });
+      // Automatically log in the user after successful registration
+      sendTokenResponse(user, 201, res);
     } catch (error) {
       console.error('Email sending failed:', error);
       user.verificationToken = undefined;

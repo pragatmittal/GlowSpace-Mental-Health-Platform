@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+console.log('API URL being used:', API_URL);
 
 // Create axios instance with default config
 const api = axios.create({
@@ -16,7 +17,10 @@ api.interceptors.request.use(
     const TOKEN_KEY = btoa('glow_access_token');
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
+      console.log('Adding token to request:', config.url);
       config.headers.Authorization = `Bearer ${atob(token)}`;
+    } else {
+      console.log('No token found for request:', config.url);
     }
     return config;
   },
@@ -98,6 +102,39 @@ export const appointmentAPI = {
   reschedule: (id, data) => api.put(`/appointments/${id}/reschedule`, data),
   cancel: (id) => api.put(`/appointments/${id}/cancel`),
   getAvailableSlots: (doctorId) => api.get(`/appointments/slots/${doctorId}`)
+};
+
+export const communityAPI = {
+  // Community management
+  getCommunities: (params) => api.get('/community', { params }),
+  getCommunity: (id) => api.get(`/community/${id}`),
+  createCommunity: (data) => api.post('/community', data),
+  updateCommunity: (id, data) => api.put(`/community/${id}`, data),
+  deleteCommunity: (id) => api.delete(`/community/${id}`),
+  joinCommunity: (id) => api.post(`/community/${id}/join`),
+  leaveCommunity: (id) => api.post(`/community/${id}/leave`),
+  getUserCommunities: () => api.get('/community/user/me'),
+  searchCommunities: (query) => api.get('/community/search', { params: { q: query } }),
+  getCategories: () => api.get('/community/categories'),
+
+  // Community messages
+  getMessages: (communityId, params) => api.get(`/community/${communityId}/messages`, { params }),
+  sendMessage: (communityId, data) => api.post(`/community/${communityId}/messages`, data),
+  editMessage: (messageId, data) => api.put(`/community/message/${messageId}`, data),
+  deleteMessage: (messageId) => api.delete(`/community/message/${messageId}`),
+  
+  // Message interactions
+  addReaction: (messageId, reaction) => api.post(`/community/message/${messageId}/reaction`, { reaction }),
+  removeReaction: (messageId, reaction) => api.delete(`/community/message/${messageId}/reaction`, { data: { reaction } }),
+  reportMessage: (messageId, data) => api.post(`/community/message/${messageId}/report`, data),
+  moderateMessage: (messageId, data) => api.post(`/community/message/${messageId}/moderate`, data),
+  togglePinMessage: (messageId) => api.post(`/community/message/${messageId}/pin`),
+  voteInPoll: (messageId, optionIndex) => api.post(`/community/message/${messageId}/vote`, { optionIndex }),
+  
+  // Additional features
+  getPinnedMessages: (communityId) => api.get(`/community/${communityId}/pinned`),
+  getReportedMessages: (communityId, status) => api.get(`/community/${communityId}/reports`, { params: { status } }),
+  searchMessages: (communityId, query) => api.get(`/community/${communityId}/search`, { params: { q: query } })
 };
 
 export default api; 
