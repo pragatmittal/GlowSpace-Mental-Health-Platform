@@ -19,7 +19,7 @@ process.env.SMTP_FROM = 'GlowSpace <test@test.com>';
 process.env.CLIENT_URL = 'http://localhost:3000';
 
 // Use a dedicated test database
-process.env.MONGODB_URI_TEST = 'mongodb+srv://username:password@cluster.mongodb.net/glowspace-test';
+process.env.MONGODB_URI_TEST = 'mongodb+srv://mittalpragat:mittal%402024@cluster0.wu2rf.mongodb.net/glowspace-test';
 
 // Mock data for testing
 global.mockData = {
