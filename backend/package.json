@@ -54,20 +54,7 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "setupFiles": [
-      "<rootDir>/tests/setup.js"
-    ],
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
-    "collectCoverageFrom": [
-      "controllers/**/*.js",
-      "routes/**/*.js",
-      "models/**/*.js"
-    ]
-  },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/your-username/glowspace-backend.git"

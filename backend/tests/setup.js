@@ -1,32 +1,27 @@
-require('dotenv').config();
+// Test setup file for Jest
+const mongoose = require('mongoose');
 
-// Set test environment
+// Set test environment variables
 process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-secret-key';
+process.env.MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/glowspace_test';
 
-// Mock environment variables for testing
-process.env.JWT_SECRET = 'test-jwt-secret';
-process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret';
-process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-process.env.PORT = 5002;
+// Global test timeout
+jest.setTimeout(30000);
 
-// Email settings for testing
-process.env.SMTP_HOST = 'smtp.test.com';
-process.env.SMTP_PORT = '587';
-process.env.SMTP_USER = 'test@test.com';
-process.env.SMTP_PASSWORD = 'test-password';
-process.env.SMTP_FROM = 'GlowSpace <test@test.com>';
-process.env.CLIENT_URL = 'http://localhost:3000';
+// Suppress console logs during tests (optional)
+if (process.env.SUPPRESS_LOGS === 'true') {
+  console.log = jest.fn();
+  console.error = jest.fn();
+  console.warn = jest.fn();
+}
 
-// Use a dedicated test database
-process.env.MONGODB_URI_TEST = 'mongodb+srv://mittalpragat:mittal%402024@cluster0.wu2rf.mongodb.net/glowspace-test';
-
-// Mock data for testing
+// Global mock data for tests
 global.mockData = {
   user: {
     name: 'Test User',
     email: 'test@example.com',
-    password: 'Test123!',
+    password: 'TestPassword123!',
     isVerified: true,
     role: 'user',
     profile: {
@@ -83,7 +78,9 @@ global.mockData = {
     mood: 'happy',
     intensity: 8,
     notes: 'Test mood entry',
-    tags: ['relaxed', 'productive']
+    tags: ['relaxed', 'productive'],
+    timeOfDay: 'afternoon',
+    entryMethod: 'manual'
   },
   emotionData: {
     emotions: {
@@ -133,5 +130,78 @@ global.mockData = {
   }
 };
 
-// Increase timeout for async operations
-jest.setTimeout(30000); 
+// Global test utilities
+global.testUtils = {
+  // Create test user
+  createTestUser: async (userData = {}) => {
+    const User = require('../models/User');
+    const defaultData = {
+      name: 'Test User',
+      email: `test${Date.now()}@example.com`,
+      password: 'TestPassword123!',
+      isActive: true,
+      mentalHealthData: {
+        currentChallenge: '7-day',
+        challengeStartDate: new Date(),
+        lastMoodEntry: new Date(),
+        lastEmotionAnalysis: new Date(),
+        wellnessScore: 75
+      },
+      ...userData
+    };
+    
+    const user = new User(defaultData);
+    await user.save();
+    return user;
+  },
+
+  // Create test mood entry
+  createTestMoodEntry: async (userId, moodData = {}) => {
+    const MoodEntry = require('../models/MoodEntry');
+    const defaultData = {
+      userId,
+      mood: 'neutral',
+      intensity: 5,
+      activity: 'other',
+      socialContext: 'alone',
+      timeOfDay: 'afternoon',
+      entryMethod: 'manual',
+      ...moodData
+    };
+    
+    const entry = new MoodEntry(defaultData);
+    await entry.save();
+    return entry;
+  },
+
+  // Generate auth token
+  generateAuthToken: (userId, email) => {
+    const jwt = require('jsonwebtoken');
+    return jwt.sign(
+      { id: userId, email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+  },
+
+  // Clean up test data
+  cleanupTestData: async () => {
+    const User = require('../models/User');
+    const MoodEntry = require('../models/MoodEntry');
+    
+    await User.deleteMany({});
+    await MoodEntry.deleteMany({});
+  }
+};
+
+// Handle unhandled promise rejections in tests
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Handle uncaught exceptions in tests
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+}); 

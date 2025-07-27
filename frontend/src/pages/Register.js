@@ -50,7 +50,7 @@ const Register = () => {
         const errorMessages = result.errors.map(err => err.msg).join(', ');
         setError(errorMessages);
       } else {
-        setError(result.message);
+      setError(result.message);
       }
     }
     

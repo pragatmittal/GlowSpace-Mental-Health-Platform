@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError, validateMoodData } from '../utils/errorHandler';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 console.log('API URL being used:', API_URL);
@@ -109,27 +110,115 @@ export const appointmentAPI = {
 
 export const moodAPI = {
   // Mood entry operations
-  createEntry: (data) => api.post('/mood/entry', data),
-  getEntries: (params) => api.get('/mood/entries', { params }),
-  updateEntry: (id, data) => api.put(`/mood/entry/${id}`, data),
-  deleteEntry: (id) => api.delete(`/mood/entry/${id}`),
+  createEntry: async (data) => {
+    try {
+      // Validate data before sending
+      validateMoodData(data);
+      const response = await api.post('/mood/entry', data);
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  getEntries: async (params) => {
+    try {
+      const response = await api.get('/mood/entries', { params });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  updateEntry: async (id, data) => {
+    try {
+      // Validate data before sending
+      validateMoodData(data);
+      const response = await api.put(`/mood/entry/${id}`, data);
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  deleteEntry: async (id) => {
+    try {
+      const response = await api.delete(`/mood/entry/${id}`);
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
   
   // Analytics and insights
-  getAnalytics: (params) => api.get('/mood/analytics', { params }),
-  getPatterns: (params) => api.get('/mood/patterns', { params }),
-  getStreaks: () => api.get('/mood/streaks'),
-  getInsights: (params) => api.get('/mood/insights', { params }),
+  getAnalytics: async (params) => {
+    try {
+      const response = await api.get('/mood/analytics', { params });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  getPatterns: async (params) => {
+    try {
+      const response = await api.get('/mood/patterns', { params });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  getStreaks: async () => {
+    try {
+      const response = await api.get('/mood/streaks');
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  getInsights: async (params) => {
+    try {
+      const response = await api.get('/mood/insights', { params });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
   
   // File uploads
-  uploadVoice: (formData) => api.post('/mood/upload/voice', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  uploadPhoto: (formData) => api.post('/mood/upload/photo', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  uploadVoice: async (formData) => {
+    try {
+      const response = await api.post('/mood/upload/voice', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  uploadPhoto: async (formData) => {
+    try {
+      const response = await api.post('/mood/upload/photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
   
   // Alerts
-  acknowledgeAlert: (id) => api.put(`/mood/alert/${id}/acknowledge`)
+  acknowledgeAlert: async (id) => {
+    try {
+      const response = await api.put(`/mood/alert/${id}/acknowledge`);
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }
 };
 
 export const communityAPI = {

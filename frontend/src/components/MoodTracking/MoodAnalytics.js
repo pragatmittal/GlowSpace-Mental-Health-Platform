@@ -1,94 +1,75 @@
 import React, { useState, useEffect } from 'react';
+import { moodAPI } from '../../services/api';
 import './MoodAnalytics.css';
 
 const MoodAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('30d');
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Mock analytics data
+  // Fetch real analytics data
   useEffect(() => {
-    const mockAnalytics = {
-      overview: {
-        totalEntries: 45,
-        averageMood: 3.2,
-        moodDistribution: {
-          very_happy: 8,
-          happy: 15,
-          neutral: 12,
-          sad: 7,
-          very_sad: 3
-        },
-        trackingStreak: 12,
-        positiveStreak: 5,
-        mostFrequentActivity: 'work',
-        mostFrequentContext: 'alone'
-      },
-      patterns: {
-        weeklyPattern: 'Mondays tend to be your lowest mood days',
-        monthlyPattern: 'Your mood improves significantly in the second half of the month',
-        timeOfDay: {
-          morning: 3.8,
-          afternoon: 3.2,
-          evening: 3.5,
-          night: 2.9
-        },
-        activityCorrelation: [
-          { activity: 'exercise', avgMood: 4.2, frequency: 8 },
-          { activity: 'social', avgMood: 4.0, frequency: 12 },
-          { activity: 'work', avgMood: 2.8, frequency: 15 },
-          { activity: 'relaxation', avgMood: 3.5, frequency: 6 },
-          { activity: 'creative', avgMood: 3.8, frequency: 4 }
-        ],
-        socialCorrelation: [
-          { context: 'with_friends', avgMood: 4.1, frequency: 10 },
-          { context: 'alone', avgMood: 2.9, frequency: 20 },
-          { context: 'with_family', avgMood: 3.8, frequency: 8 },
-          { context: 'at_work', avgMood: 2.7, frequency: 7 }
-        ]
-      },
-      trends: {
-        overallTrend: 'improving',
-        trendStrength: 0.6,
-        recentChanges: [
-          'Mood has improved 15% over the last 2 weeks',
-          'Exercise frequency increased by 40%',
-          'Social interactions up by 25%'
-        ],
-        predictions: [
-          'Continued improvement expected with current patterns',
-          'Weekend activities show positive correlation',
-          'Morning routine changes may boost mood'
-        ]
-      },
-      insights: [
-        {
-          type: 'pattern',
-          message: 'Your mood is 40% better on days you exercise',
-          priority: 'high',
-          actionable: true
-        },
-        {
-          type: 'improvement',
-          message: 'You\'ve maintained a positive streak for 5 days',
-          priority: 'medium',
-          actionable: false
-        },
-        {
-          type: 'warning',
-          message: 'Mondays show consistently lower mood scores',
-          priority: 'medium',
-          actionable: true
-        }
-      ]
-    };
+    fetchAnalytics();
+  }, [timeRange]);
 
-    setTimeout(() => {
-      setAnalytics(mockAnalytics);
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [analyticsResponse, streaksResponse, insightsResponse] = await Promise.all([
+        moodAPI.getAnalytics({ timeRange }),
+        moodAPI.getStreaks(),
+        moodAPI.getInsights({ days: 30 })
+      ]);
+
+      const realAnalytics = {
+        overview: {
+          totalEntries: analyticsResponse.data.data.summary.totalEntries || 0,
+          averageMood: analyticsResponse.data.data.summary.averageIntensity || 0,
+          moodDistribution: analyticsResponse.data.data.summary.moodDistribution || {
+            very_happy: 0,
+            happy: 0,
+            neutral: 0,
+            sad: 0,
+            very_sad: 0
+          },
+          trackingStreak: streaksResponse.data.data.currentTrackingStreak || 0,
+          positiveStreak: streaksResponse.data.data.currentPositiveStreak || 0,
+          mostFrequentActivity: 'other',
+          mostFrequentContext: 'alone'
+        },
+        patterns: {
+          weeklyPattern: 'No patterns detected yet',
+          monthlyPattern: 'Continue tracking to see patterns',
+          timeOfDay: {
+            morning: 0,
+            afternoon: 0,
+            evening: 0,
+            night: 0
+          },
+          activityCorrelation: [],
+          socialCorrelation: []
+        },
+        trends: {
+          overallTrend: 'stable',
+          trendStrength: 0,
+          recentChanges: [],
+          predictions: []
+        },
+        insights: insightsResponse.data.data || []
+      };
+
+            setAnalytics(realAnalytics);
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      setError('Failed to load analytics data');
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
   const moodLabels = {
     'very_happy': 'Very Happy',
@@ -114,6 +95,7 @@ const MoodAnalytics = () => {
   ];
 
   const getMoodPercentage = (count, total) => {
+    if (total === 0) return 0;
     return ((count / total) * 100).toFixed(1);
   };
 
@@ -131,6 +113,20 @@ const MoodAnalytics = () => {
         <div className="loading-state">
           <div className="loading-spinner"></div>
           <p>Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mood-analytics">
+        <div className="error-state">
+          <h3>Error Loading Analytics</h3>
+          <p>{error}</p>
+          <button onClick={fetchAnalytics} className="btn btn-primary">
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -201,7 +197,7 @@ const MoodAnalytics = () => {
               <div className="stat-card">
                 <div className="stat-icon">📊</div>
                 <div className="stat-content">
-                  <h3>{analytics.overview.averageMood.toFixed(1)}</h3>
+                  <h3>{(analytics.overview.averageMood || 0).toFixed(1)}</h3>
                   <p>Average Mood</p>
                 </div>
               </div>

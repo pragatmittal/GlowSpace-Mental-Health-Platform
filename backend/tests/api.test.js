@@ -38,33 +38,77 @@ const logResponse = (res, context) => {
   }
 };
 
-// Setup test data
+// Setup test data for a user
 const setupTestData = async (userId) => {
   try {
     console.log('Setting up test data for user:', userId);
-
+    
     // Create mood entry
-    const moodEntry = new MoodEntry({
+    const moodEntry = await MoodEntry.create({
       userId,
-      ...global.mockData.moodEntry
+      mood: 'happy',
+      intensity: 8,
+      notes: 'Test mood entry',
+      activity: 'work',
+      socialContext: 'with_friends',
+      timeOfDay: 'morning',
+      entryMethod: 'manual'
     });
-    await moodEntry.save();
     console.log('Created mood entry');
 
-    // Create emotion data
-    const emotionData = new EmotionData({
+    // Create emotion data with required wellnessScore
+    const emotionData = await EmotionData.create({
       userId,
-      ...global.mockData.emotionData
+      emotions: {
+        happy: 80,
+        sad: 10,
+        angry: 0,
+        fearful: 0,
+        disgusted: 0,
+        surprised: 0,
+        neutral: 10
+      },
+      dominantEmotion: 'happy',
+      confidence: 80,
+      sessionId: 'test-session',
+      wellnessScore: 75, // Added required field
+      analysisMetadata: {
+        duration: 60,
+        framesAnalyzed: 100,
+        detectionMethod: 'realtime',
+        deviceInfo: {
+          userAgent: 'test-agent',
+          platform: 'test-platform',
+          browser: 'test-browser'
+        }
+      },
+      contextualData: {
+        timeOfDay: 'morning',
+        location: 'home',
+        activity: 'working',
+        notes: 'Test emotion analysis'
+      }
     });
-    await emotionData.save();
     console.log('Created emotion data');
 
     // Create assessment
-    const assessment = new Assessment({
+    const assessment = await Assessment.create({
       userId,
-      ...global.mockData.assessment
+      type: 'mood',
+      title: 'Daily Mood Check',
+      description: 'Test assessment',
+      data: {
+        scores: {
+          anxiety: 3,
+          depression: 2,
+          stress: 4
+        },
+        responses: {
+          q1: 'Test response 1',
+          q2: 'Test response 2'
+        }
+      }
     });
-    await assessment.save();
     console.log('Created assessment');
 
     return { moodEntry, emotionData, assessment };
@@ -101,7 +145,41 @@ beforeAll(async () => {
     console.log('Cleared test database');
     
     // Create test user
-    testUser = await User.create(global.mockData.user);
+    testUser = await User.create({
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'TestPassword123!',
+      isVerified: true,
+      role: 'user',
+      profile: {
+        gender: 'prefer_not_to_say',
+        dateOfBirth: new Date('1990-01-01'),
+        phone: '+1234567890',
+        address: {
+          street: 'Test Street',
+          city: 'Test City',
+          state: 'Test State',
+          country: 'Test Country',
+          zipCode: '12345'
+        }
+      },
+      preferences: {
+        notifications: {
+          email: true,
+          sms: false,
+          push: true
+        },
+        theme: 'light',
+        language: 'en'
+      },
+      mentalHealthData: {
+        currentChallenge: '7-day', // Fixed: was null, now valid enum value
+        challengeStartDate: new Date(),
+        lastMoodEntry: new Date(),
+        lastEmotionAnalysis: new Date(),
+        wellnessScore: 75
+      }
+    });
     console.log('Created test user:', testUser._id);
 
     // Setup test data

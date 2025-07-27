@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { moodAPI } from '../../services/api';
 import './MoodEntry.css';
 
 const MoodEntry = () => {
@@ -189,8 +190,20 @@ const MoodEntry = () => {
 
     setIsSubmitting(true);
     try {
-      // Here you would call your API to save the mood entry
-      console.log('Submitting mood data:', moodData);
+      // Call API to save the mood entry
+      const entryData = {
+        mood: moodData.mood,
+        intensity: moodData.intensity,
+        moodWheel: moodData.moodWheel,
+        timeOfDay: moodData.timeOfDay,
+        activity: moodData.activity || 'other',
+        socialContext: moodData.socialContext || 'alone',
+        notes: moodData.notes,
+        tags: moodData.tags,
+        entryMethod: moodData.entryMethod || 'manual'
+      };
+
+      await moodAPI.createEntry(entryData);
       
       // Reset form
       setMoodData({
@@ -198,8 +211,8 @@ const MoodEntry = () => {
         intensity: 5,
         moodWheel: { x: 0, y: 0, color: '#667eea', angle: 0, distance: 0 },
         timeOfDay: moodData.timeOfDay, // Keep time of day
-        activity: '',
-        socialContext: '',
+        activity: 'other',
+        socialContext: 'alone',
         notes: '',
         tags: [],
         entryMethod: 'mood_wheel'

@@ -55,6 +55,7 @@
   flex-direction: column;
   text-decoration: none;
   z-index: 1;
+  cursor: pointer;
 }
 
 .service-card::before {

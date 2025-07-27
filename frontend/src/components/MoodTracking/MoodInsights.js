@@ -1,108 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './MoodInsights.css';
 
-const MoodInsights = () => {
-  const [insights, setInsights] = useState([]);
-  const [loading, setLoading] = useState(true);
+const MoodInsights = ({ insights = [], compact = false }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [expandedInsight, setExpandedInsight] = useState(null);
-
-  // Mock insights data
-  useEffect(() => {
-    const mockInsights = [
-      {
-        id: '1',
-        type: 'pattern',
-        category: 'activity',
-        priority: 'high',
-        title: 'Exercise Boosts Your Mood',
-        message: 'Your mood is 40% better on days you exercise. Consider adding more physical activity to your routine.',
-        details: 'Analysis of your last 30 entries shows a strong correlation between exercise and improved mood scores. On exercise days, your average mood score is 4.2 compared to 3.0 on non-exercise days.',
-        actionable: true,
-        actionUrl: '/moodtracking?tab=entry',
-        actionText: 'Log Exercise Mood',
-        confidence: 0.85,
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        tags: ['exercise', 'mood-boost', 'correlation']
-      },
-      {
-        id: '2',
-        type: 'improvement',
-        category: 'general',
-        priority: 'medium',
-        title: 'Positive Streak Achievement',
-        message: 'You\'ve maintained a positive mood streak for 5 consecutive days!',
-        details: 'This is your longest positive streak in the last 3 months. Your consistent mood tracking and self-awareness are paying off.',
-        actionable: false,
-        confidence: 0.95,
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        tags: ['streak', 'achievement', 'progress']
-      },
-      {
-        id: '3',
-        type: 'warning',
-        category: 'lifestyle',
-        priority: 'medium',
-        title: 'Monday Blues Pattern',
-        message: 'Mondays consistently show lower mood scores. Consider adjusting your Monday routine.',
-        details: 'Over the past 8 weeks, your Monday mood scores average 2.8, significantly lower than your weekly average of 3.4. This pattern suggests work-related stress or transition difficulties.',
-        actionable: true,
-        actionUrl: '/dashboard',
-        actionText: 'View Monday Tips',
-        confidence: 0.78,
-        createdAt: new Date(),
-        tags: ['pattern', 'monday', 'work-stress']
-      },
-      {
-        id: '4',
-        type: 'recommendation',
-        category: 'social',
-        priority: 'high',
-        title: 'Social Interactions Improve Mood',
-        message: 'Your mood is 35% better when you spend time with friends or family.',
-        details: 'Social activities consistently correlate with higher mood scores. Consider scheduling more social interactions, especially during low-mood periods.',
-        actionable: true,
-        actionUrl: '/community',
-        actionText: 'Join Community',
-        confidence: 0.82,
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        tags: ['social', 'friends', 'family']
-      },
-      {
-        id: '5',
-        type: 'achievement',
-        category: 'therapy',
-        priority: 'low',
-        title: 'Consistent Tracking Milestone',
-        message: 'You\'ve tracked your mood for 30 consecutive days!',
-        details: 'Consistent mood tracking is a key component of mental health awareness. Your dedication to self-monitoring shows strong commitment to your well-being.',
-        actionable: false,
-        confidence: 1.0,
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        tags: ['milestone', 'consistency', 'self-care']
-      },
-      {
-        id: '6',
-        type: 'pattern',
-        category: 'lifestyle',
-        priority: 'medium',
-        title: 'Evening Mood Improvement',
-        message: 'Your mood tends to improve in the evenings, especially after 7 PM.',
-        details: 'This pattern suggests you may be a night person or that evening activities help you unwind. Consider scheduling important tasks for your peak mood hours.',
-        actionable: true,
-        actionUrl: '/moodtracking?tab=analytics',
-        actionText: 'View Time Analysis',
-        confidence: 0.73,
-        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-        tags: ['time-pattern', 'evening', 'productivity']
-      }
-    ];
-
-    setTimeout(() => {
-      setInsights(mockInsights);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   const getInsightIcon = (type) => {
     switch (type) {
@@ -267,8 +169,8 @@ const MoodInsights = () => {
             <p>Try adjusting your filters or continue tracking your mood to generate more insights.</p>
           </div>
         ) : (
-          filteredInsights.map(insight => (
-            <div key={insight.id} className="insight-card">
+          filteredInsights.map((insight, index) => (
+            <div key={insight.id || `insight-${index}`} className="insight-card">
               <div className="insight-header">
                 <div className="insight-meta">
                   <div 

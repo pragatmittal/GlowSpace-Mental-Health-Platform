@@ -95,7 +95,7 @@ const userSchema = new mongoose.Schema({
     currentChallenge: {
       type: String,
       enum: ['7-day', '21-day', '30-day'],
-      default: null
+      required: false // Make it optional instead of defaulting to null
     },
     challengeStartDate: Date,
     lastMoodEntry: Date,

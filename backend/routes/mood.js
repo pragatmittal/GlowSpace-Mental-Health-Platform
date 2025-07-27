@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../middlewares/auth');
+const { protect } = require('../middlewares/auth');
 const { validateMoodEntry } = require('../middlewares/validators');
 const {
   createMoodEntry,
@@ -17,7 +17,7 @@ const {
 } = require('../controllers/moodController');
 
 // All routes are protected
-router.use(auth);
+router.use(protect);
 
 // Mood entry routes
 router.post('/entry', validateMoodEntry, createMoodEntry);

@@ -69,12 +69,12 @@ const moodEntrySchema = new mongoose.Schema({
   activity: {
     type: String,
     enum: ['work', 'study', 'exercise', 'social', 'relaxation', 'creative', 'outdoor', 'indoor', 'travel', 'family', 'friends', 'alone', 'therapy', 'other'],
-    required: true
+    default: 'other'
   },
   socialContext: {
     type: String,
     enum: ['alone', 'with_friends', 'with_family', 'at_work', 'in_public', 'at_home', 'online', 'offline', 'mixed'],
-    required: true
+    default: 'alone'
   },
   
   // Location & Weather
@@ -193,24 +193,11 @@ moodEntrySchema.statics.getMoodTrends = async function(userId, days = 7) {
     {
       $group: {
         _id: {
-          date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          mood: "$mood"
+          date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
         },
-        count: { $sum: 1 },
-        avgIntensity: { $avg: "$intensity" }
-      }
-    },
-    {
-      $group: {
-        _id: "$_id.date",
-        moods: {
-          $push: {
-            mood: "$_id.mood",
-            count: "$count",
-            avgIntensity: "$avgIntensity"
-          }
-        },
-        totalEntries: { $sum: "$count" }
+        avgMood: { $avg: { $indexOfArray: [['very_sad', 'sad', 'neutral', 'happy', 'very_happy'], '$mood'] } },
+        avgIntensity: { $avg: "$intensity" },
+        totalEntries: { $sum: 1 }
       }
     },
     {

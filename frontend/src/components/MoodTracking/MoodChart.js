@@ -4,26 +4,14 @@ import './MoodChart.css';
 const MoodChart = ({ data, timeRange }) => {
   const chartData = useMemo(() => {
     if (!data || data.length === 0) {
-      // Generate mock data for demonstration
-      const mockData = [];
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
-      
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        mockData.push({
-          date: date.toISOString().split('T')[0],
-          avgMood: Math.random() * 4 + 0.5, // Random mood between 0.5 and 4.5
-          totalEntries: Math.floor(Math.random() * 5) + 1
-        });
-      }
-      return mockData;
+      return []; // Return empty array instead of mock data
     }
 
     return data.map(item => ({
-      date: item._id,
-      avgMood: item.moods.reduce((sum, mood) => sum + mood.avgIntensity, 0) / item.moods.length,
-      totalEntries: item.totalEntries
+      date: item._id.date || item._id,
+      avgMood: item.avgMood || 0,
+      avgIntensity: item.avgIntensity || 0,
+      totalEntries: item.totalEntries || 0
     }));
   }, [data, timeRange]);
 
@@ -39,6 +27,20 @@ const MoodChart = ({ data, timeRange }) => {
     const index = Math.round(value);
     return moodColors[Math.max(0, Math.min(index, moodColors.length - 1))];
   };
+
+  // Handle empty data case
+  if (!chartData || chartData.length === 0) {
+    return (
+      <div className="mood-chart">
+        <div className="chart-container">
+          <div className="no-data-message">
+            <p>No mood data available yet</p>
+            <p>Start tracking your mood to see trends here</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const maxMood = Math.max(...chartData.map(d => d.avgMood));
   const minMood = Math.min(...chartData.map(d => d.avgMood));
@@ -56,11 +58,13 @@ const MoodChart = ({ data, timeRange }) => {
   };
 
   const getYPosition = (value) => {
+    if (range === 0) return 50; // If all values are the same, center the line
     const normalizedValue = (value - minMood) / range;
     return 100 - (normalizedValue * 80); // 80% of chart height, 10% padding top and bottom
   };
 
   const getXPosition = (index) => {
+    if (chartData.length <= 1) return 50; // If only one data point, center it
     return (index / (chartData.length - 1)) * 80 + 10; // 80% of chart width, 10% padding left and right
   };
 
@@ -206,6 +210,24 @@ const MoodChart = ({ data, timeRange }) => {
             {formatDate(chartData.reduce((best, current) => 
               current.avgMood > best.avgMood ? current : best
             ).date)}
+          </span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Mood Range</span>
+          <span className="stat-value">
+            {getMoodLabel(minMood)} - {getMoodLabel(maxMood)}
+          </span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Tracking Days</span>
+          <span className="stat-value">
+            {chartData.length}
+          </span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Avg Intensity</span>
+          <span className="stat-value">
+            {(chartData.reduce((sum, d) => sum + d.avgIntensity, 0) / chartData.length).toFixed(1)}
           </span>
         </div>
       </div>

@@ -34,6 +34,8 @@ const QuickMoodEntry = ({ onEntryCreated }) => {
         mood: selectedMood.value,
         intensity,
         notes: notes.trim() || undefined,
+        activity: 'other',
+        socialContext: 'alone',
         entryMethod: 'quick_button'
       };
 
@@ -65,6 +67,8 @@ const QuickMoodEntry = ({ onEntryCreated }) => {
       const entryData = {
         mood: mood.value,
         intensity: 5,
+        activity: 'other',
+        socialContext: 'alone',
         entryMethod: 'quick_button'
       };
 
