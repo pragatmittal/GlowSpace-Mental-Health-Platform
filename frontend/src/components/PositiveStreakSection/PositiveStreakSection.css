@@ -1,0 +1,340 @@
+.positive-streak-section {
+  padding: 100px 20px;
+  background: var(--bg-primary);
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+.section-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  will-change: transform, opacity;
+}
+
+.section-subtitle {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 4rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  will-change: transform, opacity;
+}
+
+.challenges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.challenge-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px var(--shadow-color);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, opacity;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.challenge-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.challenge-card:hover {
+  transform: translateY(-10px) !important;
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.challenge-card:hover::before {
+  opacity: 0.02;
+}
+
+.challenge-icon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.challenge-card:hover .challenge-icon {
+  transform: scale(1.1);
+}
+
+.challenge-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.challenge-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.challenge-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  position: relative;
+  z-index: 2;
+}
+
+.duration,
+.difficulty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.start-challenge-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.start-challenge-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Dark mode styles */
+.positive-streak-section.dark {
+  background: var(--bg-primary);
+}
+
+.positive-streak-section.dark .challenge-card {
+  background: var(--card-bg);
+}
+
+.positive-streak-section.dark .challenge-icon {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.success-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 4rem 0;
+  text-align: center;
+}
+
+.stat-item {
+  padding: 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 4rem 0;
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1.5rem;
+  border: 3px solid #667eea;
+  padding: 3px;
+}
+
+.testimonial-quote {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.author-name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.challenge-type {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.cta-container {
+  text-align: center;
+  padding: 4rem 0 2rem;
+}
+
+.cta-container h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.cta-container p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+  .positive-streak-section {
+    padding: 60px 20px;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .success-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-item {
+    padding: 1.5rem;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .testimonial-card {
+    text-align: center;
+  }
+
+  .testimonial-image {
+    margin: 0 auto 1.5rem;
+  }
+
+  .cta-container h3 {
+    font-size: 1.5rem;
+  }
+
+  .cta-container p {
+    font-size: 1rem;
+  }
+
+  .challenges-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .challenge-card {
+    padding: 1.5rem;
+  }
+} 

@@ -1,0 +1,370 @@
+/* MoodChart.css */
+.mood-chart {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.mood-chart:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.chart-title h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #2c3e50);
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chart-title p {
+  margin: 0;
+  color: var(--text-secondary, #7f8c8d);
+  font-size: 0.9rem;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.period-selector {
+  padding: 8px 16px;
+  border: 2px solid var(--border-color, #e9ecef);
+  border-radius: 8px;
+  background: var(--bg-white, #ffffff);
+  color: var(--text-primary, #2c3e50);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.period-selector:hover {
+  border-color: var(--primary-color, #667eea);
+}
+
+.period-selector:focus {
+  outline: none;
+  border-color: var(--primary-color, #667eea);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.chart-container {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 80px;
+  height: 200px;
+  padding-right: 16px;
+  margin-right: 16px;
+}
+
+.y-axis-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #7f8c8d);
+  font-weight: 500;
+}
+
+.chart-content {
+  flex: 1;
+  position: relative;
+  height: 220px;
+}
+
+.mood-chart-svg {
+  width: 100%;
+  height: 200px;
+}
+
+.mood-point {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mood-point:hover {
+  r: 8;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.x-axis-label {
+  font-family: inherit;
+  font-size: 11px;
+  fill: var(--text-secondary, #7f8c8d);
+}
+
+.chart-summary {
+  margin-bottom: 24px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px;
+  background: var(--bg-light, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--border-light, #e9ecef);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #7f8c8d);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary, #2c3e50);
+}
+
+.trend-improving {
+  color: #27ae60 !important;
+}
+
+.trend-declining {
+  color: #e74c3c !important;
+}
+
+.trend-stable {
+  color: #3498db !important;
+}
+
+.mood-legend {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light, #e9ecef);
+}
+
+.mood-legend h4 {
+  margin: 0 0 16px 0;
+  color: var(--text-primary, #2c3e50);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-light, #f8f9fa);
+  border-radius: 6px;
+  border: 1px solid var(--border-light, #e9ecef);
+  transition: all 0.3s ease;
+}
+
+.legend-item:hover {
+  background: var(--bg-white, #ffffff);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item span {
+  font-size: 0.9rem;
+  color: var(--text-primary, #2c3e50);
+  font-weight: 500;
+}
+
+/* Loading states */
+.mood-chart.loading {
+  pointer-events: none;
+}
+
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 2s infinite;
+  border-radius: 8px;
+}
+
+.title-skeleton {
+  height: 24px;
+  width: 200px;
+  margin-bottom: 8px;
+}
+
+.subtitle-skeleton {
+  height: 16px;
+  width: 150px;
+}
+
+.chart-skeleton {
+  height: 200px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .mood-chart {
+    padding: 16px;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .chart-title h3 {
+    font-size: 1.3rem;
+  }
+  
+  .chart-y-axis {
+    width: 60px;
+    padding-right: 8px;
+    margin-right: 8px;
+  }
+  
+  .y-axis-label {
+    font-size: 0.7rem;
+  }
+  
+  .chart-content {
+    height: 180px;
+  }
+  
+  .mood-chart-svg {
+    height: 160px;
+  }
+  
+  .summary-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  .legend-items {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .legend-item {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mood-chart {
+    padding: 12px;
+  }
+  
+  .chart-title h3 {
+    font-size: 1.2rem;
+  }
+  
+  .chart-y-axis {
+    width: 50px;
+    padding-right: 4px;
+    margin-right: 4px;
+  }
+  
+  .y-axis-label {
+    font-size: 0.6rem;
+  }
+  
+  .chart-content {
+    height: 160px;
+  }
+  
+  .mood-chart-svg {
+    height: 140px;
+  }
+  
+  .x-axis-label {
+    font-size: 9px;
+  }
+  
+  .period-selector {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .mood-chart {
+    --card-bg: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --bg-light: #2a2a2a;
+    --bg-white: #1a1a1a;
+    --border-light: #333333;
+    --border-color: #444444;
+  }
+  
+  .mood-chart-svg line {
+    stroke: #333333;
+  }
+  
+  .loading-skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+  }
+}
