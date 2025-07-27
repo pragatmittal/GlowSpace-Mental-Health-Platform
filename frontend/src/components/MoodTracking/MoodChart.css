@@ -1,0 +1,350 @@
+/* MoodChart.css */
+.mood-chart {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin-bottom: 24px;
+}
+
+/* Y-axis */
+.y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 80px;
+  height: 100%;
+  z-index: 2;
+}
+
+.y-label {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+/* Chart Area */
+.chart-area {
+  position: absolute;
+  left: 80px;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 20px 0;
+}
+
+/* Grid Lines */
+.grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  z-index: 1;
+}
+
+.grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e2e8f0;
+  opacity: 0.5;
+}
+
+/* SVG Chart */
+.chart-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  z-index: 3;
+}
+
+.area-fill {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.area-fill:hover {
+  opacity: 0.5;
+}
+
+.data-line {
+  transition: stroke-width 0.3s ease;
+}
+
+.data-line:hover {
+  stroke-width: 3;
+}
+
+.data-point {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.data-point:hover {
+  r: 5;
+  stroke-width: 3;
+}
+
+/* X-axis */
+.x-axis {
+  position: absolute;
+  bottom: 0;
+  left: 80px;
+  right: 0;
+  height: 40px;
+  z-index: 2;
+}
+
+.x-label {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: #718096;
+  white-space: nowrap;
+}
+
+/* Chart Legend */
+.chart-legend {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.legend-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-label {
+  font-size: 0.8rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+/* Chart Stats */
+.chart-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mood-chart {
+    padding: 16px;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .y-axis {
+    width: 60px;
+  }
+
+  .y-label {
+    font-size: 0.7rem;
+    right: 4px;
+  }
+
+  .chart-area {
+    left: 60px;
+  }
+
+  .x-axis {
+    left: 60px;
+  }
+
+  .x-label {
+    font-size: 0.65rem;
+  }
+
+  .legend-items {
+    gap: 12px;
+  }
+
+  .legend-item {
+    gap: 4px;
+  }
+
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .legend-label {
+    font-size: 0.75rem;
+  }
+
+  .chart-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    height: 200px;
+  }
+
+  .y-axis {
+    width: 50px;
+  }
+
+  .y-label {
+    font-size: 0.65rem;
+    right: 2px;
+  }
+
+  .chart-area {
+    left: 50px;
+  }
+
+  .x-axis {
+    left: 50px;
+  }
+
+  .x-label {
+    font-size: 0.6rem;
+  }
+
+  .legend-items {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chart-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Hover Effects */
+.mood-chart:hover .area-fill {
+  opacity: 0.4;
+}
+
+.legend-item:hover .legend-color {
+  transform: scale(1.2);
+}
+
+.stat-item:hover .stat-value {
+  color: #667eea;
+}
+
+/* Custom Scrollbar */
+.mood-chart::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mood-chart::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.mood-chart::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.mood-chart::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+} 

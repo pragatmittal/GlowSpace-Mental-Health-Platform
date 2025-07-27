@@ -98,10 +98,38 @@ export const authAPI = {
 
 export const appointmentAPI = {
   getUpcoming: () => api.get('/appointments/upcoming'),
-  schedule: (data) => api.post('/appointments', data),
+  history: () => api.get('/appointments/history'),
+  details: (id) => api.get(`/appointments/${id}`),
+  schedule: (data) => api.post('/appointments/schedule', data),
   reschedule: (id, data) => api.put(`/appointments/${id}/reschedule`, data),
-  cancel: (id) => api.put(`/appointments/${id}/cancel`),
-  getAvailableSlots: (doctorId) => api.get(`/appointments/slots/${doctorId}`)
+  cancel: (id) => api.delete(`/appointments/${id}`),
+  updateNotes: (id, data) => api.put(`/appointments/${id}/notes`, data),
+  getAvailableSlots: (date) => api.get(`/appointments/slots?date=${date}`)
+};
+
+export const moodAPI = {
+  // Mood entry operations
+  createEntry: (data) => api.post('/mood/entry', data),
+  getEntries: (params) => api.get('/mood/entries', { params }),
+  updateEntry: (id, data) => api.put(`/mood/entry/${id}`, data),
+  deleteEntry: (id) => api.delete(`/mood/entry/${id}`),
+  
+  // Analytics and insights
+  getAnalytics: (params) => api.get('/mood/analytics', { params }),
+  getPatterns: (params) => api.get('/mood/patterns', { params }),
+  getStreaks: () => api.get('/mood/streaks'),
+  getInsights: (params) => api.get('/mood/insights', { params }),
+  
+  // File uploads
+  uploadVoice: (formData) => api.post('/mood/upload/voice', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  uploadPhoto: (formData) => api.post('/mood/upload/photo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  
+  // Alerts
+  acknowledgeAlert: (id) => api.put(`/mood/alert/${id}/acknowledge`)
 };
 
 export const communityAPI = {

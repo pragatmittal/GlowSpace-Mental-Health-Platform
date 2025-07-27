@@ -218,15 +218,7 @@
   color: #22543d;
 }
 
-.community-type.private {
-  background: #fed7d7;
-  color: #742a2a;
-}
 
-.community-type.moderated {
-  background: #fef5e7;
-  color: #744210;
-}
 
 .community-item.active .community-type {
   background: rgba(255, 255, 255, 0.2);

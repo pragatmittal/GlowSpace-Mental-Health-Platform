@@ -13,6 +13,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Chat from './components/Chat';
 import EmotionDetector from './components/EmotionDetector';
 import Community from './pages/Community';
+import MoodTracking from './pages/MoodTracking';
 
 // Components
 import Navbar from './components/Navbar';
@@ -66,6 +67,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Community />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/moodtracking"
+                  element={
+                    <ProtectedRoute>
+                      <MoodTracking />
                     </ProtectedRoute>
                   }
                 />

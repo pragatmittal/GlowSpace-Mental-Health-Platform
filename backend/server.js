@@ -22,6 +22,7 @@ const chatRoutes = require('./routes/chat');
 const assessmentRoutes = require('./routes/assessments');
 const communityRoutes = require('./routes/community');
 const appointmentRoutes = require('./routes/appointments');
+const moodRoutes = require('./routes/mood');
 
 // Create Express app
 const app = express();
@@ -89,6 +90,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/mood', moodRoutes);
 
 // Root route
 app.get('/', (req, res) => {

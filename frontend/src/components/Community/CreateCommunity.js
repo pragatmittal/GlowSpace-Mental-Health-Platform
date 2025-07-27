@@ -132,21 +132,7 @@ const CreateCommunity = ({ onCommunityCreated, onClose }) => {
   };
 
   const getTypeIcon = (type) => {
-    const icons = {
-      public: <FaEye />,
-      private: <FaEyeSlash />,
-      moderated: <FaShieldAlt />
-    };
-    return icons[type];
-  };
-
-  const getTypeDescription = (type) => {
-    const descriptions = {
-      public: 'Anyone can join and view messages',
-      private: 'Only invited members can join',
-      moderated: 'Membership requires approval'
-    };
-    return descriptions[type];
+    return <FaEye />;
   };
 
   return (
@@ -232,12 +218,11 @@ const CreateCommunity = ({ onCommunityCreated, onClose }) => {
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
+                disabled
               >
                 <option value="public">Public</option>
-                <option value="private">Private</option>
-                <option value="moderated">Moderated</option>
               </select>
-              <small>{getTypeDescription(formData.type)}</small>
+              <small>All communities are public for better accessibility and support</small>
             </div>
           </div>
         </div>

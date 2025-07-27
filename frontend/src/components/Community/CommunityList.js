@@ -9,7 +9,6 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
   const [sortBy, setSortBy] = useState('lastActivity');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,7 +18,7 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
   useEffect(() => {
     loadCategories();
     loadCommunities();
-  }, [currentPage, selectedCategory, selectedType, sortBy, searchQuery]);
+  }, [currentPage, selectedCategory, sortBy, searchQuery]);
 
   const loadCategories = async () => {
     try {
@@ -39,7 +38,7 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
         page: currentPage,
         limit: 12,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        type: selectedType !== 'all' ? selectedType : undefined,
+        type: 'public',
         sortBy,
         search: searchQuery || undefined
       };
@@ -66,10 +65,7 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
     setCurrentPage(1);
   };
 
-  const handleTypeChange = (type) => {
-    setSelectedType(type);
-    setCurrentPage(1);
-  };
+
 
   const handleSortChange = (sort) => {
     setSortBy(sort);
@@ -192,19 +188,7 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
             </select>
           </div>
 
-          <div className="filter-group">
-            <label>Type:</label>
-            <select
-              value={selectedType}
-              onChange={(e) => handleTypeChange(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Types</option>
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-              <option value="moderated">Moderated</option>
-            </select>
-          </div>
+
 
           <div className="filter-group">
             <label>Sort by:</label>
@@ -255,8 +239,8 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
             <div className="community-card-header">
               <div className="community-card-title">
                 <h3>{community.name}</h3>
-                <span className={`community-type ${community.type}`}>
-                  {community.type}
+                <span className="community-type public">
+                  Public
                 </span>
               </div>
               <div className="community-category">

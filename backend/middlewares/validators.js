@@ -154,7 +154,7 @@ exports.validateAssessment = [
   handleValidationErrors
 ];
 
-// Mood entry validation
+// Enhanced mood entry validation
 exports.validateMoodEntry = [
   body('mood')
     .isIn(['very_sad', 'sad', 'neutral', 'happy', 'very_happy'])
@@ -165,10 +165,55 @@ exports.validateMoodEntry = [
     .isInt({ min: 1, max: 10 })
     .withMessage('Intensity must be between 1 and 10'),
   
+  body('moodWheel')
+    .optional()
+    .isObject()
+    .withMessage('Mood wheel data must be an object'),
+  
+  body('moodWheel.x')
+    .optional()
+    .isFloat({ min: -1, max: 1 })
+    .withMessage('Mood wheel X coordinate must be between -1 and 1'),
+  
+  body('moodWheel.y')
+    .optional()
+    .isFloat({ min: -1, max: 1 })
+    .withMessage('Mood wheel Y coordinate must be between -1 and 1'),
+  
+  body('timeOfDay')
+    .optional()
+    .isIn(['morning', 'afternoon', 'evening', 'night'])
+    .withMessage('Invalid time of day'),
+  
+  body('activity')
+    .optional()
+    .isIn(['work', 'study', 'exercise', 'social', 'relaxation', 'creative', 'outdoor', 'indoor', 'travel', 'family', 'friends', 'alone', 'therapy', 'other'])
+    .withMessage('Invalid activity'),
+  
+  body('socialContext')
+    .optional()
+    .isIn(['alone', 'with_friends', 'with_family', 'at_work', 'in_public', 'at_home', 'online', 'offline', 'mixed'])
+    .withMessage('Invalid social context'),
+  
+  body('entryMethod')
+    .optional()
+    .isIn(['quick_button', 'mood_wheel', 'voice', 'photo', 'manual'])
+    .withMessage('Invalid entry method'),
+  
   body('notes')
     .optional()
-    .isLength({ max: 500 })
-    .withMessage('Notes must be less than 500 characters'),
+    .isLength({ max: 1000 })
+    .withMessage('Notes must be less than 1000 characters'),
+  
+  body('tags')
+    .optional()
+    .isArray({ max: 10 })
+    .withMessage('Tags must be an array with maximum 10 items'),
+  
+  body('tags.*')
+    .optional()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Each tag must be between 1 and 20 characters'),
   
   handleValidationErrors
 ];
@@ -365,8 +410,8 @@ exports.validateCommunity = [
   
   body('type')
     .optional()
-    .isIn(['public', 'private', 'moderated'])
-    .withMessage('Invalid community type'),
+    .isIn(['public'])
+    .withMessage('Only public communities are supported'),
   
   body('tags')
     .optional()

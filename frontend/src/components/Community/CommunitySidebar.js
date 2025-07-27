@@ -184,8 +184,8 @@ const CommunitySidebar = ({ selectedCommunity, onCommunitySelect, onCreateCommun
                       <FaUsers />
                       {formatMemberCount(community.stats.totalMembers)}
                     </span>
-                    <span className={`community-type ${community.type}`}>
-                      {community.type}
+                    <span className="community-type public">
+                      Public
                     </span>
                   </div>
                 </div>
