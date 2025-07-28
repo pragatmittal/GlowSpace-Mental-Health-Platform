@@ -14,7 +14,7 @@ const handleValidationErrors = (req, res, next) => {
 };
 
 // Register validation
-exports.validateRegister = [
+const validateRegister = [
   body('name')
     .trim()
     .isLength({ min: 2, max: 50 })
@@ -37,7 +37,7 @@ exports.validateRegister = [
 ];
 
 // Login validation
-exports.validateLogin = [
+const validateLogin = [
   body('email')
     .isEmail()
     .normalizeEmail()
@@ -51,7 +51,7 @@ exports.validateLogin = [
 ];
 
 // Forgot password validation
-exports.validateForgotPassword = [
+const validateForgotPassword = [
   body('email')
     .isEmail()
     .normalizeEmail()
@@ -61,7 +61,7 @@ exports.validateForgotPassword = [
 ];
 
 // Reset password validation
-exports.validateResetPassword = [
+const validateResetPassword = [
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long')
@@ -72,7 +72,7 @@ exports.validateResetPassword = [
 ];
 
 // Change password validation
-exports.validateChangePassword = [
+const validateChangePassword = [
   body('currentPassword')
     .notEmpty()
     .withMessage('Current password is required'),
@@ -95,7 +95,7 @@ exports.validateChangePassword = [
 ];
 
 // Profile update validation
-exports.validateUpdateProfile = [
+const validateUpdateProfile = [
   body('name')
     .optional()
     .trim()
@@ -133,7 +133,7 @@ exports.validateUpdateProfile = [
 ];
 
 // Google auth validation
-exports.validateGoogleAuth = [
+const validateGoogleAuth = [
   body('tokenId')
     .notEmpty()
     .withMessage('Google token is required'),
@@ -142,7 +142,7 @@ exports.validateGoogleAuth = [
 ];
 
 // Assessment validation
-exports.validateAssessment = [
+const validateAssessment = [
   body('type')
     .isIn(['trauma', 'medication', 'voice', 'mood'])
     .withMessage('Invalid assessment type'),
@@ -155,7 +155,7 @@ exports.validateAssessment = [
 ];
 
 // Enhanced mood entry validation
-exports.validateMoodEntry = [
+const validateMoodEntry = [
   body('mood')
     .isIn(['very_sad', 'sad', 'neutral', 'happy', 'very_happy'])
     .withMessage('Invalid mood selection'),
@@ -219,7 +219,7 @@ exports.validateMoodEntry = [
 ];
 
 // Counseling appointment validation
-exports.validateAppointment = [
+const validateAppointment = [
   body('doctorId')
     .isMongoId()
     .withMessage('Invalid doctor ID'),
@@ -241,7 +241,7 @@ exports.validateAppointment = [
 ];
 
 // Chat message validation
-exports.validateChatMessage = [
+const validateChatMessage = [
   body('content')
     .trim()
     .isLength({ min: 1, max: 1000 })
@@ -265,7 +265,7 @@ exports.validateChatMessage = [
 ];
 
 // Challenge validation
-exports.validateChallenge = [
+const validateChallenge = [
   body('type')
     .isIn(['7-day', '21-day', '30-day'])
     .withMessage('Invalid challenge type'),
@@ -274,7 +274,7 @@ exports.validateChallenge = [
 ];
 
 // Generic ID validation
-exports.validateMongoId = (field = 'id') => [
+const validateMongoId = (field = 'id') => [
   body(field)
     .isMongoId()
     .withMessage(`Invalid ${field} format`),
@@ -283,7 +283,7 @@ exports.validateMongoId = (field = 'id') => [
 ];
 
 // File upload validation
-exports.validateFileUpload = (allowedTypes = [], maxSize = 5 * 1024 * 1024) => {
+const validateFileUpload = (allowedTypes = [], maxSize = 5 * 1024 * 1024) => {
   return (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({
@@ -313,7 +313,7 @@ exports.validateFileUpload = (allowedTypes = [], maxSize = 5 * 1024 * 1024) => {
 };
 
 // Emotion analysis validation
-exports.validateEmotionAnalysis = [
+const validateEmotionAnalysis = [
   body('emotions')
     .isObject()
     .withMessage('Emotions must be an object')
@@ -390,7 +390,7 @@ exports.validateEmotionAnalysis = [
 ];
 
 // Community validation
-exports.validateCommunity = [
+const validateCommunity = [
   body('name')
     .trim()
     .isLength({ min: 3, max: 100 })
@@ -427,7 +427,7 @@ exports.validateCommunity = [
 ];
 
 // Community message validation
-exports.validateCommunityMessage = [
+const validateCommunityMessage = [
   body('content')
     .trim()
     .isLength({ min: 1, max: 2000 })
@@ -482,7 +482,7 @@ exports.validateCommunityMessage = [
 ];
 
 // Reaction validation
-exports.validateReaction = [
+const validateReaction = [
   body('reaction')
     .trim()
     .isLength({ min: 1, max: 10 })
@@ -492,7 +492,7 @@ exports.validateReaction = [
 ];
 
 // Report validation
-exports.validateReport = [
+const validateReport = [
   body('reason')
     .isIn(['spam', 'inappropriate', 'harassment', 'misinformation', 'other'])
     .withMessage('Invalid report reason'),
@@ -506,7 +506,7 @@ exports.validateReport = [
 ];
 
 // Moderation validation
-exports.validateModeration = [
+const validateModeration = [
   body('action')
     .isIn(['warn', 'hide', 'delete', 'ban'])
     .withMessage('Invalid moderation action'),
@@ -520,7 +520,7 @@ exports.validateModeration = [
 ];
 
 // Custom validation for complex objects
-exports.validateComplexObject = (schema) => {
+const validateComplexObject = (schema) => {
   return (req, res, next) => {
     const errors = [];
     
@@ -579,4 +579,86 @@ exports.validateComplexObject = (schema) => {
 
     next();
   };
+};
+
+// Goal validation
+const validateGoal = [
+  body('title')
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Title is required and must be between 1 and 100 characters'),
+  
+  body('description')
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage('Description is required and must be between 1 and 500 characters'),
+  
+  body('category')
+    .isIn(['mindfulness', 'physical', 'emotional', 'social', 'productivity', 'learning', 'other'])
+    .withMessage('Invalid category'),
+  
+  body('targetValue')
+    .isInt({ min: 1 })
+    .withMessage('Target value must be a positive integer'),
+  
+  body('unit')
+    .trim()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Unit is required and must be between 1 and 20 characters'),
+  
+  body('endDate')
+    .isISO8601()
+    .withMessage('End date must be a valid date')
+    .custom((value) => {
+      const endDate = new Date(value);
+      const now = new Date();
+      if (endDate <= now) {
+        throw new Error('End date must be in the future');
+      }
+      return true;
+    }),
+  
+  body('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high'])
+    .withMessage('Priority must be low, medium, or high'),
+  
+  body('status')
+    .optional()
+    .isIn(['active', 'completed', 'paused', 'cancelled'])
+    .withMessage('Invalid status'),
+  
+  handleValidationErrors
+];
+
+// Goal progress validation
+const validateGoalProgress = [
+  body('increment')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Increment must be a positive integer'),
+  
+  handleValidationErrors
+];
+
+module.exports = {
+  validateRegister,
+  validateLogin,
+  validateGoogleAuth,
+  validateForgotPassword,
+  validateResetPassword,
+  validateChangePassword,
+  validateUpdateProfile,
+  validateMoodEntry,
+  validateEmotionAnalysis,
+  validateAssessment,
+  validateAppointment,
+  validateCommunity,
+  validateCommunityMessage,
+  validateReaction,
+  validateReport,
+  validateModeration,
+  validateGoal,
+  validateGoalProgress,
+  validateChatMessage
 };

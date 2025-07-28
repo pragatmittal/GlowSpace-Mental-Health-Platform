@@ -76,12 +76,49 @@ const MoodInsights = ({ insights = [], compact = false }) => {
 
   const filteredInsights = getFilteredInsights();
 
+  // Check if user is new (no insights yet)
+  const isNewUser = !insights || insights.length === 0;
+
   if (loading) {
     return (
       <div className="mood-insights">
         <div className="loading-state">
           <div className="loading-spinner"></div>
           <p>Loading insights...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show welcome message for new users
+  if (isNewUser) {
+    return (
+      <div className="mood-insights">
+        <div className="insights-header">
+          <h2>Mood Insights</h2>
+          <p>Personalized insights and recommendations based on your mood patterns</p>
+        </div>
+        
+        <div className="new-user-insights">
+          <div className="new-user-card">
+            <div className="new-user-icon">🔮</div>
+            <h3>Your Insights Are Coming!</h3>
+            <p>Start tracking your moods to unlock personalized insights and recommendations. We'll analyze your patterns to help you understand your emotional wellbeing better.</p>
+            <div className="insight-preview">
+              <div className="preview-item">
+                <span className="preview-icon">📊</span>
+                <span>Mood patterns and trends</span>
+              </div>
+              <div className="preview-item">
+                <span className="preview-icon">💡</span>
+                <span>Personalized recommendations</span>
+              </div>
+              <div className="preview-item">
+                <span className="preview-icon">🎯</span>
+                <span>Wellness improvement tips</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

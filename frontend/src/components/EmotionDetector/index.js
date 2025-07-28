@@ -260,9 +260,9 @@ const EmotionDetector = () => {
         
         Object.entries(expressions).forEach(([emotion, score]) => {
           normalizedEmotions[emotion] = Math.round((score / totalScore) * 100);
-        });
+      });
 
-        // Update state
+      // Update state
         setEmotions(normalizedEmotions);
         
         // Calculate wellness score
@@ -436,8 +436,8 @@ const EmotionDetector = () => {
           {error && (
             <div className="error-message">
               <p>{error}</p>
-            </div>
-          )}
+                </div>
+              )}
           
           {isRateLimited && (
             <div className="rate-limit-indicator">

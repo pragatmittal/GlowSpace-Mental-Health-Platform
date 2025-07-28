@@ -18,11 +18,12 @@ const Message = require('./models/Message');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const emotionsRoutes = require('./routes/emotions');
-const chatRoutes = require('./routes/chat');
-const assessmentRoutes = require('./routes/assessments');
+// const chatRoutes = require('./routes/chat');
+// const assessmentRoutes = require('./routes/assessments');
 const communityRoutes = require('./routes/community');
 const appointmentRoutes = require('./routes/appointments');
 const moodRoutes = require('./routes/mood');
+const goalRoutes = require('./routes/goals');
 
 // Create Express app
 const app = express();
@@ -86,11 +87,12 @@ app.use('/api/', defaultLimiter); // Default limit for other routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/emotions', emotionsRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/assessments', assessmentRoutes);
+// app.use('/api/chat', chatRoutes);
+// app.use('/api/assessments', assessmentRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/mood', moodRoutes);
+app.use('/api/goals', goalRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -376,10 +378,43 @@ const connectDB = async () => {
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      family: 4 // Use IPv4, skip trying IPv6
     });
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('Database connection error:', error);
+    
+    // If it's an IP whitelist error, provide helpful message
+    if (error.message && error.message.includes('whitelist')) {
+      console.error('\n🔴 MongoDB Atlas IP Whitelist Error:');
+      console.error('Your current IP address is not whitelisted in MongoDB Atlas.');
+      console.error('To fix this:');
+      console.error('1. Go to MongoDB Atlas Dashboard');
+      console.error('2. Navigate to Network Access');
+      console.error('3. Click "Add IP Address"');
+      console.error('4. Add your current IP or use "0.0.0.0/0" for all IPs (less secure)');
+      console.error('5. Or use a local MongoDB instance instead');
+      console.error('\nCurrent IP:', require('child_process').execSync('curl -s ifconfig.me').toString().trim());
+    }
+    
+    // Try to connect to local MongoDB as fallback
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\n🔄 Trying to connect to local MongoDB as fallback...');
+      try {
+        await mongoose.connect('mongodb://localhost:27017/glowspace', {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+          serverSelectionTimeoutMS: 3000
+        });
+        console.log('✅ Connected to local MongoDB successfully');
+        return;
+      } catch (localError) {
+        console.error('❌ Local MongoDB connection also failed:', localError.message);
+      }
+    }
+    
     process.exit(1);
   }
 };

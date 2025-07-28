@@ -254,4 +254,57 @@ export const communityAPI = {
   searchMessages: (communityId, query) => api.get(`/community/${communityId}/search`, { params: { q: query } })
 };
 
+// Goal API
+export const goalAPI = {
+  // Get all goals
+  getGoals: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `/goals?${queryString}` : '/goals';
+    const response = await api.get(url);
+    return response;
+  },
+
+  // Get single goal
+  getGoal: async (id) => {
+    const response = await api.get(`/goals/${id}`);
+    return response;
+  },
+
+  // Create goal
+  createGoal: async (goalData) => {
+    const response = await api.post('/goals', goalData);
+    return response;
+  },
+
+  // Update goal
+  updateGoal: async (id, goalData) => {
+    const response = await api.put(`/goals/${id}`, goalData);
+    return response;
+  },
+
+  // Update goal progress
+  updateProgress: async (id, increment = 1) => {
+    const response = await api.put(`/goals/${id}/progress`, { increment });
+    return response;
+  },
+
+  // Delete goal
+  deleteGoal: async (id) => {
+    const response = await api.delete(`/goals/${id}`);
+    return response;
+  },
+
+  // Get goal statistics
+  getStats: async () => {
+    const response = await api.get('/goals/stats');
+    return response;
+  },
+
+  // Reset goal progress
+  resetProgress: async (id) => {
+    const response = await api.put(`/goals/${id}/reset`);
+    return response;
+  }
+};
+
 export default api; 

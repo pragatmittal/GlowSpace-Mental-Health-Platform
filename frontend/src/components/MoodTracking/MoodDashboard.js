@@ -69,50 +69,80 @@ const MoodDashboard = () => {
     );
   }
 
+  // Check if user is new (no entries yet)
+  const isNewUser = !dashboardData?.analytics?.summary?.totalEntries || dashboardData.analytics.summary.totalEntries === 0;
+
   return (
     <div className="mood-dashboard">
+      {/* Welcome Message for New Users */}
+      {isNewUser && (
+        <div className="welcome-section">
+          <div className="welcome-card">
+            <div className="welcome-icon">🌟</div>
+            <h2>Welcome to Mood Tracking!</h2>
+            <p>Start your journey to better emotional awareness by tracking your daily moods. Your first entry will unlock personalized insights and patterns.</p>
+            <div className="welcome-features">
+              <div className="feature">
+                <span className="feature-icon">📊</span>
+                <span>Track daily moods</span>
+              </div>
+              <div className="feature">
+                <span className="feature-icon">📈</span>
+                <span>View trends & patterns</span>
+              </div>
+              <div className="feature">
+                <span className="feature-icon">💡</span>
+                <span>Get personalized insights</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Entry Section */}
       <div className="dashboard-section quick-entry-section">
         <h2>How are you feeling right now?</h2>
         <QuickMoodEntry onEntryCreated={handleEntryCreated} />
       </div>
 
-      {/* Stats Overview */}
-      <div className="dashboard-section stats-section">
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-content">
-              <h3>{dashboardData?.analytics?.summary?.totalEntries || 0}</h3>
-              <p>Total Entries</p>
+      {/* Stats Overview - Only show if user has data */}
+      {!isNewUser && (
+        <div className="dashboard-section stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">📊</div>
+              <div className="stat-content">
+                <h3>{dashboardData?.analytics?.summary?.totalEntries || 0}</h3>
+                <p>Total Entries</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">🔥</div>
-            <div className="stat-content">
-              <h3>{dashboardData?.streaks?.currentTrackingStreak || 0}</h3>
-              <p>Day Streak</p>
+            
+            <div className="stat-card">
+              <div className="stat-icon">🔥</div>
+              <div className="stat-content">
+                <h3>{dashboardData?.streaks?.currentTrackingStreak || 0}</h3>
+                <p>Day Streak</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-content">
-              <h3>{dashboardData?.streaks?.currentPositiveStreak || 0}</h3>
-              <p>Positive Days</p>
+            
+            <div className="stat-card">
+              <div className="stat-icon">📈</div>
+              <div className="stat-content">
+                <h3>{dashboardData?.streaks?.currentPositiveStreak || 0}</h3>
+                <p>Positive Days</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">💡</div>
-            <div className="stat-content">
-              <h3>{dashboardData?.insights?.length || 0}</h3>
-              <p>Insights</p>
+            
+            <div className="stat-card">
+              <div className="stat-icon">💡</div>
+              <div className="stat-content">
+                <h3>{dashboardData?.insights?.length || 0}</h3>
+                <p>Insights</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="dashboard-grid">

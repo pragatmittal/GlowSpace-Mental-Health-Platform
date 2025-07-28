@@ -3,111 +3,106 @@ const MoodEntry = require('../models/MoodEntry');
 const EmotionData = require('../models/EmotionData');
 const Assessment = require('../models/Assessment');
 const Appointment = require('../models/Appointment');
+const Goal = require('../models/Goal');
+const mongoose = require('mongoose');
 
-const getDashboardData = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        console.log('Fetching dashboard data for user:', userId);
-        
-        // Initialize with empty arrays/objects in case of no data
-        let moodTrends = [];
-        let emotionTrends = [];
-        let recentAppointments = [];
-        let recentActivities = {};
-        
-        try {
-            moodTrends = await MoodEntry.getMoodTrends(userId, 7) || [];
-        } catch (error) {
-            console.log('No mood data available for user');
-        }
-        
-        try {
-            emotionTrends = await EmotionData.getEmotionTrends(userId, 7) || [];
-        } catch (error) {
-            console.log('No emotion data available for user');
-        }
-        
-        try {
-            recentAppointments = await Appointment.getUserAppointments(userId, 5) || [];
-        } catch (error) {
-            console.log('No appointment data available for user');
-        }
-        
-        try {
-            recentActivities = await getRecentActivitiesData(userId) || {};
-        } catch (error) {
-            console.log('No activity data available for user');
-        }
+// @desc    Get dashboard data
+// @route   GET /api/dashboard/data
+// @access  Private
+exports.getDashboardData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log('Fetching dashboard data for user:', userId);
 
-        // --- NEW: Get latest emotion session ---
-        let latestSession = null;
-        let latestSessionId = null;
-        let latestSessionData = [];
-        let latestSessionSummary = null;
-        let recommendations = [];
+    // Get user data
+    const user = await User.findById(userId).select('-password');
 
-        try {
-        // Find the most recent EmotionData entry for the user
-        const latestEmotion = await EmotionData.findOne({ userId }).sort({ createdAt: -1 });
-        if (latestEmotion) {
-            latestSessionId = latestEmotion.sessionId;
-            latestSessionData = await EmotionData.find({ userId, sessionId: latestSessionId }).sort({ createdAt: 1 });
-            // Aggregate session data
-            if (latestSessionData.length > 0) {
-                // Calculate average wellness score and emotion progression
-                const totalScore = latestSessionData.reduce((sum, d) => sum + (d.wellnessScore || 0), 0);
-                const avgWellnessScore = Math.round(totalScore / latestSessionData.length);
-                const emotionProgression = latestSessionData.map(d => ({
-                    timestamp: d.createdAt,
-                    dominantEmotion: d.dominantEmotion,
-                    confidence: d.confidence,
-                    wellnessScore: d.wellnessScore
-                }));
-                // Use the last entry for recommendations
-                recommendations = latestSessionData[latestSessionData.length - 1].generateRecommendations();
-                latestSessionSummary = {
-                    sessionId: latestSessionId,
-                    totalReadings: latestSessionData.length,
-                    averageWellnessScore: avgWellnessScore,
-                    emotionProgression,
-                    recommendations
-                };
-                latestSession = {
-                    sessionId: latestSessionId,
-                    summary: latestSessionSummary,
-                    data: emotionProgression
-                };
+    // Get recent mood entries
+    const recentMoods = await MoodEntry.find({ userId, isActive: true })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get recent emotion data
+    const recentEmotionData = await EmotionData.find({ userId, isActive: true })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Get recent appointments
+    const recentAppointments = await Appointment.find({ userId, isActive: true })
+      .sort({ scheduledDate: 1 })
+      .limit(5);
+
+    // Get goals summary
+    const Goal = require('../models/Goal');
+    const goalsSummary = await Goal.getGoalsSummary(userId);
+
+    // Get recent activities
+    const recentActivities = {
+      recentMoods,
+      recentEmotionData,
+      recentAppointments
+    };
+
+    // Get latest session data
+    const latestSession = recentEmotionData.length > 0 ? {
+      sessionId: recentEmotionData[0].sessionId,
+      summary: {
+        sessionId: recentEmotionData[0].sessionId,
+        totalReadings: recentEmotionData.length,
+        averageWellnessScore: recentEmotionData.reduce((sum, data) => sum + data.wellnessScore, 0) / recentEmotionData.length,
+        emotionProgression: recentEmotionData.map(data => ({
+          timestamp: data.createdAt,
+          dominantEmotion: data.dominantEmotion,
+          confidence: data.confidence,
+          wellnessScore: data.wellnessScore
+        })),
+        recommendations: []
+      },
+      data: recentEmotionData.map(data => ({
+        timestamp: data.createdAt,
+        dominantEmotion: data.dominantEmotion,
+        confidence: data.confidence,
+        wellnessScore: data.wellnessScore
+      }))
+    } : null;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+        moodTrends: await MoodEntry.getMoodTrends(userId, 7),
+        emotionTrends: await EmotionData.aggregate([
+          { $match: { userId: new mongoose.Types.ObjectId(userId), isActive: true } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+              emotions: {
+                $push: {
+                  emotion: "$dominantEmotion",
+                  confidence: "$confidence"
+                }
+              },
+              wellnessScore: { $avg: "$wellnessScore" }
             }
-            }
-        } catch (error) {
-            console.log('No emotion session data available for user');
-        }
+          },
+          { $sort: { _id: -1 } },
+          { $limit: 7 }
+        ]),
+        recentAppointments,
+        recentActivities,
+        latestSession,
+        goalsSummary
+      }
+    });
 
-        res.status(200).json({
-            success: true,
-            data: {
-                user: {
-                    id: req.user._id,
-                    name: req.user.name,
-                    email: req.user.email,
-                    isVerified: req.user.isVerified,
-                    mentalHealthData: req.user.mentalHealthData
-                },
-                moodTrends,
-                emotionTrends,
-                recentAppointments,
-                recentActivities,
-                latestSession // <-- new field for frontend
-            }
-        });
-    } catch (error) {
-        console.error('Dashboard data error:', error);
-        res.status(500).json({
-            success: false,
-            message: "Error fetching dashboard data",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
+  } catch (error) {
+    console.error('Dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard data',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 };
 
 const getUserProgress = async (req, res) => {
@@ -254,7 +249,7 @@ const getRecentActivitiesData = async (userId) => {
 };
 
 module.exports = {
-    getDashboardData,
+    getDashboardData: exports.getDashboardData,
     getUserProgress,
     getEmotionTrends,
     getActivitySummary,

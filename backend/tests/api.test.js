@@ -42,7 +42,7 @@ const logResponse = (res, context) => {
 const setupTestData = async (userId) => {
   try {
     console.log('Setting up test data for user:', userId);
-    
+
     // Create mood entry
     const moodEntry = await MoodEntry.create({
       userId,

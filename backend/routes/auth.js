@@ -35,7 +35,7 @@ router.post('/google', validateGoogleAuth, googleAuth);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/forgot-password', rateLimitAuth(5, 15 * 60 * 1000), validateForgotPassword, forgotPassword);
 router.put('/reset-password/:token', rateLimitAuth(5, 15 * 60 * 1000), validateResetPassword, resetPassword);
-router.post('/refresh', refreshToken); // No rate limiting
+router.post('/refresh', refreshToken);
 
 // Protected routes
 router.use(protect); // All routes after this middleware are protected
@@ -43,6 +43,6 @@ router.use(protect); // All routes after this middleware are protected
 router.get('/me', getMe);
 router.put('/profile', validateUpdateProfile, updateProfile);
 router.put('/change-password', validateChangePassword, changePassword);
-router.post('/logout', logout); // No rate limiting
+router.post('/logout', logout);
 
 module.exports = router;

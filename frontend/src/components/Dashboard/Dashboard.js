@@ -223,7 +223,7 @@ const Dashboard = () => {
               </div>
               
               <div className="progress-charts">
-                <GoalsProgress goals={dashboardData?.goals} />
+                <GoalsProgress />
               </div>
             </div>
           </div>
@@ -234,7 +234,6 @@ const Dashboard = () => {
             <div className="progress-grid">
               <div className="goals-section">
                 <GoalsProgress 
-                  goals={dashboardData?.goals} 
                   detailed={true}
                 />
               </div>

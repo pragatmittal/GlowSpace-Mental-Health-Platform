@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false); // Add flag to prevent multiple loads
 
   // Security: Obfuscate token storage
   const TOKEN_KEY = btoa('glow_access_token');
@@ -105,12 +106,11 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Token refresh error:', error);
-      // Clear auth state and redirect to login
+      // Clear auth state but don't redirect automatically
       setIsAuthenticated(false);
       setUser(null);
       storeToken(null);
       storeRefreshToken(null);
-      window.location.href = '/login';
       return null;
     }
   };
@@ -231,30 +231,65 @@ export const AuthProvider = ({ children }) => {
 
   // Load user on app start
   const loadUser = async () => {
+    if (hasLoaded) return; // Prevent multiple loads
+    
     try {
-      const token = await getValidToken();
+      const token = getStoredToken();
       
-      if (token) {
-        const response = await authAPI.getProfile();
-        const data = response.data;
+      if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+        setHasLoaded(true);
+        return;
+      }
 
-        if (data.success) {
-          setUser(data.user);
-          setIsAuthenticated(true);
-        } else {
+      // Check if token is expired
+      if (isTokenExpired(token)) {
+        const refreshToken = getStoredRefreshToken();
+        if (!refreshToken) {
+          // No refresh token, clear auth state
           setIsAuthenticated(false);
           setUser(null);
+          storeToken(null);
+          setLoading(false);
+          setHasLoaded(true);
+          return;
         }
+        
+        // Try to refresh token
+        const newToken = await refreshAccessToken();
+        if (!newToken) {
+          setIsAuthenticated(false);
+          setUser(null);
+          setLoading(false);
+          setHasLoaded(true);
+          return;
+        }
+      }
+
+      // Now try to get user profile
+      const response = await authAPI.getProfile();
+      const data = response.data;
+
+      if (data.success) {
+        setUser(data.user);
+        setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
         setUser(null);
+        storeToken(null);
+        storeRefreshToken(null);
       }
     } catch (error) {
       console.error('Load user error:', error);
       setIsAuthenticated(false);
       setUser(null);
+      storeToken(null);
+      storeRefreshToken(null);
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   };
 
@@ -294,8 +329,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    loadUser();
-  }, []);
+    if (!hasLoaded) {
+      loadUser();
+    }
+  }, [hasLoaded]);
 
   const value = {
     user,
