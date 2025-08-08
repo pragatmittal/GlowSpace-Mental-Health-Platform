@@ -1,0 +1,125 @@
+.welcome-message {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+.greeting-section {
+  flex: 1;
+}
+
+.greeting-text {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.motivational-text {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.wellness-streak {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.streak-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.streak-number {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffd700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.streak-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.streak-icon {
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .welcome-message {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .greeting-text {
+    font-size: 2rem;
+  }
+  
+  .motivational-text {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .wellness-streak {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .greeting-text {
+    font-size: 1.8rem;
+  }
+  
+  .streak-number {
+    font-size: 2.5rem;
+  }
+  
+  .welcome-message {
+    padding: 1rem;
+  }
+}
