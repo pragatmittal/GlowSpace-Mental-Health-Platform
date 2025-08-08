@@ -70,20 +70,10 @@ const sendTokenResponse = async (user, statusCode, res) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    console.log('🔍 AUTH DEBUG - Registration request received:', {
-      method: req.method,
-      url: req.url,
-      origin: req.headers.origin,
-      userAgent: req.headers['user-agent'],
-      contentType: req.headers['content-type'],
-      authorization: req.headers.authorization ? 'Present' : 'Not present',
-      body: { ...req.body, password: req.body.password ? '***' : 'undefined' }
-    });
-
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('🔍 AUTH DEBUG - Registration validation errors:', errors.array());
+      console.log('Registration validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -92,7 +82,7 @@ exports.register = async (req, res) => {
     }
 
     const { name, email, password, mentalHealthData } = req.body;
-    console.log('🔍 AUTH DEBUG - Registration data received:', { name, email, password: password ? '***' : 'undefined', mentalHealthData });
+    console.log('Registration data received:', { name, email, password: password ? '***' : 'undefined', mentalHealthData });
 
     // Check if user already exists
     const existingUser = await User.findByEmail(email);

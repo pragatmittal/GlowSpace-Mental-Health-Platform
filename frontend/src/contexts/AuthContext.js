@@ -183,10 +183,10 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (userData) => {
     try {
-      console.log('🔍 AUTH DEBUG - Sending registration data:', userData);
+      console.log('Sending registration data:', userData);
       const response = await authAPI.register(userData);
       const data = response.data;
-      console.log('🔍 AUTH DEBUG - Registration response:', data);
+      console.log('Registration response:', data);
 
       if (data.success) {
         if (data.accessToken) {
@@ -202,43 +202,11 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message };
       }
     } catch (error) {
-      console.error('🔍 AUTH DEBUG - Registration error details:', {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          baseURL: error.config?.baseURL,
-          withCredentials: error.config?.withCredentials
-        }
-      });
-
-      // Handle specific CORS errors
-      if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
-        return {
-          success: false,
-          message: 'Network connection failed. Please check if the server is running and CORS is configured properly.',
-          errorType: 'NETWORK_ERROR'
-        };
-      }
-
-      if (error.response?.status === 0 || error.message?.includes('CORS')) {
-        return {
-          success: false,
-          message: 'CORS policy error. The server may not be configured to accept requests from this domain.',
-          errorType: 'CORS_ERROR'
-        };
-      }
-
-      return {
-        success: false,
+      console.error('Registration error:', error);
+      return { 
+        success: false, 
         message: error.response?.data?.message || 'Registration failed. Please try again.',
-        errors: error.response?.data?.errors,
-        errorType: 'API_ERROR'
+        errors: error.response?.data?.errors
       };
     }
   };

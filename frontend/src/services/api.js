@@ -1,48 +1,31 @@
 import axios from 'axios';
 import { handleApiError, validateMoodData } from '../utils/errorHandler';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 console.log('API URL being used:', API_URL);
 
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // Enable credentials for CORS
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Add token to requests (skip for auth endpoints that don't need tokens)
+// Add token to requests
 api.interceptors.request.use(
   async (config) => {
     const TOKEN_KEY = btoa('glow_access_token');
     const token = localStorage.getItem(TOKEN_KEY);
-    
-    // Skip adding token for registration and login endpoints
-    const authEndpoints = ['/auth/register', '/auth/login', '/auth/refresh'];
-    const isAuthEndpoint = authEndpoints.some(endpoint => config.url?.includes(endpoint));
-    
-    if (token && !isAuthEndpoint) {
-      console.log('🔍 API DEBUG - Adding token to request:', config.url);
+    if (token) {
+      console.log('Adding token to request:', config.url);
       config.headers.Authorization = `Bearer ${atob(token)}`;
-    } else if (isAuthEndpoint) {
-      console.log('🔍 API DEBUG - Skipping token for auth endpoint:', config.url);
     } else {
-      console.log('🔍 API DEBUG - No token found for request:', config.url);
+      console.log('No token found for request:', config.url);
     }
-    
-    console.log('🔍 API DEBUG - Request config:', {
-      url: config.url,
-      method: config.method,
-      withCredentials: config.withCredentials,
-      headers: config.headers
-    });
-    
     return config;
   },
   (error) => {
-    console.error('🔍 API DEBUG - Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
