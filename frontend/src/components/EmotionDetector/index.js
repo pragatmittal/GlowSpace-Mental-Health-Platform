@@ -252,6 +252,9 @@ const EmotionDetector = () => {
         .withFaceExpressions();
 
       if (detection) {
+        // Clear any previous error when face is detected
+        setError(null);
+        
         const { expressions } = detection;
         
         // Calculate normalized emotion scores
@@ -260,9 +263,9 @@ const EmotionDetector = () => {
         
         Object.entries(expressions).forEach(([emotion, score]) => {
           normalizedEmotions[emotion] = Math.round((score / totalScore) * 100);
-      });
+        });
 
-      // Update state
+        // Update state
         setEmotions(normalizedEmotions);
         
         // Calculate wellness score
@@ -314,24 +317,42 @@ const EmotionDetector = () => {
   }, [isModelLoaded, sessionId, sendEmotionData]);
 
   // Calculate wellness score
-  const calculateWellnessScore = (emotions) => {
-    const weights = {
-      happy: 1.5,
-      neutral: 1.0,
-      surprised: 0.5,
-      sad: -1.0,
-      angry: -1.0,
-      fearful: -1.0,
-      disgusted: -1.0
+ // ... existing code ...
+
+// Calculate wellness score with dynamic response
+const calculateWellnessScore = (emotions) => {
+  // Dynamic weights based on emotion intensity
+  const getDynamicWeight = (emotion, value) => {
+    const baseWeights = {
+      happy: 3.0,      // Strong positive for happy
+      neutral: 1.0,    // Moderate positive for neutral
+      surprised: 0.5,  // Small positive for surprised
+      sad: -2.0,       // Strong negative for sad
+      angry: -3.5,     // Very strong negative for angry
+      fearful: -2.0,   // Strong negative for fearful
+      disgusted: -2.0  // Strong negative for disgusted
     };
 
-    let score = 50; // Base score
-    Object.entries(emotions).forEach(([emotion, value]) => {
-      score += (value * weights[emotion]) / 50;
-    });
-
-    return Math.max(0, Math.min(100, Math.round(score)));
+    // Scale weight based on emotion intensity (more pronounced = stronger effect)
+    const intensityMultiplier = value / 100; // 0 to 1
+    return baseWeights[emotion] * intensityMultiplier;
   };
+
+  let score = 50; // Start with neutral score
+  
+  Object.entries(emotions).forEach(([emotion, value]) => {
+    if (value > 0) { // Only process emotions with some presence
+      const dynamicWeight = getDynamicWeight(emotion, value);
+      const impact = (value * dynamicWeight) / 10; // More sensitive scaling
+      score += impact;
+    }
+  });
+
+  // Ensure score stays within 0-100 range
+  return Math.max(0, Math.min(100, Math.round(score)));
+};
+
+// ... existing code ...
 
   // Start detection
   const startDetection = async () => {
