@@ -46,6 +46,7 @@ exports.protect = async (req, res, next) => {
       }
 
       req.user = user;
+      console.log('🔐 Authenticated user:', { id: user._id, email: user.email, name: user.name });
       next();
     } catch (error) {
       console.error('Token verification error:', error);

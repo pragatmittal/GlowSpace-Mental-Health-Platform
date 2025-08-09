@@ -7,19 +7,37 @@ const MoodChart = ({ data, timeRange = '7d' }) => {
   const [selectedPeriod, setSelectedPeriod] = useState(timeRange);
 
   useEffect(() => {
-    if (data) {
+    console.log('📊 MoodChart received data:', data);
+    
+    if (data && Array.isArray(data) && data.length > 0) {
+      // Process real data
+      const processedData = data.map(entry => ({
+        date: entry.date,
+        mood: parseInt(entry.mood) || 3,
+        intensity: parseInt(entry.intensity) || 5,
+        label: entry.label || new Date(entry.date).toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        }),
+        timeOfDay: entry.timeOfDay,
+        activity: entry.activity,
+        notes: entry.notes
+      }));
+      
+      setChartData(processedData);
       setLoading(false);
-      setChartData(data);
+      console.log('✅ MoodChart data processed:', processedData);
     } else {
-      // Simulate loading
-      setTimeout(() => {
-        setLoading(false);
-        setChartData(generateMockData());
-      }, 1000);
+      // No data available - show empty state
+      setLoading(false);
+      setChartData([]);
+      console.log('ℹ️ MoodChart: No data available, showing empty state');
     }
   }, [data]);
 
   const generateMockData = () => {
+    // This function is kept for fallback but shouldn't be used with real data
     const periods = {
       '7d': 7,
       '30d': 30,
@@ -35,6 +53,7 @@ const MoodChart = ({ data, timeRange = '7d' }) => {
       mockData.push({
         date: date.toISOString().split('T')[0],
         mood: Math.floor(Math.random() * 5) + 1,
+        intensity: Math.floor(Math.random() * 10) + 1,
         label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       });
     }
@@ -124,111 +143,131 @@ const MoodChart = ({ data, timeRange = '7d' }) => {
       </div>
 
       <div className="chart-container">
-        <div className="chart-y-axis">
-          {[5, 4, 3, 2, 1].map(level => (
-            <div key={level} className="y-axis-label">
-              <span>{getMoodLabel(level)}</span>
+        {chartData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🎭</div>
+            <h4>No Mood Data Yet</h4>
+            <p>Start tracking your mood to see your emotional journey over time</p>
+            <button 
+              className="cta-button"
+              onClick={() => window.location.href = '/moodtracking'}
+            >
+              📝 Track Your Mood Now
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="chart-y-axis">
+              {[5, 4, 3, 2, 1].map(level => (
+                <div key={level} className="y-axis-label">
+                  <span>{getMoodLabel(level)}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        
-        <div className="chart-content">
-          <svg width="100%" height={chartHeight} className="mood-chart-svg">
-            {/* Grid lines */}
-            {[1, 2, 3, 4, 5].map(level => (
-              <line
-                key={level}
-                x1="0"
-                y1={chartHeight - (level * chartHeight / maxMood)}
-                x2="100%"
-                y2={chartHeight - (level * chartHeight / maxMood)}
-                stroke="#f0f0f0"
-                strokeWidth="1"
-              />
-            ))}
             
-            {/* Mood line */}
-            {chartData.length > 1 && (
-              <polyline
-                points={chartData.map((item, index) => 
-                  `${(index * 100) / (chartData.length - 1)},${chartHeight - (item.mood * chartHeight / maxMood)}`
-                ).join(' ')}
-                fill="none"
-                stroke="#667eea"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-            
-            {/* Mood points */}
-            {chartData.map((item, index) => (
-              <g key={index}>
-                <circle
-                  cx={`${(index * 100) / (chartData.length - 1)}%`}
-                  cy={chartHeight - (item.mood * chartHeight / maxMood)}
-                  r="6"
-                  fill={getMoodColor(item.mood)}
-                  stroke="#fff"
-                  strokeWidth="2"
-                  className="mood-point"
-                  data-mood={item.mood}
-                  data-date={item.date}
-                  data-label={item.label}
-                />
-                <text
-                  x={`${(index * 100) / (chartData.length - 1)}%`}
-                  y={chartHeight + 15}
-                  textAnchor="middle"
-                  className="x-axis-label"
-                  fontSize="12"
-                  fill="#7f8c8d"
-                >
-                  {item.label}
-                </text>
-              </g>
-            ))}
-          </svg>
-        </div>
+            <div className="chart-content">
+              <svg width="100%" height={chartHeight} className="mood-chart-svg">
+                {/* Grid lines */}
+                {[1, 2, 3, 4, 5].map(level => (
+                  <line
+                    key={level}
+                    x1="0"
+                    y1={chartHeight - (level * chartHeight / maxMood)}
+                    x2="100%"
+                    y2={chartHeight - (level * chartHeight / maxMood)}
+                    stroke="#f0f0f0"
+                    strokeWidth="1"
+                  />
+                ))}
+                
+                {/* Mood line */}
+                {chartData.length > 1 && (
+                  <polyline
+                    points={chartData.map((item, index) => 
+                      `${(index * 100) / (chartData.length - 1)},${chartHeight - (item.mood * chartHeight / maxMood)}`
+                    ).join(' ')}
+                    fill="none"
+                    stroke="#667eea"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+                
+                {/* Mood points */}
+                {chartData.map((item, index) => (
+                  <g key={index}>
+                    <circle
+                      cx={`${(index * 100) / (chartData.length - 1)}%`}
+                      cy={chartHeight - (item.mood * chartHeight / maxMood)}
+                      r="6"
+                      fill={getMoodColor(item.mood)}
+                      stroke="#fff"
+                      strokeWidth="2"
+                      className="mood-point"
+                      data-mood={item.mood}
+                      data-date={item.date}
+                      data-label={item.label}
+                    />
+                    <text
+                      x={`${(index * 100) / (chartData.length - 1)}%`}
+                      y={chartHeight + 15}
+                      textAnchor="middle"
+                      className="x-axis-label"
+                      fontSize="12"
+                      fill="#7f8c8d"
+                    >
+                      {item.label}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="chart-summary">
-        <div className="summary-stats">
-          <div className="stat-item">
-            <span className="stat-label">Average Mood</span>
-            <span className="stat-value" style={{ color: getMoodColor(Math.round(getAverageMood())) }}>
-              {getAverageMood()}/5
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Trend</span>
-            <span className={`stat-value trend-${getMoodTrend()}`}>
-              {getMoodTrend() === 'improving' && '📈 Improving'}
-              {getMoodTrend() === 'declining' && '📉 Declining'}
-              {getMoodTrend() === 'stable' && '📊 Stable'}
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Entries</span>
-            <span className="stat-value">{chartData.length}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mood-legend">
-        <h4>Mood Scale</h4>
-        <div className="legend-items">
-          {[1, 2, 3, 4, 5].map(mood => (
-            <div key={mood} className="legend-item">
-              <div 
-                className="legend-color" 
-                style={{ backgroundColor: getMoodColor(mood) }}
-              ></div>
-              <span>{getMoodLabel(mood)}</span>
+      {chartData.length > 0 && (
+        <>
+          <div className="chart-summary">
+            <div className="summary-stats">
+              <div className="stat-item">
+                <span className="stat-label">Average Mood</span>
+                <span className="stat-value" style={{ color: getMoodColor(Math.round(getAverageMood())) }}>
+                  {getAverageMood()}/5
+                </span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Trend</span>
+                <span className={`stat-value trend-${getMoodTrend()}`}>
+                  {getMoodTrend() === 'improving' && '📈 Improving'}
+                  {getMoodTrend() === 'declining' && '📉 Declining'}
+                  {getMoodTrend() === 'stable' && '📊 Stable'}
+                </span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Entries</span>
+                <span className="stat-value">{chartData.length}</span>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+
+          <div className="mood-legend">
+            <h4>Mood Scale</h4>
+            <div className="legend-items">
+              {[1, 2, 3, 4, 5].map(mood => (
+                <div key={mood} className="legend-item">
+                  <div 
+                    className="legend-color" 
+                    style={{ backgroundColor: getMoodColor(mood) }}
+                  ></div>
+                  <span>{getMoodLabel(mood)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -26,7 +26,7 @@ const DashboardStats = ({ stats, isLoading }) => {
     {
       icon: '😊',
       label: 'Average Mood',
-      value: displayStats.averageMood ? `${displayStats.averageMood.toFixed(1)}/10` : '0/10',
+      value: displayStats.averageMood ? (typeof displayStats.averageMood === 'number' ? `${displayStats.averageMood.toFixed(1)}/10` : `${displayStats.averageMood}/10`) : '0.0/10',
       color: '#FF9800',
       description: 'Your mood rating average'
     },

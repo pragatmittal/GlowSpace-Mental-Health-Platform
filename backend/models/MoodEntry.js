@@ -182,6 +182,7 @@ moodEntrySchema.statics.getMoodTrends = async function(userId, days = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
+  // First try to get aggregated trends
   const trends = await this.aggregate([
     {
       $match: {
@@ -195,17 +196,94 @@ moodEntrySchema.statics.getMoodTrends = async function(userId, days = 7) {
         _id: {
           date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
         },
-        avgMood: { $avg: { $indexOfArray: [['very_sad', 'sad', 'neutral', 'happy', 'very_happy'], '$mood'] } },
+        avgMood: { $avg: { $add: [{ $indexOfArray: [['very_sad', 'sad', 'neutral', 'happy', 'very_happy'], '$mood'] }, 1] } },
         avgIntensity: { $avg: "$intensity" },
-        totalEntries: { $sum: 1 }
+        totalEntries: { $sum: 1 },
+        moodEntries: { 
+          $push: {
+            mood: "$mood",
+            intensity: "$intensity",
+            timeOfDay: "$timeOfDay",
+            activity: "$activity",
+            createdAt: "$createdAt"
+          }
+        }
       }
     },
     {
-      $sort: { _id: 1 }
+      $sort: { "_id.date": 1 }
+    },
+    {
+      $project: {
+        date: "$_id.date",
+        avgMood: 1,
+        avgIntensity: 1,
+        totalEntries: 1,
+        moodEntries: 1,
+        _id: 0
+      }
     }
   ]);
 
+  // If no trends found, get individual entries as fallback
+  if (trends.length === 0) {
+    const individualEntries = await this.find({
+      userId: new mongoose.Types.ObjectId(userId),
+      createdAt: { $gte: startDate },
+      isActive: true
+    })
+    .select('mood intensity timeOfDay activity createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+
+    // Transform individual entries to trends format
+    const groupedByDate = {};
+    individualEntries.forEach(entry => {
+      const date = entry.createdAt.toISOString().split('T')[0];
+      if (!groupedByDate[date]) {
+        groupedByDate[date] = {
+          date,
+          moodEntries: [],
+          totalEntries: 0,
+          moodSum: 0,
+          intensitySum: 0
+        };
+      }
+      groupedByDate[date].moodEntries.push(entry);
+      groupedByDate[date].totalEntries++;
+      groupedByDate[date].moodSum += ['very_sad', 'sad', 'neutral', 'happy', 'very_happy'].indexOf(entry.mood) + 1;
+      groupedByDate[date].intensitySum += entry.intensity;
+    });
+
+    return Object.values(groupedByDate).map(day => ({
+      date: day.date,
+      avgMood: day.totalEntries > 0 ? day.moodSum / day.totalEntries : 0,
+      avgIntensity: day.totalEntries > 0 ? day.intensitySum / day.totalEntries : 0,
+      totalEntries: day.totalEntries,
+      moodEntries: day.moodEntries
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+
   return trends;
+};
+
+// Static method to get recent mood entries for dashboard
+moodEntrySchema.statics.getRecentMoodEntries = async function(userId, limit = 10) {
+  const entries = await this.find({
+    userId: new mongoose.Types.ObjectId(userId),
+    isActive: true
+  })
+  .select('mood intensity timeOfDay activity createdAt notes')
+  .sort({ createdAt: -1 })
+  .limit(limit)
+  .lean();
+
+  return entries.map(entry => ({
+    ...entry,
+    moodValue: ['very_sad', 'sad', 'neutral', 'happy', 'very_happy'].indexOf(entry.mood) + 1,
+    formattedDate: entry.createdAt.toLocaleDateString(),
+    formattedTime: entry.createdAt.toLocaleTimeString()
+  }));
 };
 
 // Static method to get mood patterns

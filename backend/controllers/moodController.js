@@ -258,7 +258,15 @@ exports.createMoodEntry = async (req, res) => {
     });
 
     // Save the mood entry
+    console.log('💾 Saving mood entry for user:', req.user.id, {
+      mood,
+      intensity: intensity || 5,
+      timeOfDay: timeOfDayValue,
+      activity: activity || 'other'
+    });
+    
     await moodEntry.save();
+    console.log('✅ Mood entry saved with ID:', moodEntry._id);
 
     // Generate insights for this entry
     try {

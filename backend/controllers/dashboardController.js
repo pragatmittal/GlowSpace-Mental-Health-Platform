@@ -18,9 +18,37 @@ exports.getDashboardData = async (req, res) => {
     const user = await User.findById(userId).select('-password');
 
     // Get recent mood entries
+    console.log('🔍 Fetching recent moods for user:', userId);
     const recentMoods = await MoodEntry.find({ userId, isActive: true })
       .sort({ createdAt: -1 })
       .limit(5);
+    console.log('📝 Found recent moods:', recentMoods.length, 'entries');
+
+    // Get detailed mood data for trends
+    console.log('📈 Fetching mood trends...');
+    const moodTrends = await MoodEntry.getMoodTrends(userId, 7);
+    console.log('📊 Mood trends:', moodTrends.length, 'trend points');
+    
+    console.log('📋 Fetching recent mood entries...');
+    const recentMoodEntries = await MoodEntry.getRecentMoodEntries(userId, 10);
+    console.log('✅ Recent mood entries:', recentMoodEntries.length, 'entries');
+    if (recentMoodEntries.length > 0) {
+      console.log('📄 Sample entry:', recentMoodEntries[0]);
+    }
+
+    // Calculate mood statistics
+    const moodStats = {
+      totalEntries: await MoodEntry.countDocuments({ userId, isActive: true }),
+      thisWeekEntries: await MoodEntry.countDocuments({ 
+        userId, 
+        isActive: true,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }),
+      averageMood: recentMoodEntries.length > 0 
+        ? recentMoodEntries.reduce((sum, entry) => sum + entry.moodValue, 0) / recentMoodEntries.length
+        : 0,
+      lastEntry: recentMoodEntries[0] || null
+    };
 
     // Get recent emotion data
     const recentEmotionData = await EmotionData.find({ userId, isActive: true })
@@ -35,13 +63,6 @@ exports.getDashboardData = async (req, res) => {
     // Get goals summary
     const Goal = require('../models/Goal');
     const goalsSummary = await Goal.getGoalsSummary(userId);
-
-    // Get recent activities
-    const recentActivities = {
-      recentMoods,
-      recentEmotionData,
-      recentAppointments
-    };
 
     // Get latest session data
     const latestSession = recentEmotionData.length > 0 ? {
@@ -66,11 +87,21 @@ exports.getDashboardData = async (req, res) => {
       }))
     } : null;
 
+    console.log('✅ Dashboard response prepared:', {
+      userId,
+      moodDataLength: recentMoodEntries.length,
+      moodTrendsLength: moodTrends.length,
+      totalMoodEntries: moodStats.totalEntries,
+      sampleMoodEntry: recentMoodEntries[0] || 'none'
+    });
+
     res.status(200).json({
       success: true,
       data: {
         user,
-        moodTrends: await MoodEntry.getMoodTrends(userId, 7),
+        moodTrends,
+        moodData: recentMoodEntries, // Add this for frontend compatibility
+        moodStats, // Add mood statistics
         emotionTrends: await EmotionData.aggregate([
           { $match: { userId: new mongoose.Types.ObjectId(userId), isActive: true } },
           {
@@ -89,7 +120,6 @@ exports.getDashboardData = async (req, res) => {
           { $limit: 7 }
         ]),
         recentAppointments,
-        recentActivities,
         latestSession,
         goalsSummary
       }
@@ -204,56 +234,11 @@ const getGoalProgress = async (req, res) => {
     }
 };
 
-const getRecentActivities = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const activities = await getRecentActivitiesData(userId);
-
-        res.status(200).json({
-            success: true,
-            data: activities
-        });
-    } catch (error) {
-        console.error('Recent activities error:', error);
-        res.status(500).json({
-            success: false,
-            message: "Error fetching recent activities",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-};
-
-const getRecentActivitiesData = async (userId) => {
-    try {
-        const recentMoods = await MoodEntry.find({ userId, isActive: true })
-            .limit(5)
-            .sort({ createdAt: -1 })
-            .lean() || [];
-            
-        const recentEmotionData = await EmotionData.find({ userId, isActive: true })
-            .limit(5)
-            .sort({ createdAt: -1 })
-            .lean() || [];
-            
-        const recentAppointments = await Appointment.getUserAppointments(userId, 5) || [];
-
-        return {
-            recentMoods,
-            recentEmotionData,
-            recentAppointments
-        };
-    } catch (error) {
-        console.error('Recent activities data error:', error);
-        throw new Error("Error fetching recent activities data");
-    }
-};
-
 module.exports = {
     getDashboardData: exports.getDashboardData,
     getUserProgress,
     getEmotionTrends,
     getActivitySummary,
     getGoalProgress,
-    getRecentActivities,
 };
 

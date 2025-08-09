@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
+import LoadingSpinner from '../common/LoadingSpinner';
 import DashboardStats from './DashboardStats';
 import MoodChart from './MoodChart';
 import EmotionInsights from './EmotionInsights';
 import UpcomingAppointments from './UpcomingAppointments';
-import RecentActivity from './RecentActivity';
 import GoalsProgress from './GoalsProgress';
 import QuickActions from './QuickActions';
 import WelcomeMessage from './WelcomeMessage';
@@ -24,6 +24,29 @@ const Dashboard = () => {
     // eslint-disable-next-line
   }, []);
 
+  // Auto-refresh when coming back from mood tracking
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page became visible, refreshing dashboard data...');
+        fetchDashboardData();
+      }
+    };
+
+    // Listen for page visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also refresh when location changes (user navigates back to dashboard)
+    if (location.state?.refreshDashboard) {
+      console.log('🔄 Location state refresh triggered...');
+      fetchDashboardData();
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location]);
+
   // Auto-refresh dashboard when navigating back to /dashboard
   useEffect(() => {
     if (location.pathname === '/dashboard') {
@@ -36,7 +59,69 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await dashboardAPI.getDashboardData();
-      setDashboardData(response.data);
+      
+      // Transform backend data to match frontend expectations
+      console.log('🌐 Raw dashboard API response:', response.data);
+      console.log('📋 moodData from API:', response.data.moodData);
+      console.log('📈 moodTrends from API:', response.data.moodTrends);
+      console.log('📊 moodStats from API:', response.data.moodStats);
+      
+      const transformedData = {
+        ...response.data,
+        // Use the new moodData field if available, fallback to moodTrends
+        moodData: response.data.moodData?.map(entry => ({
+          date: entry.createdAt,
+          mood: entry.moodValue,
+          intensity: entry.intensity,
+          timeOfDay: entry.timeOfDay,
+          activity: entry.activity,
+          label: entry.formattedDate,
+          notes: entry.notes || ''
+        })) || response.data.moodTrends?.map(trend => ({
+          date: trend.date || trend._id?.date,
+          mood: Math.round(trend.avgMood || 3), // Fallback to neutral
+          intensity: Math.round(trend.avgIntensity || 5),
+          label: new Date(trend.date || trend._id?.date).toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric' 
+          })
+        })) || [],
+        // Enhanced mood statistics
+        moodStats: response.data.moodStats || {
+          totalEntries: 0,
+          thisWeekEntries: 0,
+          averageMood: 0,
+          lastEntry: null
+        },
+        emotionData: response.data.emotionTrends || [],
+        appointments: response.data.recentAppointments || [],
+        stats: {
+          totalSessions: response.data.emotionTrends?.length || 0,
+          averageMood: response.data.moodStats?.averageMood || 0,
+          completedGoals: response.data.goalsSummary?.completedGoals || 0,
+          streakDays: response.data.moodStats?.thisWeekEntries || 0,
+          upcomingAppointments: response.data.recentAppointments?.length || 0,
+          activeChatSessions: 0,
+          completedAssessments: 0,
+          hoursOfSupport: 0,
+          totalMoodEntries: response.data.moodStats?.totalEntries || 0
+        }
+      };
+      
+      console.log('📊 Dashboard Data Loaded:', {
+        moodDataCount: transformedData.moodData.length,
+        moodStats: transformedData.moodStats,
+        hasRecentData: transformedData.moodData.length > 0,
+        rawMoodDataSample: transformedData.moodData.slice(0, 2),
+        rawAPIResponse: {
+          moodDataLength: response.data.moodData?.length || 0,
+          moodTrendsLength: response.data.moodTrends?.length || 0,
+          totalMoodEntries: response.data.moodStats?.totalEntries || 0
+        }
+      });
+      
+      setDashboardData(transformedData);
     } catch (err) {
       setError('Failed to load dashboard data');
       console.error('Dashboard error:', err);
@@ -73,20 +158,23 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading your dashboard...</p>
-      </div>
+      <LoadingSpinner 
+        type="pulse" 
+        size="large" 
+        text="Loading your personalized dashboard..." 
+        overlay={true}
+      />
     );
   }
 
   if (error) {
     return (
       <div className="dashboard-error">
-        <h2>Unable to load dashboard</h2>
+        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>😔</div>
+        <h2>Oops! Something went wrong</h2>
         <p>{error}</p>
         <button onClick={fetchDashboardData} className="retry-btn">
-          Try Again
+          ✨ Try Again
         </button>
       </div>
     );
@@ -107,19 +195,19 @@ const Dashboard = () => {
             className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => handleTabChange('overview')}
           >
-            Overview
+            📊 Overview
           </button>
           <button
             className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => handleTabChange('analytics')}
           >
-            Analytics
+            📈 Analytics
           </button>
           <button
             className={`tab-btn ${activeTab === 'progress' ? 'active' : ''}`}
             onClick={() => handleTabChange('progress')}
           >
-            Progress
+            🏆 Progress
           </button>
         </div>
       </div>
@@ -137,7 +225,7 @@ const Dashboard = () => {
                   <span className="score-max">/100</span>
                 </div>
                 <div className="emotion-graph-section">
-                  <h4>Emotion Progression</h4>
+                  <h4>📈 Emotion Progression</h4>
                   <div className="emotion-graph">
                     {/* Simple line graph using SVG for demo, can use chart.js for production */}
                     <svg width="100%" height="80" viewBox="0 0 300 80">
@@ -163,7 +251,7 @@ const Dashboard = () => {
                 </div>
                 {latestRecommendations.length > 0 && (
                   <div className="recommendations-section">
-                    <h4>Recommendations to Improve Your Wellness</h4>
+                    <h4>💡 Recommendations to Improve Your Wellness</h4>
                     <ul className="recommendations-list">
                       {latestRecommendations.map((rec, idx) => (
                         <li key={idx} className="recommendation-item">
@@ -191,10 +279,6 @@ const Dashboard = () => {
               
               <div className="grid-item appointments">
                 <UpcomingAppointments appointments={dashboardData?.appointments} />
-              </div>
-              
-              <div className="grid-item recent-activity">
-                <RecentActivity activities={dashboardData?.recentActivity} />
               </div>
               
               <div className="grid-item emotion-insights">
@@ -239,7 +323,7 @@ const Dashboard = () => {
               </div>
               
               <div className="achievements-section">
-                <h3>Recent Achievements</h3>
+                <h3>🏆 Recent Achievements</h3>
                 <div className="achievements-list">
                   {dashboardData?.achievements?.map((achievement, index) => (
                     <div key={index} className="achievement-item">

@@ -6,8 +6,7 @@ const {
   getUserProgress,
   getEmotionTrends,
   getActivitySummary,
-  getGoalProgress,
-  getRecentActivities
+  getGoalProgress
 } = require('../controllers/dashboardController');
 
 // @route   GET /api/dashboard/data
@@ -34,10 +33,5 @@ router.get('/activity/summary', protect, getActivitySummary);
 // @desc    Get goal progress
 // @access  Private
 router.get('/goals/progress', protect, getGoalProgress);
-
-// @route   GET /api/dashboard/activities/recent
-// @desc    Get recent activities
-// @access  Private
-router.get('/activities/recent', protect, getRecentActivities);
 
 module.exports = router;

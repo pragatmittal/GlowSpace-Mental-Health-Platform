@@ -6,16 +6,47 @@ const MoodChart = ({ data, timeRange }) => {
   const [selectedPoint, setSelectedPoint] = useState(null);
 
   const chartData = useMemo(() => {
-    if (!data || data.length === 0) {
+    console.log('🔍 MoodTracking/MoodChart received data:', data);
+    
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.log('⚠️ MoodTracking/MoodChart: No valid data provided');
       return [];
     }
 
-    return data.map(item => ({
-      date: item._id.date || item._id,
-      avgMood: item.avgMood || 0,
-      avgIntensity: item.avgIntensity || 0,
-      totalEntries: item.totalEntries || 0
-    }));
+    const processedData = data.filter(item => item && (item._id || item.date || item.createdAt)).map((item, index) => {
+      // Handle different data structures
+      let dateValue;
+      
+      if (item._id && typeof item._id === 'object' && item._id.date) {
+        dateValue = item._id.date;
+      } else if (item._id && typeof item._id === 'string') {
+        dateValue = item._id;
+      } else if (item.date) {
+        dateValue = item.date;
+      } else if (item.createdAt) {
+        dateValue = new Date(item.createdAt).toISOString().split('T')[0];
+      } else {
+        console.warn('⚠️ Could not extract date from item:', item);
+        dateValue = new Date().toISOString().split('T')[0];
+      }
+      
+      console.log(`📊 Processing item ${index}:`, {
+        original: item,
+        extractedDate: dateValue,
+        avgMood: item.avgMood,
+        avgIntensity: item.avgIntensity
+      });
+      
+      return {
+        date: dateValue,
+        avgMood: item.avgMood || 0,
+        avgIntensity: item.avgIntensity || 0,
+        totalEntries: item.totalEntries || 0
+      };
+    });
+    
+    console.log('✅ MoodTracking/MoodChart processed data:', processedData);
+    return processedData;
   }, [data, timeRange]);
 
   const moodLabels = ['Very Sad', 'Sad', 'Neutral', 'Happy', 'Very Happy'];
