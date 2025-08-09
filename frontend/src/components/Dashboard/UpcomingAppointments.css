@@ -107,16 +107,20 @@
 }
 
 .appointments-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 16px;
 }
 
 .appointment-card {
   background: var(--bg-light);
   border-radius: 8px;
-  padding: 16px;
+  padding: 20px;
   transition: all 0.3s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .appointment-card:hover {
@@ -255,6 +259,31 @@
 }
 
 @media (max-width: 768px) {
+  .appointments-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .appointment-card {
+    padding: 16px;
+    min-height: auto;
+  }
+  
+  .appointment-main {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .appointment-details {
+    text-align: center;
+  }
+  
+  .appointment-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
   .upcoming-appointments {
     padding: 16px;
   }

@@ -1,46 +1,55 @@
 .quick-actions {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .quick-actions-header {
-  margin-bottom: 24px;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .quick-actions-header h3 {
   margin: 0 0 8px 0;
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .quick-actions-header p {
   margin: 0;
   color: #7f8c8d;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .quick-actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 1.5rem;
+  max-width: none;
 }
 
 .quick-action-card {
   display: flex;
   align-items: center;
-  padding: 16px;
-  background: #f8f9fa;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
   border: 2px solid transparent;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
   position: relative;
   overflow: hidden;
+  min-height: 100px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .quick-action-card:hover {
@@ -118,12 +127,12 @@
   }
   
   .quick-actions-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
   }
   
   .quick-action-card {
-    padding: 12px;
+    padding: 16px;
   }
   
   .quick-action-icon {

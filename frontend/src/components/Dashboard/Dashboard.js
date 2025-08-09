@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import LoadingSpinner from '../common/LoadingSpinner';
-import DashboardStats from './DashboardStats';
 import MoodChart from './MoodChart';
 import EmotionInsights from './EmotionInsights';
 import UpcomingAppointments from './UpcomingAppointments';
@@ -93,18 +92,7 @@ const Dashboard = () => {
           lastEntry: null
         },
         emotionData: response.data.emotionTrends || [],
-        appointments: response.data.recentAppointments || [],
-        stats: {
-          totalSessions: response.data.emotionTrends?.length || 0,
-          averageMood: response.data.moodStats?.averageMood || 0,
-          completedGoals: response.data.goalsSummary?.completedGoals || 0,
-          streakDays: response.data.moodStats?.thisWeekEntries || 0,
-          upcomingAppointments: response.data.recentAppointments?.length || 0,
-          activeChatSessions: 0,
-          completedAssessments: 0,
-          hoursOfSupport: 0,
-          totalMoodEntries: response.data.moodStats?.totalEntries || 0
-        }
+        appointments: response.data.recentAppointments || []
       };
       
       console.log('📊 Dashboard Data Loaded:', {
@@ -182,10 +170,6 @@ const Dashboard = () => {
 
       <div className="dashboard-content">
         <div className="dashboard-grid">
-          <div className="grid-item stats">
-            <DashboardStats stats={dashboardData?.stats} />
-          </div>
-          
           <div className="grid-item quick-actions">
             <QuickActions onAction={handleQuickAction} />
           </div>
