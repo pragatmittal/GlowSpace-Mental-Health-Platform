@@ -1,28 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { assessmentAPI } from '../../services/api';
 import './AssessmentHub.css';
 
 const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
   const [assessmentTypes, setAssessmentTypes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { apiRequest } = useAuth();
+  const { token } = useAuth();
 
-  useEffect(() => {
-    fetchAssessmentTypes();
-  }, []);
-
-  const fetchAssessmentTypes = async () => {
+  const fetchAssessmentTypes = useCallback(async () => {
     try {
-      const response = await apiRequest('/assessments/templates');
-      if (response.success) {
-        setAssessmentTypes(response.data);
+      const response = await assessmentAPI.getTemplates();
+      if (response.data.success) {
+        setAssessmentTypes(response.data.data);
       }
     } catch (err) {
       console.error('Error fetching assessment types:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAssessmentTypes();
+  }, [fetchAssessmentTypes]);
 
   const assessmentIcons = {
     depression: '😔',
@@ -70,33 +71,34 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
       )}
 
       <div className="assessment-types-grid">
-        {assessmentTypes.map((assessment) => (
-          <div 
-            key={assessment.type}
-            className="assessment-type-card"
-            style={{ '--card-color': assessmentColors[assessment.type] || '#6B7280' }}
-            onClick={() => onStartAssessment(assessment.type)}
-          >
-            <div className="assessment-card-header">
-              <div className="assessment-icon">
-                {assessmentIcons[assessment.type] || '📋'}
+        {assessmentTypes && assessmentTypes.length > 0 ? (
+          assessmentTypes.map((assessment) => (
+            <div 
+              key={assessment.type}
+              className="assessment-type-card"
+              style={{ '--card-color': assessmentColors[assessment.type] || '#6B7280' }}
+              onClick={() => onStartAssessment(assessment)}
+            >
+              <div className="assessment-card-header">
+                <div className="assessment-icon">
+                  {assessmentIcons[assessment.type] || '📋'}
+                </div>
+                <h3>{assessment.name}</h3>
               </div>
-              <h3>{assessment.name}</h3>
-            </div>
-            
-            <div className="assessment-card-content">
-              <p className="assessment-description">
-                {assessment.description}
-              </p>
               
-              <div className="assessment-meta">
-                <span className="assessment-time">
-                  ⏱️ {assessment.timeEstimate}
-                </span>
-                <span className="assessment-questions">
-                  📝 {assessment.questions.length} questions
-                </span>
-              </div>
+              <div className="assessment-card-content">
+                <p className="assessment-description">
+                  {assessment.description}
+                </p>
+                
+                <div className="assessment-meta">
+                  <span className="assessment-time">
+                    ⏱️ {assessment.timeEstimate}
+                  </span>
+                  <span className="assessment-questions">
+                    📝 {assessment.questionCount || 0} questions
+                  </span>
+                </div>
             </div>
             
             <div className="assessment-card-footer">
@@ -105,7 +107,14 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
               </button>
             </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="no-assessments">
+            <div className="no-assessments-icon">📋</div>
+            <h3>No Assessments Available</h3>
+            <p>Assessment templates are being loaded. Please try again in a moment.</p>
+          </div>
+        )}
       </div>
 
       <div className="assessment-hub-info">

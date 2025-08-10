@@ -15,6 +15,9 @@ import EmotionDetector from './components/EmotionDetector';
 import Community from './pages/Community';
 import MoodTracking from './pages/MoodTracking';
 
+// Assessment Page
+import Assessment from './pages/Assessment';
+
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -75,6 +78,48 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <MoodTracking />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Assessment Routes */}
+                <Route
+                  path="/assessments"
+                  element={
+                    <ProtectedRoute>
+                      <Assessment />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assessments/:view"
+                  element={
+                    <ProtectedRoute>
+                      <Assessment />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assessments/take/:type"
+                  element={
+                    <ProtectedRoute>
+                      <Assessment />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assessments/results/:assessmentId"
+                  element={
+                    <ProtectedRoute>
+                      <Assessment />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assessments/history"
+                  element={
+                    <ProtectedRoute>
+                      <Assessment />
                     </ProtectedRoute>
                   }
                 />

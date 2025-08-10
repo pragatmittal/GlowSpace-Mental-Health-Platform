@@ -69,6 +69,18 @@ const Navbar = () => {
                     <i className="fas fa-columns"></i>
                     Dashboard
                   </Link>
+                  <Link to="/assessments" className="menu-item">
+                    <i className="fas fa-clipboard-list"></i>
+                    Mental Health Assessments
+                  </Link>
+                  <Link to="/moodtracking" className="menu-item">
+                    <i className="fas fa-heart"></i>
+                    Mood Tracking
+                  </Link>
+                  <Link to="/community" className="menu-item">
+                    <i className="fas fa-users"></i>
+                    Community
+                  </Link>
                   <Link to="/profile" className="menu-item">
                     <i className="fas fa-user"></i>
                     Profile

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { assessmentAPI } from '../../services/api';
 import './AssessmentFlow.css';
 
 const AssessmentFlow = ({ assessment, onComplete, onBack, error }) => {
@@ -7,26 +8,26 @@ const AssessmentFlow = ({ assessment, onComplete, onBack, error }) => {
   const [responses, setResponses] = useState({});
   const [assessmentData, setAssessmentData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { apiRequest } = useAuth();
+  const { token } = useAuth();
 
-  useEffect(() => {
-    if (assessment) {
-      fetchAssessmentDetails();
-    }
-  }, [assessment]);
-
-  const fetchAssessmentDetails = async () => {
+  const fetchAssessmentDetails = useCallback(async () => {
     try {
-      const response = await apiRequest(`/assessments/templates/${assessment.type}`);
-      if (response.success) {
-        setAssessmentData(response.data);
+      const response = await assessmentAPI.getByType(assessment.type);
+      if (response.data.success) {
+        setAssessmentData(response.data.data);
       }
     } catch (err) {
       console.error('Error fetching assessment details:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [assessment.type]);
+
+  useEffect(() => {
+    if (assessment) {
+      fetchAssessmentDetails();
+    }
+  }, [assessment, fetchAssessmentDetails]);
 
   if (loading || !assessmentData) {
     return (

@@ -50,10 +50,42 @@
   border: 2px solid #e2e8f0;
 }
 
-.btn-secondary:hover {
+.view-history-btn:hover {
   background: #e2e8f0;
   transform: translateY(-1px);
 }
+
+/* No Assessments State */
+.no-assessments {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.no-assessments-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.no-assessments h3 {
+  color: #374151;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.no-assessments p {
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Responsive Design */
 
 .assessment-types-grid {
   display: grid;

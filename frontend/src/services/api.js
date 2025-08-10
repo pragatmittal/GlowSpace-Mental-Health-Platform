@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { handleApiError, validateMoodData } from '../utils/errorHandler';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 console.log('API URL being used:', API_URL);
 
 // Create axios instance with default config
@@ -307,4 +307,44 @@ export const goalAPI = {
   }
 };
 
+// Assessment API
+export const assessmentAPI = {
+  // Get assessment templates
+  getTemplates: async () => {
+    const response = await api.get('/assessments/templates');
+    return response;
+  },
+
+  // Get specific assessment by type
+  getByType: async (type) => {
+    const response = await api.get(`/assessments/templates/${type}`);
+    return response;
+  },
+
+  // Submit assessment
+  submit: async (assessmentData) => {
+    const response = await api.post('/assessments/submit', assessmentData);
+    return response;
+  },
+
+  // Get assessment history
+  getHistory: async (params = {}) => {
+    const response = await api.get('/assessments/history', { params });
+    return response;
+  },
+
+  // Get assessment results by ID
+  getResults: async (id) => {
+    const response = await api.get(`/assessments/${id}`);
+    return response;
+  },
+
+  // Get analytics
+  getAnalytics: async () => {
+    const response = await api.get('/assessments/analytics');
+    return response;
+  }
+};
+
+export { api };
 export default api; 

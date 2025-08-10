@@ -3,14 +3,10 @@ const router = express.Router();
 
 // Import controllers
 const {
-  createAssessment,
-  getUserAssessments,
-  getAssessment,
+  getTemplates,
+  getTemplate,
   submitAssessment,
-  getAssessmentAnalytics,
-  getAssessmentTemplates,
-  getAssessmentQuestions,
-  deleteAssessment
+  getHistory
 } = require('../controllers/assessmentController');
 
 // Import middleware
@@ -20,18 +16,12 @@ const { validateAssessment } = require('../middlewares/validators');
 // Protect all routes
 router.use(protect);
 
-// Assessment templates (public for authenticated users)
-router.get('/templates', getAssessmentTemplates);
-router.get('/templates/:type', getAssessmentQuestions);
+// Assessment templates
+router.get('/templates', getTemplates);
+router.get('/templates/:type', getTemplate);
 
-// Assessment analytics
-router.get('/analytics', getAssessmentAnalytics);
-
-// Assessment CRUD operations
-router.post('/', validateAssessment, createAssessment);
-router.get('/', getUserAssessments);
-router.get('/:id', getAssessment);
-router.put('/:id/submit', submitAssessment);
-router.delete('/:id', deleteAssessment);
+// Assessment operations
+router.post('/submit', validateAssessment, submitAssessment);
+router.get('/history', getHistory);
 
 module.exports = router;
