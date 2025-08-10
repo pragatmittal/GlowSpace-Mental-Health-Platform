@@ -144,12 +144,8 @@ const validateGoogleAuth = [
 // Assessment validation
 const validateAssessment = [
   body('type')
-    .isIn(['trauma', 'medication', 'voice', 'mood'])
+    .isIn(['depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'])
     .withMessage('Invalid assessment type'),
-  
-  body('data')
-    .notEmpty()
-    .withMessage('Assessment data is required'),
   
   handleValidationErrors
 ];

@@ -9,6 +9,7 @@ const {
   submitAssessment,
   getAssessmentAnalytics,
   getAssessmentTemplates,
+  getAssessmentQuestions,
   deleteAssessment
 } = require('../controllers/assessmentController');
 
@@ -21,6 +22,7 @@ router.use(protect);
 
 // Assessment templates (public for authenticated users)
 router.get('/templates', getAssessmentTemplates);
+router.get('/templates/:type', getAssessmentQuestions);
 
 // Assessment analytics
 router.get('/analytics', getAssessmentAnalytics);

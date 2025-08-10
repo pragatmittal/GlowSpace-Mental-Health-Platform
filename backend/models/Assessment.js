@@ -9,7 +9,7 @@ const assessmentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['trauma', 'medication', 'voice', 'mood', 'anxiety', 'depression', 'stress'],
+    enum: ['depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'],
     required: true
   },
   title: {
