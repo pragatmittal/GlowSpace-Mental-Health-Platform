@@ -100,6 +100,12 @@ const moodEntrySchema = new mongoose.Schema({
   },
   tags: [String],
   
+  // Inspirational Quote
+  quote: {
+    text: String,
+    author: String
+  },
+  
   // Sentiment Analysis
   sentiment: {
     score: { type: Number, min: -1, max: 1 },

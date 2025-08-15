@@ -1,5 +1,6 @@
 const MoodEntry = require('../models/MoodEntry');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -57,7 +58,8 @@ exports.createMoodEntry = async (req, res) => {
       weather,
       notes,
       tags,
-      entryMethod
+      entryMethod,
+      quote
     } = req.body;
 
     // Enhanced validation
@@ -252,6 +254,7 @@ exports.createMoodEntry = async (req, res) => {
       location,
       weather,
       notes,
+      quote,
       tags: tags || [],
       sentiment,
       entryMethod: entryMethod || 'manual'
@@ -509,6 +512,88 @@ exports.getMoodEntries = async (req, res) => {
     });
   }
 };
+
+// @desc    Get user's most recent mood entry
+// @route   GET /api/moods/recent
+// @access  Private
+exports.getRecentMood = async (req, res) => {
+  try {
+    const recentMood = await MoodEntry.findOne({
+      userId: req.user.id,
+      isActive: true
+    })
+    .sort({ createdAt: -1 })
+    .select('mood intensity notes quote timeOfDay activity socialContext createdAt')
+    .lean();
+
+    if (!recentMood) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: 'No mood entries found'
+      });
+    }
+
+    // Format the response
+    const formattedMood = {
+      ...recentMood,
+      moodEmoji: getMoodEmoji(recentMood.mood),
+      moodLabel: getMoodLabel(recentMood.mood),
+      formattedDate: recentMood.createdAt.toLocaleDateString(),
+      formattedTime: recentMood.createdAt.toLocaleTimeString(),
+      timeAgo: getTimeAgo(recentMood.createdAt)
+    };
+
+    res.status(200).json({
+      success: true,
+      data: formattedMood
+    });
+
+  } catch (error) {
+    console.error('Get recent mood error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching recent mood',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Helper function to get mood emoji
+function getMoodEmoji(mood) {
+  const moodEmojis = {
+    very_sad: '😢',
+    sad: '😞',
+    neutral: '😐',
+    happy: '😊',
+    very_happy: '😄'
+  };
+  return moodEmojis[mood] || '😐';
+}
+
+// Helper function to get mood label
+function getMoodLabel(mood) {
+  const moodLabels = {
+    very_sad: 'Very Sad',
+    sad: 'Sad',
+    neutral: 'Neutral',
+    happy: 'Happy',
+    very_happy: 'Very Happy'
+  };
+  return moodLabels[mood] || 'Unknown';
+}
+
+// Helper function to get time ago
+function getTimeAgo(date) {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  return date.toLocaleDateString();
+}
 
 // @desc    Get mood analytics
 // @route   GET /api/mood/analytics
@@ -945,6 +1030,454 @@ exports.acknowledgeAlert = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error acknowledging alert',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Get unified mood dashboard data
+// @route   GET /api/mood/dashboard
+// @access  Private
+exports.getMoodDashboardData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const now = moment();
+    const todayStart = moment().startOf('day');
+    const weekStart = moment().startOf('week');
+
+    // Get today's entries
+    const todayEntries = await MoodEntry.find({
+      userId,
+      isActive: true,
+      createdAt: {
+        $gte: todayStart.toDate(),
+        $lte: now.toDate()
+      }
+    }).sort({ createdAt: 1 });
+
+    // Get analytics data (total entries, averages, etc.)
+    const totalEntries = await MoodEntry.countDocuments({
+      userId,
+      isActive: true
+    });
+
+    // Calculate average mood (1-5 scale)
+    const avgMoodResult = await MoodEntry.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          isActive: true,
+          mood: { $exists: true }
+        }
+      },
+      {
+        $addFields: {
+          moodValue: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$mood', 'very_sad'] }, then: 1 },
+                { case: { $eq: ['$mood', 'sad'] }, then: 2 },
+                { case: { $eq: ['$mood', 'neutral'] }, then: 3 },
+                { case: { $eq: ['$mood', 'happy'] }, then: 4 },
+                { case: { $eq: ['$mood', 'very_happy'] }, then: 5 }
+              ],
+              default: 3
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          averageMood: { $avg: '$moodValue' }
+        }
+      }
+    ]);
+
+    const averageMood = avgMoodResult.length > 0 ? avgMoodResult[0].averageMood : 0;
+
+    // Get weekly entries count
+    const weeklyEntries = await MoodEntry.countDocuments({
+      userId,
+      isActive: true,
+      createdAt: {
+        $gte: weekStart.toDate(),
+        $lte: now.toDate()
+      }
+    });
+
+    // Calculate current tracking streak
+    let currentTrackingStreak = 0;
+    let checkDate = moment().startOf('day');
+    
+    while (currentTrackingStreak < 100) { // Prevent infinite loop
+      const dayEntries = await MoodEntry.countDocuments({
+        userId,
+        isActive: true,
+        createdAt: {
+          $gte: checkDate.toDate(),
+          $lt: checkDate.clone().add(1, 'day').toDate()
+        }
+      });
+
+      if (dayEntries > 0) {
+        currentTrackingStreak++;
+        checkDate.subtract(1, 'day');
+      } else {
+        break;
+      }
+    }
+
+    // Calculate max tracking streak
+    const maxStreakResult = await MoodEntry.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          isActive: true
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 0 }
+        }
+      },
+      {
+        $sort: {
+          '_id.year': 1,
+          '_id.month': 1,
+          '_id.day': 1
+        }
+      }
+    ]);
+
+    let maxTrackingStreak = 0;
+    let currentStreak = 0;
+    let lastDate = null;
+
+    maxStreakResult.forEach(day => {
+      const currentDate = moment({
+        year: day._id.year,
+        month: day._id.month - 1,
+        date: day._id.day
+      });
+
+      if (lastDate && currentDate.diff(lastDate, 'days') === 1) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+
+      maxTrackingStreak = Math.max(maxTrackingStreak, currentStreak);
+      lastDate = currentDate;
+    });
+
+    // Get weekly trends (last 7 days)
+    const weeklyTrends = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = moment().subtract(i, 'days').startOf('day');
+      const entries = await MoodEntry.find({
+        userId,
+        isActive: true,
+        createdAt: {
+          $gte: date.toDate(),
+          $lt: date.clone().add(1, 'day').toDate()
+        }
+      });
+
+      const dayMoodValues = entries.map(entry => {
+        switch (entry.mood) {
+          case 'very_sad': return 1;
+          case 'sad': return 2;
+          case 'neutral': return 3;
+          case 'happy': return 4;
+          case 'very_happy': return 5;
+          default: return 3;
+        }
+      });
+
+      const avgMood = dayMoodValues.length > 0 
+        ? dayMoodValues.reduce((a, b) => a + b, 0) / dayMoodValues.length 
+        : 0;
+
+      weeklyTrends.push({
+        date: date.format('YYYY-MM-DD'),
+        entries: entries.length,
+        averageMood: avgMood,
+        moodEntries: entries
+      });
+    }
+
+    // Generate basic insights
+    const insights = [];
+    
+    if (currentTrackingStreak >= 7) {
+      insights.push({
+        type: 'streak',
+        message: `Great job! You've been tracking your mood for ${currentTrackingStreak} consecutive days.`,
+        priority: 'positive'
+      });
+    }
+
+    if (todayEntries.length === 0) {
+      insights.push({
+        type: 'reminder',
+        message: 'Don\'t forget to log your mood today to maintain your tracking streak.',
+        priority: 'medium'
+      });
+    }
+
+    if (averageMood >= 4) {
+      insights.push({
+        type: 'wellness',
+        message: 'Your overall mood has been quite positive lately. Keep up the great work!',
+        priority: 'positive'
+      });
+    }
+
+    // Combine all data
+    const dashboardData = {
+      summary: {
+        totalEntries,
+        averageMood: Math.round(averageMood * 10) / 10,
+        weeklyEntries
+      },
+      streaks: {
+        currentTrackingStreak,
+        maxTrackingStreak
+      },
+      todayEntries,
+      weeklyTrends,
+      insights
+    };
+
+    res.status(200).json({
+      success: true,
+      data: dashboardData
+    });
+
+  } catch (error) {
+    console.error('Get mood dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching mood dashboard data',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Get unified mood dashboard data (optimized single API call)
+// @route   GET /api/mood/dashboard-unified
+// @access  Private
+exports.getMoodDashboardUnified = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { period = '7' } = req.query;
+    const days = parseInt(period);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Single optimized aggregation pipeline for all dashboard data
+    const dashboardData = await MoodEntry.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(userId),
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalEntries: { $sum: 1 },
+          avgMood: { $avg: '$mood' },
+          avgIntensity: { $avg: '$intensity' },
+          moods: { $push: '$mood' },
+          intensities: { $push: '$intensity' },
+          dailyEntries: {
+            $push: {
+              date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              mood: '$mood',
+              intensity: '$intensity',
+              activities: '$activities',
+              triggers: '$triggers',
+              notes: '$notes'
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          analytics: {
+            totalEntries: '$totalEntries',
+            averageMood: { $round: ['$avgMood', 2] },
+            averageIntensity: { $round: ['$avgIntensity', 2] },
+            moodDistribution: {
+              excellent: {
+                $size: {
+                  $filter: {
+                    input: '$moods',
+                    cond: { $gte: ['$$this', 9] }
+                  }
+                }
+              },
+              good: {
+                $size: {
+                  $filter: {
+                    input: '$moods',
+                    cond: { $and: [{ $gte: ['$$this', 7] }, { $lt: ['$$this', 9] }] }
+                  }
+                }
+              },
+              neutral: {
+                $size: {
+                  $filter: {
+                    input: '$moods',
+                    cond: { $and: [{ $gte: ['$$this', 5] }, { $lt: ['$$this', 7] }] }
+                  }
+                }
+              },
+              low: {
+                $size: {
+                  $filter: {
+                    input: '$moods',
+                    cond: { $and: [{ $gte: ['$$this', 3] }, { $lt: ['$$this', 5] }] }
+                  }
+                }
+              },
+              poor: {
+                $size: {
+                  $filter: {
+                    input: '$moods',
+                    cond: { $lt: ['$$this', 3] }
+                  }
+                }
+              }
+            }
+          },
+          weeklyPattern: '$dailyEntries',
+          insights: {
+            moodTrend: {
+              $cond: {
+                if: { $gt: ['$avgMood', 6] },
+                then: 'positive',
+                else: {
+                  $cond: {
+                    if: { $gt: ['$avgMood', 4] },
+                    then: 'neutral',
+                    else: 'needs_attention'
+                  }
+                }
+              }
+            },
+            consistencyScore: {
+              $multiply: [
+                { $divide: ['$totalEntries', days] },
+                100
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Calculate streaks
+    const recentEntries = await MoodEntry.find({
+      user: userId
+    })
+    .sort({ createdAt: -1 })
+    .limit(30)
+    .select('createdAt mood');
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    const today = new Date();
+    
+    for (let i = 0; i < recentEntries.length; i++) {
+      const entryDate = new Date(recentEntries[i].createdAt);
+      const daysDiff = Math.floor((today - entryDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === i) {
+        tempStreak++;
+        if (i === 0) currentStreak = tempStreak;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 0;
+      }
+    }
+    longestStreak = Math.max(longestStreak, tempStreak);
+
+    // Generate AI-powered insights
+    const data = dashboardData[0] || {
+      analytics: { totalEntries: 0, averageMood: 0, averageIntensity: 0, moodDistribution: {} },
+      weeklyPattern: [],
+      insights: { moodTrend: 'neutral', consistencyScore: 0 }
+    };
+
+    const personalInsights = [];
+    
+    if (data.analytics.averageMood >= 7) {
+      personalInsights.push({
+        type: 'positive',
+        title: 'Excellent Mood Stability',
+        message: 'Your mood has been consistently positive. Keep up the great work!',
+        priority: 'low'
+      });
+    } else if (data.analytics.averageMood < 5) {
+      personalInsights.push({
+        type: 'concern',
+        title: 'Mood Support Needed',
+        message: 'Consider reaching out to support or trying mood-boosting activities.',
+        priority: 'high'
+      });
+    }
+
+    if (data.insights.consistencyScore < 50) {
+      personalInsights.push({
+        type: 'suggestion',
+        title: 'Track More Consistently',
+        message: 'Regular mood tracking helps identify patterns and improve well-being.',
+        priority: 'medium'
+      });
+    }
+
+    // Final unified response
+    const unifiedData = {
+      analytics: data.analytics,
+      weeklyPattern: data.weeklyPattern,
+      streaks: {
+        current: currentStreak,
+        longest: longestStreak
+      },
+      insights: {
+        trend: data.insights.moodTrend,
+        consistency: Math.round(data.insights.consistencyScore),
+        recommendations: personalInsights
+      },
+      lastUpdated: new Date().toISOString(),
+      period: `${days} days`
+    };
+
+    res.json({
+      success: true,
+      data: unifiedData
+    });
+
+  } catch (error) {
+    console.error('Get unified mood dashboard error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching unified mood dashboard data',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

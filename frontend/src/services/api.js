@@ -151,6 +151,15 @@ export const moodAPI = {
   },
   
   // Analytics and insights
+  getDashboardData: async () => {
+    try {
+      const response = await api.get('/mood/dashboard');
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
   getAnalytics: async (params) => {
     try {
       const response = await api.get('/mood/analytics', { params });
@@ -181,6 +190,15 @@ export const moodAPI = {
   getInsights: async (params) => {
     try {
       const response = await api.get('/mood/insights', { params });
+      return response;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  
+  getRecentMood: async () => {
+    try {
+      const response = await api.get('/mood/recent');
       return response;
     } catch (error) {
       throw handleApiError(error);
@@ -307,42 +325,72 @@ export const goalAPI = {
   }
 };
 
-// Assessment API
+// Assessment API - TEMPORARILY DISABLED FOR COMING SOON FEATURE
 export const assessmentAPI = {
   // Get assessment templates
   getTemplates: async () => {
-    const response = await api.get('/assessments/templates');
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment templates coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   },
 
   // Get specific assessment by type
   getByType: async (type) => {
-    const response = await api.get(`/assessments/templates/${type}`);
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment templates coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   },
 
   // Submit assessment
   submit: async (assessmentData) => {
-    const response = await api.post('/assessments/submit', assessmentData);
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment submission coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   },
 
   // Get assessment history
   getHistory: async (params = {}) => {
-    const response = await api.get('/assessments/history', { params });
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment history coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   },
 
   // Get assessment results by ID
   getResults: async (id) => {
-    const response = await api.get(`/assessments/${id}`);
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment results coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   },
 
   // Get analytics
   getAnalytics: async () => {
-    const response = await api.get('/assessments/analytics');
-    return response;
+    return {
+      data: {
+        success: false,
+        message: 'Assessment analytics coming soon! We\'re building something amazing.',
+        comingSoon: true
+      }
+    };
   }
 };
 

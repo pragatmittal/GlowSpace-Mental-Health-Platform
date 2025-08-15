@@ -45,6 +45,55 @@
   width: 100%;
 }
 
+/* Responsive Grid Layout */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas: 
+      "quick-actions mood-tracking"
+      "mood-chart appointments"
+      "emotion-insights emotion-insights";
+  }
+  
+  .grid-item.quick-actions {
+    grid-area: quick-actions;
+  }
+  
+  .grid-item.mood-tracking {
+    grid-area: mood-tracking;
+  }
+  
+  .grid-item.mood-chart {
+    grid-area: mood-chart;
+  }
+  
+  .grid-item.appointments {
+    grid-area: appointments;
+  }
+  
+  .grid-item.emotion-insights {
+    grid-area: emotion-insights;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 
+      "quick-actions mood-tracking mood-chart"
+      "appointments emotion-insights emotion-insights";
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas: 
+      "quick-actions mood-tracking mood-chart appointments"
+      "emotion-insights emotion-insights emotion-insights emotion-insights";
+  }
+}
+
 .grid-item {
   background: var(--bg-card);
   border-radius: 20px;

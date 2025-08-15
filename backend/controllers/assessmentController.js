@@ -1,3 +1,8 @@
+// TEMPORARILY DISABLED - ASSESSMENT FUNCTIONALITY COMING SOON
+// This entire controller is commented out for the "Coming Soon" feature
+// All assessment functionality will be restored when the feature is ready
+
+/*
 const Assessment = require('../models/Assessment');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
@@ -208,21 +213,50 @@ exports.submitAssessment = async (req, res) => {
       });
     }
 
-    // Calculate score and interpretation
     const template = assessmentTemplates[type];
-    const scoring = calculateScore(type, responses, template);
-    const recommendations = generateRecommendations(type, scoring);
 
-    // Create assessment record
+    // Calculate score and interpretation
+    const scoringCalc = calculateScore(type, responses || {}, template);
+    const recommendations = generateRecommendations(type, scoringCalc);
+
+    // Map flat responses into structured responses.ratings expected by schema
+    const ratings = template.questions
+      .filter(q => q.type === 'scale')
+      .map(q => {
+        const val = responses ? responses[q.id] : undefined;
+        if (val === undefined || val === null || val === '') return null;
+        return {
+          questionId: q.id,
+          rating: Number(val),
+          scale: {
+            min: q.scale?.min ?? 0,
+            max: q.scale?.max ?? 3,
+            labels: {
+              low: Array.isArray(q.scale?.labels) ? q.scale.labels[0] : 'Low',
+              high: Array.isArray(q.scale?.labels) ? q.scale.labels[q.scale.labels.length - 1] : 'High'
+            }
+          }
+        };
+      })
+      .filter(Boolean);
+
+    // Create assessment record matching schema
     const assessment = new Assessment({
       userId,
       type,
-      responses,
-      totalScore: scoring.totalScore,
-      maxScore: scoring.maxScore,
-      interpretation: scoring.interpretation,
-      recommendations,
-      createdAt: new Date()
+      title: template.name,
+      description: template.description,
+      // Save questions optionally for traceability (no answers stored here)
+      // questions: template.questions,
+      responses: {
+        ratings
+      },
+      scoring: {
+        totalScore: scoringCalc.totalScore,
+        recommendations // riskLevel will be computed in pre-save based on responses
+      },
+      status: 'completed',
+      completedAt: new Date()
     });
 
     await assessment.save();
@@ -230,25 +264,31 @@ exports.submitAssessment = async (req, res) => {
     res.status(201).json({
       success: true,
       data: {
-        assessmentId: assessment._id,
+        _id: assessment._id, // for frontend navigation contract
+        assessmentId: assessment._id, // backward compatible
+        type,
+        title: assessment.title,
+        description: assessment.description,
         score: {
-          total: scoring.totalScore,
-          max: scoring.maxScore,
-          interpretation: scoring.interpretation,
-          level: scoring.level,
-          color: scoring.color
+          total: scoringCalc.totalScore,
+          max: scoringCalc.maxScore,
+          interpretation: scoringCalc.interpretation,
+          level: scoringCalc.level,
+          color: scoringCalc.color
         },
         recommendations,
-        completedAt: assessment.createdAt
+        riskLevel: assessment.scoring?.riskLevel || 'low',
+        completedAt: assessment.completedAt
       }
     });
 
   } catch (error) {
     console.error('Error submitting assessment:', error);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       message: 'Failed to submit assessment',
-      error: error.message
+      error: isDev ? (error?.errors || error?.message || error) : undefined
     });
   }
 };
@@ -435,4 +475,37 @@ const calculateHistoryInsights = (assessments) => {
     averageGap,
     mostCommonType
   };
+};
+*/
+
+// Placeholder exports for "Coming Soon" functionality
+module.exports = {
+  getTemplates: (req, res) => {
+    res.status(503).json({
+      success: false,
+      message: 'Assessment templates coming soon! We\'re building something amazing.',
+      comingSoon: true
+    });
+  },
+  getTemplate: (req, res) => {
+    res.status(503).json({
+      success: false,
+      message: 'Assessment templates coming soon! We\'re building something amazing.',
+      comingSoon: true
+    });
+  },
+  submitAssessment: (req, res) => {
+    res.status(503).json({
+      success: false,
+      message: 'Assessment submission coming soon! We\'re building something amazing.',
+      comingSoon: true
+    });
+  },
+  getHistory: (req, res) => {
+    res.status(503).json({
+      success: false,
+      message: 'Assessment history coming soon! We\'re building something amazing.',
+      comingSoon: true
+    });
+  }
 };

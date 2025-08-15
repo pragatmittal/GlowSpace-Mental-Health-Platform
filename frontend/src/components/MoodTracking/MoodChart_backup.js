@@ -15,7 +15,7 @@ import { moodAPI } from '../../services/api';
 import { 
   validateAnalyticsResponse, 
   validateMoodValue 
-} from '../../utils/moodDataValidation';
+} from '../../utils/moodData';
 import './MoodChart.css';
 
 const MoodChart = ({ refreshTrigger }) => {

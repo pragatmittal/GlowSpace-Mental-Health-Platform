@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import LoadingSpinner from '../common/LoadingSpinner';
+import DashboardErrorBoundary from '../common/DashboardErrorBoundary';
 import MoodChart from './MoodChart';
+import MoodTrackingBox from './MoodTrackingBox';
 import EmotionInsights from './EmotionInsights';
 import UpcomingAppointments from './UpcomingAppointments';
 import QuickActions from './QuickActions';
 import WelcomeMessage from './WelcomeMessage';
-import { dashboardAPI } from '../../services/api';
+import { dashboardAPI } from '../../services/apiWrapper';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -15,53 +17,44 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Refs for cleanup and preventing multiple calls
+  const abortControllerRef = useRef(null);
+  const lastFetchTimeRef = useRef(0);
+  const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-    // eslint-disable-next-line
-  }, []);
-
-  // Auto-refresh when coming back from mood tracking
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('🔄 Page became visible, refreshing dashboard data...');
-        fetchDashboardData();
-      }
-    };
-
-    // Listen for page visibility changes
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+  // Debounced fetch function to prevent spam
+  const fetchDashboardData = useCallback(async () => {
+    const now = Date.now();
+    const minInterval = 2000; // Minimum 2 seconds between fetches
     
-    // Also refresh when location changes (user navigates back to dashboard)
-    if (location.state?.refreshDashboard) {
-      console.log('🔄 Location state refresh triggered...');
-      fetchDashboardData();
+    // Prevent too frequent calls
+    if (now - lastFetchTimeRef.current < minInterval) {
+      console.log('⏳ Dashboard fetch skipped - too frequent');
+      return;
     }
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [location]);
-
-  // Auto-refresh dashboard when navigating back to /dashboard
-  useEffect(() => {
-    if (location.pathname === '/dashboard') {
-      fetchDashboardData();
+    
+    // Cancel previous request if still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
-    // eslint-disable-next-line
-  }, [location.pathname]);
-
-  const fetchDashboardData = async () => {
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    lastFetchTimeRef.current = now;
+    
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('🌐 Fetching dashboard data...');
       const response = await dashboardAPI.getDashboardData();
+      
+      // Check if component is still mounted
+      if (!isMountedRef.current) return;
       
       // Transform backend data to match frontend expectations
       console.log('🌐 Raw dashboard API response:', response.data);
-      console.log('📋 moodData from API:', response.data.moodData);
-      console.log('📈 moodTrends from API:', response.data.moodTrends);
-      console.log('📊 moodStats from API:', response.data.moodStats);
       
       const transformedData = {
         ...response.data,
@@ -99,27 +92,79 @@ const Dashboard = () => {
         moodDataCount: transformedData.moodData.length,
         moodStats: transformedData.moodStats,
         hasRecentData: transformedData.moodData.length > 0,
-        rawMoodDataSample: transformedData.moodData.slice(0, 2),
-        rawAPIResponse: {
-          moodDataLength: response.data.moodData?.length || 0,
-          moodTrendsLength: response.data.moodTrends?.length || 0,
-          totalMoodEntries: response.data.moodStats?.totalEntries || 0
-        }
+        rawMoodDataSample: transformedData.moodData.slice(0, 2)
       });
       
-      setDashboardData(transformedData);
+      if (isMountedRef.current) {
+        setDashboardData(transformedData);
+      }
     } catch (err) {
-      setError('Failed to load dashboard data');
+      if (err.name === 'AbortError') {
+        console.log('� Dashboard fetch aborted');
+        return;
+      }
+      
       console.error('Dashboard error:', err);
+      if (isMountedRef.current) {
+        setError(err.message || 'Failed to load dashboard data');
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+      abortControllerRef.current = null;
     }
-  };
+  }, []);
+
+  // Single useEffect for initial load and cleanup
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    // Initial fetch
+    fetchDashboardData();
+    
+    // Listen for mood data updates (but debounced)
+    const handleMoodDataUpdate = (event) => {
+      console.log('🔄 Mood data updated event received');
+      // Add delay to prevent immediate refetch
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          fetchDashboardData();
+        }
+      }, 1000);
+    };
+
+    // Only listen for specific events, not all visibility changes
+    window.addEventListener('moodDataUpdated', handleMoodDataUpdate);
+    
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+      window.removeEventListener('moodDataUpdated', handleMoodDataUpdate);
+      
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty dependency array - only run once
+
+  // Separate effect for location-based refresh (more controlled)
+  useEffect(() => {
+    // Only refresh if explicitly requested via state
+    if (location.state?.refreshDashboard && isMountedRef.current) {
+      console.log('🔄 Location state refresh triggered...');
+      fetchDashboardData();
+      
+      // Clear the refresh flag
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, fetchDashboardData]);
 
   const handleQuickAction = (action) => {
     switch (action) {
       case 'mood':
-        navigate('/mood-tracking');
+        navigate('/moodtracking');
         break;
       case 'emotion':
         navigate('/emotion-detection');
@@ -137,6 +182,8 @@ const Dashboard = () => {
         break;
     }
   };
+
+  // REMOVED: handleMoodDataUpdate function that was causing circular dependencies
 
   if (loading) {
     return (
@@ -163,31 +210,47 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <WelcomeMessage user={dashboardData?.user} />
-      </div>
+    <DashboardErrorBoundary>
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <WelcomeMessage user={dashboardData?.user} />
+        </div>
 
-      <div className="dashboard-content">
-        <div className="dashboard-grid">
-          <div className="grid-item quick-actions">
-            <QuickActions onAction={handleQuickAction} />
-          </div>
-          
-          <div className="grid-item mood-chart">
-            <MoodChart data={dashboardData?.moodData} />
-          </div>
-          
-          <div className="grid-item appointments">
-            <UpcomingAppointments appointments={dashboardData?.appointments} />
-          </div>
-          
-          <div className="grid-item emotion-insights">
-            <EmotionInsights data={dashboardData?.emotionData} />
+        <div className="dashboard-content">
+          <div className="dashboard-grid">
+            <DashboardErrorBoundary>
+              <div className="grid-item quick-actions">
+                <QuickActions onAction={handleQuickAction} />
+              </div>
+            </DashboardErrorBoundary>
+            
+            <DashboardErrorBoundary>
+              <div className="grid-item mood-tracking">
+                <MoodTrackingBox />
+              </div>
+            </DashboardErrorBoundary>
+            
+            <DashboardErrorBoundary>
+              <div className="grid-item mood-chart">
+                <MoodChart data={dashboardData?.moodData} />
+              </div>
+            </DashboardErrorBoundary>
+            
+            <DashboardErrorBoundary>
+              <div className="grid-item appointments">
+                <UpcomingAppointments appointments={dashboardData?.appointments} />
+              </div>
+            </DashboardErrorBoundary>
+            
+            <DashboardErrorBoundary>
+              <div className="grid-item emotion-insights">
+                <EmotionInsights data={dashboardData?.emotionData} />
+              </div>
+            </DashboardErrorBoundary>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardErrorBoundary>
   );
 };
 

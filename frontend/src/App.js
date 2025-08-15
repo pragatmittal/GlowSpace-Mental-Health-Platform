@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { MoodProvider } from './contexts/MoodContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -16,7 +17,7 @@ import Community from './pages/Community';
 import MoodTracking from './pages/MoodTracking';
 
 // Assessment Page
-import Assessment from './pages/Assessment';
+import ComingSoon from './pages/ComingSoon';
 
 // Components
 import Navbar from './components/Navbar';
@@ -30,24 +31,25 @@ function App() {
     <ErrorBoundary>
     <AuthProvider>
       <ThemeProvider>
-        <Router>
-          <div className="App">
-            <Navbar />
-            <main className="main-content">
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                
-                {/* Protected Routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
+        <MoodProvider>
+          <Router>
+            <div className="App">
+              <Navbar />
+              <main className="main-content">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  
+                  {/* Protected Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
                 />
                 <Route
                   path="/chat"
@@ -82,47 +84,10 @@ function App() {
                   }
                 />
                 
-                {/* Assessment Routes */}
-                <Route
-                  path="/assessments"
-                  element={
-                    <ProtectedRoute>
-                      <Assessment />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assessments/:view"
-                  element={
-                    <ProtectedRoute>
-                      <Assessment />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assessments/take/:type"
-                  element={
-                    <ProtectedRoute>
-                      <Assessment />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assessments/results/:assessmentId"
-                  element={
-                    <ProtectedRoute>
-                      <Assessment />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assessments/history"
-                  element={
-                    <ProtectedRoute>
-                      <Assessment />
-                    </ProtectedRoute>
-                  }
-                />
+                {/* Assessment Routes - Coming Soon */}
+                <Route path="/assessments" element={<ComingSoon />} />
+                <Route path="/assessments/*" element={<ComingSoon />} />
+                <Route path="/assessments-coming-soon" element={<ComingSoon />} />
                 
                 {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" />} />
@@ -131,6 +96,7 @@ function App() {
             <Footer />
           </div>
         </Router>
+        </MoodProvider>
       </ThemeProvider>
     </AuthProvider>
     </ErrorBoundary>

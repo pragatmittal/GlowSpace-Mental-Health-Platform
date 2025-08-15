@@ -1,20 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { emotionAPI } from '../../services/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { emotionAPI } from '../../services/apiWrapper';
 import './EmotionInsights.css';
 
 const EmotionInsights = () => {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Refs for cleanup and preventing multiple calls
+  const abortControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const lastFetchTimeRef = useRef(0);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchEmotionInsights();
-  }, []);
+    
+    return () => {
+      isMountedRef.current = false;
+      
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty dependency array - only run once
 
   const fetchEmotionInsights = async () => {
+    const now = Date.now();
+    const minInterval = 3000; // Minimum 3 seconds between fetches
+    
+    // Prevent too frequent calls
+    if (now - lastFetchTimeRef.current < minInterval) {
+      console.log('⏳ EmotionInsights fetch skipped - too frequent');
+      return;
+    }
+    
+    // Cancel previous request if still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    lastFetchTimeRef.current = now;
+
     try {
+      if (!isMountedRef.current) return;
+      
       setLoading(true);
       const response = await emotionAPI.getEmotionInsights();
+      
+      if (!isMountedRef.current) return;
+      
       const data = response.data;
       
       if (data.success) {
@@ -24,10 +62,24 @@ const EmotionInsights = () => {
         setError(data.message || 'Failed to load emotion insights');
       }
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('🚫 EmotionInsights fetch aborted');
+        return;
+      }
+      
       console.error('Error fetching emotion insights:', err);
-      setError('Failed to load emotion insights. Please try again.');
+      if (isMountedRef.current) {
+        if (err.message.includes('Too many requests') || err.message.includes('429')) {
+          setError('Server is busy. Emotion insights will be available shortly.');
+        } else {
+          setError('Failed to load emotion insights. Please try again.');
+        }
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+      abortControllerRef.current = null;
     }
   };
 

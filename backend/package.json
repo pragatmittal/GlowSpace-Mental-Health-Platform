@@ -30,6 +30,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^6.10.0",
     "express-validator": "^7.0.1",
+    "form-data": "^4.0.4",
     "google-auth-library": "^9.1.0",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -54,7 +55,6 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/your-username/glowspace-backend.git"

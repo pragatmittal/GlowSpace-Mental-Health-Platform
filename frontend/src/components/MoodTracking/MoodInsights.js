@@ -1,323 +1,383 @@
 import React, { useState, useEffect } from 'react';
+import { moodAPI } from '../../services/api';
+import { validateAnalyticsResponse } from '../../utils/moodDataValidation';
 import './MoodInsights.css';
 
-const MoodInsights = ({ insights = [], compact = false }) => {
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [expandedInsight, setExpandedInsight] = useState(null);
-  const [loading, setLoading] = useState(false);
+const MoodInsights = ({ refreshTrigger }) => {
+  const [insights, setInsights] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const getInsightIcon = (type) => {
-    switch (type) {
-      case 'pattern': return '🔍';
-      case 'improvement': return '📈';
-      case 'warning': return '⚠️';
-      case 'achievement': return '🏆';
-      case 'recommendation': return '💡';
-      default: return '📊';
+  // Mood emoji mapping
+  const moodEmojis = {
+    'very_sad': '😢',
+    'sad': '😞',
+    'neutral': '😐',
+    'happy': '😊',
+    'very_happy': '😄'
+  };
+
+  // Fetch insights data
+  const fetchInsights = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch multiple data sources for comprehensive insights with error handling
+      const requests = [
+        moodAPI.getAnalytics({ timeRange: '30d' }).catch(err => ({ error: err, data: { success: false } })),
+        moodAPI.getStreaks().catch(err => ({ error: err, data: { success: false } })),
+        moodAPI.getPatterns({ days: 30 }).catch(err => ({ error: err, data: { success: false } }))
+      ];
+
+      const [analyticsResponse, streaksResponse, patternsResponse] = await Promise.all(requests);
+
+      // Validate and extract data using the validation utility
+      const analytics = validateAnalyticsResponse(analyticsResponse);
+      const streaks = streaksResponse?.data?.success ? streaksResponse.data.data : {};
+      const patterns = patternsResponse?.data?.success ? patternsResponse.data.data : [];
+
+      // Calculate comprehensive insights with validated data
+      const calculatedInsights = calculateInsights(analytics, streaks, patterns);
+      setInsights(calculatedInsights);
+
+    } catch (err) {
+      console.error('Error fetching insights:', err);
+      
+      // Handle different error types
+      if (err.response?.status === 401) {
+        setError('Please log in to view your mood insights');
+      } else if (err.response?.status === 404) {
+        setError('Mood tracking service unavailable');
+      } else if (!navigator.onLine) {
+        setError('Please check your internet connection');
+      } else {
+        setError('Failed to load insights');
+      }
+      
+      setInsights(getEmptyInsights());
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getInsightColor = (type) => {
-    switch (type) {
-      case 'pattern': return '#667eea';
-      case 'improvement': return '#27ae60';
-      case 'warning': return '#f39c12';
-      case 'achievement': return '#e74c3c';
-      case 'recommendation': return '#9b59b6';
-      default: return '#95a5a6';
-    }
+  // Calculate insights from data
+  const calculateInsights = (analytics, streaks, patterns) => {
+    // Safely extract data with fallbacks
+    const summary = analytics?.summary || {};
+    const trends = Array.isArray(analytics?.trends) ? analytics.trends : [];
+    
+    // Calculate statistics with validation
+    const totalMoods = Number(summary.totalEntries) || 0;
+    
+    // Find most frequent mood with validation
+    const moodCounts = summary.moodCounts || {};
+    const validMoodCounts = Object.keys(moodCounts).filter(mood => 
+      ['very_sad', 'sad', 'neutral', 'happy', 'very_happy'].includes(mood)
+    );
+    
+    const mostFrequentMood = validMoodCounts.length > 0 
+      ? validMoodCounts.reduce((a, b) => (moodCounts[a] || 0) > (moodCounts[b] || 0) ? a : b, 'neutral')
+      : 'neutral';
+    
+    // Calculate best and worst days with validation
+    const validTrends = trends.filter(trend => trend && typeof trend.avgMood === 'number' && !isNaN(trend.avgMood));
+    const sortedTrends = validTrends.sort((a, b) => (b.avgMood || 0) - (a.avgMood || 0));
+    const bestDay = sortedTrends[0];
+    const worstDay = sortedTrends[sortedTrends.length - 1];
+    
+    // Calculate weekly improvement with validation
+    const recentWeek = validTrends.slice(-7);
+    const previousWeek = validTrends.slice(-14, -7);
+    
+    const recentAvg = recentWeek.length > 0 
+      ? recentWeek.reduce((sum, t) => sum + (t.avgMood || 0), 0) / recentWeek.length 
+      : 0;
+    const previousAvg = previousWeek.length > 0 
+      ? previousWeek.reduce((sum, t) => sum + (t.avgMood || 0), 0) / previousWeek.length 
+      : 0;
+    
+    const weeklyImprovement = previousAvg > 0 
+      ? ((recentAvg - previousAvg) / previousAvg * 100) 
+      : 0;
+    
+    // Monthly mood distribution with validation
+    const safeMoodCounts = {
+      'very_happy': Number(moodCounts.very_happy) || 0,
+      'happy': Number(moodCounts.happy) || 0,
+      'neutral': Number(moodCounts.neutral) || 0,
+      'sad': Number(moodCounts.sad) || 0,
+      'very_sad': Number(moodCounts.very_sad) || 0
+    };
+    
+    const moodDistribution = {};
+    Object.keys(safeMoodCounts).forEach(mood => {
+      moodDistribution[mood] = totalMoods > 0 ? (safeMoodCounts[mood] / totalMoods * 100) : 0;
+    });
+    
+    // Activity analysis with validation
+    const activityCorrelation = summary.activityCorrelation || {};
+    const validActivities = Object.entries(activityCorrelation)
+      .filter(([, data]) => data && typeof data.average === 'number' && !isNaN(data.average));
+    const bestActivity = validActivities.length > 0 
+      ? validActivities.sort(([,a], [,b]) => (b.average || 0) - (a.average || 0))[0]
+      : null;
+    
+    // Time analysis with validation
+    const timeCorrelation = summary.timeCorrelation || {};
+    const validTimes = Object.entries(timeCorrelation)
+      .filter(([, data]) => data && typeof data.average === 'number' && !isNaN(data.average));
+    const bestTime = validTimes.length > 0 
+      ? validTimes.sort(([,a], [,b]) => (b.average || 0) - (a.average || 0))[0]
+      : null;
+
+    return {
+      totalMoods,
+      avgMood: isNaN(Number(summary.avgMood) || 3) ? 0 : Math.round((Number(summary.avgMood) || 3) * 10) / 10,
+      mostFrequentMood,
+      currentStreak: Number(streaks?.currentPositiveStreak) || 0,
+      longestStreak: Number(streaks?.maxPositiveStreak) || 0,
+      bestDay: bestDay ? {
+        date: bestDay.date,
+        mood: Math.round(bestDay.avgMood || 0),
+        formatted: formatDate(bestDay.date)
+      } : null,
+      worstDay: worstDay ? {
+        date: worstDay.date,
+        mood: Math.round(worstDay.avgMood || 0),
+        formatted: formatDate(worstDay.date)
+      } : null,
+      weeklyImprovement: isNaN(weeklyImprovement) ? 0 : Math.round(weeklyImprovement * 10) / 10,
+      moodDistribution,
+      bestActivity: bestActivity ? {
+        name: bestActivity[0],
+        average: Math.round((bestActivity[1].average || 0) * 10) / 10
+      } : null,
+      bestTime: bestTime ? {
+        name: bestTime[0],
+        average: Math.round((bestTime[1].average || 0) * 10) / 10
+      } : null,
+      consistencyScore: Math.round((totalMoods / 30) * 100) || 0 // percentage of days tracked in last 30 days
+    };
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return '#e74c3c';
-      case 'medium': return '#f39c12';
-      case 'low': return '#27ae60';
-      default: return '#95a5a6';
-    }
+  // Get empty insights for new users
+  const getEmptyInsights = () => ({
+    totalMoods: 0,
+    avgMood: 0,
+    mostFrequentMood: 'neutral',
+    currentStreak: 0,
+    longestStreak: 0,
+    bestDay: null,
+    worstDay: null,
+    weeklyImprovement: 0,
+    moodDistribution: {
+      'very_happy': 0,
+      'happy': 0,
+      'neutral': 0,
+      'sad': 0,
+      'very_sad': 0
+    },
+    bestActivity: null,
+    bestTime: null,
+    consistencyScore: 0
+  });
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case 'activity': return '🏃‍♂️';
-      case 'social': return '👥';
-      case 'lifestyle': return '🌱';
-      case 'therapy': return '🧠';
-      case 'general': return '📊';
-      default: return '📋';
-    }
+  // Get mood label
+  const getMoodLabel = (moodValue) => {
+    const labels = {
+      1: 'Very Sad',
+      2: 'Sad', 
+      3: 'Neutral',
+      4: 'Happy',
+      5: 'Very Happy'
+    };
+    return labels[moodValue] || 'Neutral';
   };
 
-  const formatDate = (date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+  // Get mood color
+  const getMoodColor = (mood) => {
+    const colors = {
+      'very_sad': '#e74c3c',
+      'sad': '#f39c12',
+      'neutral': '#f1c40f',
+      'happy': '#2ecc71',
+      'very_happy': '#27ae60'
+    };
+    return colors[mood] || colors.neutral;
   };
 
-  const getFilteredInsights = () => {
-    if (activeFilter === 'all') return insights;
-    return insights.filter(insight => insight.type === activeFilter);
-  };
-
-  const handleInsightAction = (insight) => {
-    if (insight.actionUrl) {
-      // Here you would typically navigate to the action URL
-      console.log('Taking action for insight:', insight.id);
-      alert(`Action: ${insight.actionText}`);
-    }
-  };
-
-  const toggleInsightExpansion = (insightId) => {
-    setExpandedInsight(expandedInsight === insightId ? null : insightId);
-  };
-
-  const filteredInsights = getFilteredInsights();
-
-  // Check if user is new (no insights yet)
-  const isNewUser = !insights || insights.length === 0;
+  // Fetch data on mount and when refreshTrigger changes
+  useEffect(() => {
+    fetchInsights();
+  }, [refreshTrigger]);
 
   if (loading) {
     return (
       <div className="mood-insights">
+        <div className="insights-header">
+          <h3>💡 Mood Insights</h3>
+          <p>Personal analytics and patterns</p>
+        </div>
         <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Loading insights...</p>
+          <div className="loading-spinner-small"></div>
+          <p>Calculating insights...</p>
         </div>
       </div>
     );
   }
 
-  // Show welcome message for new users
-  if (isNewUser) {
+  if (error) {
     return (
       <div className="mood-insights">
         <div className="insights-header">
-          <h2>Mood Insights</h2>
-          <p>Personalized insights and recommendations based on your mood patterns</p>
+          <h3>💡 Mood Insights</h3>
         </div>
-        
-        <div className="new-user-insights">
-          <div className="new-user-card">
-            <div className="new-user-icon">🔮</div>
-            <h3>Your Insights Are Coming!</h3>
-            <p>Start tracking your moods to unlock personalized insights and recommendations. We'll analyze your patterns to help you understand your emotional wellbeing better.</p>
-            <div className="insight-preview">
-              <div className="preview-item">
-                <span className="preview-icon">📊</span>
-                <span>Mood patterns and trends</span>
-              </div>
-              <div className="preview-item">
-                <span className="preview-icon">💡</span>
-                <span>Personalized recommendations</span>
-              </div>
-              <div className="preview-item">
-                <span className="preview-icon">🎯</span>
-                <span>Wellness improvement tips</span>
-              </div>
-            </div>
-          </div>
+        <div className="error-state">
+          <div className="error-icon">⚠️</div>
+          <p>{error}</p>
+          <button onClick={fetchInsights} className="retry-button">
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
+  const isEmpty = insights.totalMoods === 0;
+
   return (
     <div className="mood-insights">
+      {/* Header */}
       <div className="insights-header">
-        <h2>Mood Insights</h2>
-        <p>Personalized insights and recommendations based on your mood patterns</p>
+        <h3>💡 Mood Insights</h3>
+        <p>Personal analytics and patterns from your mood tracking journey</p>
       </div>
 
-      {/* Insights Summary */}
-      <div className="insights-summary">
-        <div className="summary-card">
-          <div className="summary-icon">💡</div>
-          <div className="summary-content">
-            <h3>{insights.length}</h3>
-            <p>Total Insights</p>
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-icon">🎯</div>
-          <div className="summary-content">
-            <h3>{insights.filter(i => i.actionable).length}</h3>
-            <p>Actionable</p>
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-icon">📈</div>
-          <div className="summary-content">
-            <h3>{insights.filter(i => i.type === 'improvement').length}</h3>
-            <p>Improvements</p>
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-icon">⚠️</div>
-          <div className="summary-content">
-            <h3>{insights.filter(i => i.type === 'warning').length}</h3>
-            <p>Warnings</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="insights-filters">
-        <button 
-          className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('all')}
-        >
-          All ({insights.length})
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'pattern' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('pattern')}
-        >
-          Patterns ({insights.filter(i => i.type === 'pattern').length})
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'improvement' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('improvement')}
-        >
-          Improvements ({insights.filter(i => i.type === 'improvement').length})
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'warning' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('warning')}
-        >
-          Warnings ({insights.filter(i => i.type === 'warning').length})
-        </button>
-        <button 
-          className={`filter-btn ${activeFilter === 'recommendation' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('recommendation')}
-        >
-          Recommendations ({insights.filter(i => i.type === 'recommendation').length})
-        </button>
-      </div>
-
-      {/* Insights List */}
-      <div className="insights-list">
-        {filteredInsights.length === 0 ? (
-          <div className="no-insights">
-            <div className="no-insights-icon">🔍</div>
-            <h4>No insights found</h4>
-            <p>Try adjusting your filters or continue tracking your mood to generate more insights.</p>
+      {/* Content */}
+      <div className="insights-content">
+        {isEmpty ? (
+          <div className="empty-insights">
+            <div className="empty-icon">🔮</div>
+            <h4>No insights yet</h4>
+            <p>Start tracking your mood regularly to unlock personalized insights and discover patterns in your emotional wellbeing!</p>
           </div>
         ) : (
-          filteredInsights.map((insight, index) => (
-            <div key={insight.id || `insight-${index}`} className="insight-card">
-              <div className="insight-header">
-                <div className="insight-meta">
-                  <div 
-                    className="insight-icon"
-                    style={{ backgroundColor: getInsightColor(insight.type) }}
-                  >
-                    {getInsightIcon(insight.type)}
-                  </div>
-                  <div className="insight-info">
-                    <h3>{insight.title}</h3>
-                    <div className="insight-tags">
-                      <span className="category-tag">
-                        {getCategoryIcon(insight.category)} {insight.category}
-                      </span>
-                      <span 
-                        className="priority-tag"
-                        style={{ backgroundColor: getPriorityColor(insight.priority) }}
-                      >
-                        {insight.priority}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="insight-actions">
-                  <button 
-                    className="expand-btn"
-                    onClick={() => toggleInsightExpansion(insight.id)}
-                  >
-                    {expandedInsight === insight.id ? '−' : '+'}
-                  </button>
-                </div>
-              </div>
-
+          <div className="insights-grid">
+            
+            {/* Total Moods */}
+            <div className="insight-card primary">
+              <div className="insight-icon">📊</div>
               <div className="insight-content">
-                <p className="insight-message">{insight.message}</p>
-                
-                {expandedInsight === insight.id && (
-                  <div className="insight-details">
-                    <div className="detail-section">
-                      <h4>Details</h4>
-                      <p>{insight.details}</p>
-                    </div>
-                    
-                    <div className="detail-section">
-                      <h4>Confidence</h4>
-                      <div className="confidence-bar">
-                        <div 
-                          className="confidence-fill"
-                          style={{ width: `${insight.confidence * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="confidence-text">{(insight.confidence * 100).toFixed(0)}% confident</span>
-                    </div>
-
-                    <div className="detail-section">
-                      <h4>Tags</h4>
-                      <div className="tags-list">
-                        {insight.tags.map(tag => (
-                          <span key={tag} className="tag">{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="detail-section">
-                      <h4>Generated</h4>
-                      <span className="generated-date">{formatDate(insight.createdAt)}</span>
-                    </div>
-                  </div>
-                )}
-
-                {insight.actionable && (
-                  <div className="insight-action">
-                    <button 
-                      className="action-btn"
-                      onClick={() => handleInsightAction(insight)}
-                    >
-                      {insight.actionText}
-                    </button>
-                  </div>
-                )}
+                <h4>Total Moods</h4>
+                <div className="insight-value">{insights.totalMoods}</div>
+                <p>Entries recorded</p>
               </div>
             </div>
-          ))
-        )}
-      </div>
 
-      {/* Insights Tips */}
-      <div className="insights-tips">
-        <h3>💡 Tips for Better Insights</h3>
-        <div className="tips-grid">
-          <div className="tip-card">
-            <h4>Track Consistently</h4>
-            <p>Log your mood daily to get more accurate patterns and insights.</p>
+            {/* Average Mood */}
+            <div className="insight-card secondary">
+              <div className="insight-icon">
+                {moodEmojis[insights.mostFrequentMood]}
+              </div>
+              <div className="insight-content">
+                <h4>Average Mood</h4>
+                <div className="insight-value">{insights.avgMood}/5</div>
+                <p>{getMoodLabel(Math.round(insights.avgMood))}</p>
+              </div>
+            </div>
+
+            {/* Most Frequent Mood */}
+            <div className="insight-card tertiary">
+              <div 
+                className="insight-icon mood-circle"
+                style={{ backgroundColor: getMoodColor(insights.mostFrequentMood) }}
+              >
+                {moodEmojis[insights.mostFrequentMood]}
+              </div>
+              <div className="insight-content">
+                <h4>Most Frequent</h4>
+                <div className="insight-value">
+                  {insights.mostFrequentMood.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </div>
+                <p>Your common mood</p>
+              </div>
+            </div>
+
+            {/* Current Streak */}
+            <div className="insight-card success">
+              <div className="insight-icon">🔥</div>
+              <div className="insight-content">
+                <h4>Current Streak</h4>
+                <div className="insight-value">{insights.currentStreak}</div>
+                <p>Days of positive moods</p>
+              </div>
+            </div>
+
+            {/* Best Day */}
+            {insights.bestDay && (
+              <div className="insight-card highlight">
+                <div className="insight-icon">⭐</div>
+                <div className="insight-content">
+                  <h4>Best Day</h4>
+                  <div className="insight-value">{insights.bestDay.formatted}</div>
+                  <p>{getMoodLabel(insights.bestDay.mood)} mood</p>
+                </div>
+              </div>
+            )}
+
+            {/* Consistency Score */}
+            <div className="insight-card info">
+              <div className="insight-icon">📈</div>
+              <div className="insight-content">
+                <h4>Consistency</h4>
+                <div className="insight-value">{insights.consistencyScore}%</div>
+                <p>Tracking regularity</p>
+              </div>
+            </div>
+
+            {/* Weekly Improvement */}
+            <div className={`insight-card ${insights.weeklyImprovement >= 0 ? 'positive' : 'negative'}`}>
+              <div className="insight-icon">
+                {insights.weeklyImprovement >= 0 ? '📈' : '📉'}
+              </div>
+              <div className="insight-content">
+                <h4>Weekly Change</h4>
+                <div className="insight-value">
+                  {insights.weeklyImprovement > 0 ? '+' : ''}{insights.weeklyImprovement}%
+                </div>
+                <p>{insights.weeklyImprovement >= 0 ? 'Improving' : 'Declining'}</p>
+              </div>
+            </div>
+
+            {/* Best Activity */}
+            {insights.bestActivity && (
+              <div className="insight-card activity">
+                <div className="insight-icon">🎯</div>
+                <div className="insight-content">
+                  <h4>Best Activity</h4>
+                  <div className="insight-value">
+                    {insights.bestActivity.name.charAt(0).toUpperCase() + insights.bestActivity.name.slice(1)}
+                  </div>
+                  <p>Boosts your mood most</p>
+                </div>
+              </div>
+            )}
+
           </div>
-          <div className="tip-card">
-            <h4>Add Context</h4>
-            <p>Include activities, social context, and notes for richer analysis.</p>
-          </div>
-          <div className="tip-card">
-            <h4>Review Regularly</h4>
-            <p>Check your insights weekly to identify trends and take action.</p>
-          </div>
-          <div className="tip-card">
-            <h4>Share with Therapist</h4>
-            <p>Use insights to inform discussions with your mental health professional.</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default MoodInsights; 
+export default MoodInsights;

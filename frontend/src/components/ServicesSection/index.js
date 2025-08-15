@@ -34,11 +34,11 @@ const services = [
   {
     id: 'assessments',
     title: 'Mental Health Assessments',
-    description: 'Take comprehensive assessments to better understand your mental well-being and track progress.',
-    icon: '📋',
+    description: 'Comprehensive assessments to understand your mental well-being - Coming Soon!',
+    icon: '�',
     color: '#FF9800',
-    link: '/assessments',
-    requiresAuth: true
+    link: '/assessments-coming-soon',
+    requiresAuth: false
   },
   {
     id: 'meditation',

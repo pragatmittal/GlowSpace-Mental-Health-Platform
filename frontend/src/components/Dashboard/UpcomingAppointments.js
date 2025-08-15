@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { appointmentAPI } from '../../services/api';
+import { appointmentAPI } from '../../services/apiWrapper';
 import './UpcomingAppointments.css';
 
 const UpcomingAppointments = () => {
@@ -8,15 +8,53 @@ const UpcomingAppointments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { apiRequest } = useAuth();
+  
+  // Refs for cleanup and preventing multiple calls
+  const abortControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const lastFetchTimeRef = useRef(0);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchAppointments();
-  }, []);
+    
+    return () => {
+      isMountedRef.current = false;
+      
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty dependency array - only run once
 
   const fetchAppointments = async () => {
+    const now = Date.now();
+    const minInterval = 5000; // Minimum 5 seconds between fetches
+    
+    // Prevent too frequent calls
+    if (now - lastFetchTimeRef.current < minInterval) {
+      console.log('⏳ UpcomingAppointments fetch skipped - too frequent');
+      return;
+    }
+    
+    // Cancel previous request if still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    lastFetchTimeRef.current = now;
+
     try {
+      if (!isMountedRef.current) return;
+      
       setLoading(true);
       const response = await appointmentAPI.getUpcoming();
+      
+      if (!isMountedRef.current) return;
+      
       const data = response.data;
       
       if (data.success) {
@@ -26,10 +64,24 @@ const UpcomingAppointments = () => {
         setError(data.message || 'Failed to load appointments');
       }
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('🚫 UpcomingAppointments fetch aborted');
+        return;
+      }
+      
       console.error('Error fetching appointments:', err);
-      setError('Failed to load appointments. Please try again.');
+      if (isMountedRef.current) {
+        if (err.message.includes('Too many requests') || err.message.includes('429')) {
+          setError('Server is busy. Appointments will be available shortly.');
+        } else {
+          setError('Failed to load appointments. Please try again.');
+        }
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+      abortControllerRef.current = null;
     }
   };
 

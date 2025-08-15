@@ -1,0 +1,370 @@
+/* RecentMoodHistory.css */
+
+.recent-mood-history {
+  padding: 25px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.recent-mood-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.recent-mood-header h3 {
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.recent-mood-header p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Content */
+.recent-mood-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mood Entry Card */
+.mood-entry-card {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 15px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  animation: fadeIn 0.5s ease;
+}
+
+.mood-entry-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mood Display */
+.mood-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.mood-emoji-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.mood-emoji-circle:hover {
+  transform: scale(1.1);
+}
+
+.mood-emoji-large {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.mood-info {
+  flex: 1;
+}
+
+.mood-title {
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.mood-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mood-intensity,
+.mood-timestamp {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.mood-intensity {
+  font-weight: 600;
+}
+
+/* Description */
+.mood-description {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px;
+  border-radius: 10px;
+  border-left: 3px solid #667eea;
+}
+
+.mood-description p {
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Quote */
+.mood-quote {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 12px;
+  border-radius: 10px;
+  position: relative;
+  border-left: 3px solid #f39c12;
+}
+
+.quote-mark {
+  position: absolute;
+  top: -5px;
+  left: 10px;
+  font-size: 2rem;
+  color: #f39c12;
+  opacity: 0.3;
+}
+
+.quote-text {
+  color: #555;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+  font-style: italic;
+  margin-left: 15px;
+}
+
+/* Context Info */
+.mood-context {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.context-icon {
+  font-size: 1rem;
+}
+
+.context-label {
+  color: #555;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Entry Animation */
+.entry-animation {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.pulse-ring {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #27ae60;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.loading-spinner-small {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e1e8ed;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-state p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Error State */
+.error-state {
+  text-align: center;
+  padding: 40px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.error-icon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.error-state p {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.retry-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.retry-button:hover {
+  background: #5a6fd8;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .recent-mood-history {
+    padding: 20px;
+  }
+
+  .mood-display {
+    gap: 12px;
+  }
+
+  .mood-emoji-circle {
+    width: 50px;
+    height: 50px;
+  }
+
+  .mood-emoji-large {
+    font-size: 1.8rem;
+  }
+
+  .mood-title {
+    font-size: 1.1rem;
+  }
+
+  .mood-context {
+    gap: 10px;
+  }
+
+  .context-item {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mood-display {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .mood-context {
+    justify-content: center;
+  }
+}
