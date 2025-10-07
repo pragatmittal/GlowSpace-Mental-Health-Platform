@@ -9,7 +9,7 @@ const assessmentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'],
+    enum: ['comprehensive', 'depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'],
     required: true
   },
   title: {
@@ -136,6 +136,20 @@ const assessmentSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  metadata: {
+    completedSections: [String],
+    assessmentVersion: String,
+    personalDetails: {
+      stressLevel: Number,
+      sleepQuality: String,
+      exerciseFrequency: String,
+      socialInteraction: String,
+      screenTime: String,
+      ageGroup: String,
+      gender: String,
+      occupation: String
+    }
   }
 }, {
   timestamps: true

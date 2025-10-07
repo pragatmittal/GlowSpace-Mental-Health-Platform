@@ -1,320 +1,199 @@
-/* MoodChart.css */
-
-/* Main container for modern mood chart */
-.mood-chart-container {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-  min-height: 400px;
-  position: relative;
-}
-
-.mood-chart-container:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.3s ease;
-}
-
-/* Chart header styles */
-.chart-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.chart-header h2 {
-  color: #1f2937;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.chart-header p {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-/* Chart controls */
-.chart-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.chart-type-toggle {
-  display: flex;
-  background: #f3f4f6;
-  border-radius: 8px;
-  padding: 4px;
-}
-
-.chart-type-toggle button {
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #6b7280;
-}
-
-.chart-type-toggle button.active {
-  background: #ffffff;
-  color: #1f2937;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.chart-type-toggle button:hover:not(.active) {
-  color: #374151;
-}
-
-.time-range-selector {
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: #1f2937;
-  cursor: pointer;
-  outline: none;
-}
-
-.time-range-selector:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Chart content area */
-.chart-content {
-  background: #ffffff;
-  border-radius: 12px;
-  min-height: 320px;
-  position: relative;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-}
-
-/* Statistics bar */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 4px;
-}
-
-.stat-card .stat-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-/* Loading states */
-.loading-skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 2s infinite;
-  border-radius: 8px;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.loading-spinner-large {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .mood-chart-container {
-    background: #1f2937;
-    border: 1px solid #374151;
-  }
-  
-  .chart-header h2 {
-    color: #f9fafb;
-  }
-  
-  .chart-header p {
-    color: #9ca3af;
-  }
-  
-  .chart-type-toggle {
-    background: #374151;
-  }
-  
-  .chart-type-toggle button {
-    color: #9ca3af;
-  }
-  
-  .chart-type-toggle button.active {
-    background: #4b5563;
-    color: #f9fafb;
-  }
-  
-  .time-range-selector {
-    background: #374151;
-    color: #f9fafb;
-  }
-  
-  .chart-content {
-    background: #1f2937;
-    border-color: #374151;
-  }
-  
-  .stat-card {
-    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-    border-color: #4b5563;
-  }
-  
-  .stat-card .stat-value {
-    color: #f9fafb;
-  }
-  
-  .stat-card .stat-label {
-    color: #9ca3af;
-  }
-}
+/* Enhanced MoodChart.css for Mental Wellness Platform */
 
 .mood-chart {
-  padding: 25px;
+  padding: 35px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Header */
+/* Calming background pattern */
+.mood-chart::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+  opacity: 0.02;
+  animation: float 30s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+/* Enhanced Header */
 .chart-header {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .chart-header h3 {
-  color: #333;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chart-header h3::before {
+  content: '📈';
   font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 5px;
 }
 
 .chart-header p {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0 0 15px 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0 0 20px 0;
+  font-weight: 500;
 }
 
-/* Time Toggle */
+/* Enhanced Time Toggle */
 .time-toggle {
   display: flex;
-  background: #f1f3f5;
-  border-radius: 25px;
-  padding: 3px;
+  background: var(--bg-secondary);
+  border-radius: 30px;
+  padding: 4px;
   justify-content: center;
-  max-width: 200px;
+  max-width: 220px;
   margin: 0 auto;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .time-toggle button {
   background: transparent;
   border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #666;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.time-toggle button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.time-toggle button:hover::before {
+  left: 100%;
 }
 
 .time-toggle button.active {
-  background: #667eea;
+  background: var(--primary-gradient);
   color: white;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
 }
 
 .time-toggle button:hover:not(.active) {
-  color: #333;
-  background: rgba(102, 126, 234, 0.1);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
 }
 
-/* Chart Content */
+/* Enhanced Chart Content */
 .chart-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  min-height: 450px;
 }
 
-/* Chart Container */
+/* Enhanced Chart Container */
 .chart-container {
   position: relative;
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  background: var(--card-bg, white);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+  transition: all 0.3s ease;
+  min-height: 400px;
+  width: 100%;
+}
+
+.chart-container:hover {
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1));
+  border-color: var(--primary-color, #667eea);
+}
+
+/* Ensure ResponsiveContainer works properly */
+.chart-container .recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Chart rendering fixes */
+.chart-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.chart-container .recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .mood-chart-svg {
   max-width: 100%;
   height: auto;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
 }
 
 .chart-point {
-  transition: r 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .chart-point:hover {
   r: 8;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-/* Y-axis Labels */
+/* Enhanced Y-axis Labels */
 .y-axis-labels {
   position: absolute;
-  left: -10px;
+  left: -15px;
   top: 50%;
   transform: translateY(-50%);
-  height: 160px;
+  height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -325,65 +204,104 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 25px;
-  height: 25px;
-  background: white;
+  width: 30px;
+  height: 30px;
+  background: var(--card-bg);
   border-radius: 50%;
-  border: 2px solid #e1e8ed;
-  font-size: 0.8rem;
+  border: 2px solid var(--border-color);
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.y-label:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
 }
 
 .mood-emoji-small {
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-/* X-axis Labels */
+/* Enhanced X-axis Labels */
 .x-axis-labels {
   display: flex;
   justify-content: space-between;
-  padding: 0 40px;
-  margin-bottom: 15px;
+  padding: 0 50px;
+  margin-bottom: 20px;
 }
 
 .x-label {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
 }
 
-/* Chart Summary */
+.x-label:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Enhanced Chart Summary */
 .chart-summary {
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border-radius: 12px;
-  padding: 15px;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg-secondary) 100%);
+  border-radius: 20px;
+  padding: 20px;
   display: flex;
   justify-content: space-around;
-  gap: 15px;
+  gap: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.chart-summary:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
 }
 
 .summary-item {
   text-align: center;
   flex: 1;
+  padding: 10px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-2px);
 }
 
 .summary-label {
   display: block;
-  font-size: 0.8rem;
-  color: #666;
-  margin-bottom: 5px;
-  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .summary-value {
   display: block;
-  font-size: 0.9rem;
-  color: #333;
-  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 800;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Empty Chart */
+/* Enhanced Empty Chart */
 .empty-chart {
   flex: 1;
   display: flex;
@@ -391,91 +309,107 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 40px 20px;
+  padding: 50px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .empty-chart-icon {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  opacity: 0.5;
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.4;
+  color: var(--text-muted);
+  animation: float 3s ease-in-out infinite;
 }
 
 .empty-chart h4 {
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .empty-chart p {
-  color: #666;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.6;
+  max-width: 300px;
 }
 
-/* Loading State */
+/* Enhanced Loading State */
 .loading-state {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 15px;
-  padding: 40px 20px;
+  gap: 20px;
+  padding: 50px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .loading-spinner-small {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #e1e8ed;
-  border-top: 3px solid #667eea;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 1.2s linear infinite;
 }
 
 .loading-state p {
-  color: #666;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   margin: 0;
+  font-weight: 500;
 }
 
-/* Error State */
+/* Enhanced Error State */
 .error-state {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 15px;
-  padding: 40px 20px;
+  gap: 20px;
+  padding: 50px 20px;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .error-icon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   opacity: 0.6;
+  color: var(--error-color);
 }
 
 .error-state p {
-  color: #e74c3c;
-  font-size: 0.9rem;
+  color: var(--error-color);
+  font-size: 1rem;
   margin: 0;
+  font-weight: 600;
 }
 
 .retry-button {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
 }
 
 .retry-button:hover {
-  background: #5a6fd8;
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 @keyframes spin {
@@ -483,14 +417,15 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
 @media (max-width: 768px) {
   .mood-chart {
-    padding: 20px;
+    padding: 25px;
   }
 
   .chart-container {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
   }
 
   .mood-chart-svg {
@@ -499,36 +434,38 @@
   }
 
   .y-axis-labels {
-    height: 140px;
-    left: -8px;
+    height: 160px;
+    left: -12px;
   }
 
   .y-label {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
   }
 
   .mood-emoji-small {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 
   .x-axis-labels {
-    padding: 0 30px;
+    padding: 0 40px;
   }
 
   .x-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .chart-summary {
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    padding: 15px;
   }
 
   .summary-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 8px;
   }
 
   .summary-label,
@@ -537,12 +474,18 @@
   }
 
   .time-toggle {
-    max-width: 160px;
+    max-width: 180px;
   }
 
   .time-toggle button {
-    padding: 6px 15px;
-    font-size: 0.8rem;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+  }
+  
+  .empty-chart,
+  .loading-state,
+  .error-state {
+    padding: 40px 20px;
   }
 }
 
@@ -553,22 +496,254 @@
   }
 
   .chart-header h3 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
   .chart-header p {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
   .empty-chart-icon {
-    font-size: 2.5rem;
+    font-size: 3rem;
   }
 
   .empty-chart h4 {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .empty-chart p {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
+  
+  .mood-chart {
+    padding: 20px;
+  }
+}
+
+/* Mood Trend Indicators */
+.mood-trend-indicator {
+  margin-top: 8px;
+}
+
+.trend-up,
+.trend-down,
+.trend-stable {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.trend-up {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.trend-down {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.trend-stable {
+  color: #6B7280;
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Error Handling */
+.rate-limit-info {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+}
+
+.rate-limit-message {
+  color: #EF4444;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.retry-info {
+  color: #6B7280;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.retry-button,
+.reset-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.retry-button {
+  background: var(--accent-color);
+  color: white;
+}
+
+.retry-button:hover {
+  background: var(--accent-color-dark);
+  transform: translateY(-1px);
+}
+
+.reset-button {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.reset-button:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
+}
+
+/* Enhanced Tooltip Styles */
+.chart-tooltip {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+  max-width: 320px;
+  font-family: var(--font-family);
+  z-index: 1000;
+}
+
+.chart-tooltip h4 {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.tooltip-mood {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.mood-emoji {
+  font-size: 1.2rem;
+}
+
+.mood-text {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mood-value {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.tooltip-details {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.tooltip-details p {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-details strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.mood-breakdown {
+  margin-top: 8px;
+}
+
+.mood-entry-tag {
+  display: inline-block;
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin: 2px 4px 2px 0;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Dynamic Mood Indicators */
+.mood-indicator {
+  transition: all 0.3s ease;
+}
+
+.mood-indicator.happy {
+  animation: moodUp 0.6s ease-out;
+}
+
+.mood-indicator.sad {
+  animation: moodDown 0.6s ease-out;
+}
+
+@keyframes moodUp {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes moodDown {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+  100% { transform: translateY(0); }
+}
+
+/* Updating Indicator */
+.updating-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.updating-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent-color);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

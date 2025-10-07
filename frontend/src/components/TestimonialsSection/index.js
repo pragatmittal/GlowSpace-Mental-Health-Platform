@@ -1,124 +1,243 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './TestimonialsSection.css';
 
 const testimonials = [
   {
     id: 1,
-    name: 'Sarah M.',
-    role: 'Student',
-    image: '/images/testimonials/sarah.jpg',
-    quote: 'The 21-day challenge transformed my approach to mental wellness. The daily exercises were manageable and really made a difference.',
-    challenge: '21-day Challenge',
-    rating: 5
+    name: 'Sarah Johnson',
+    role: 'Software Engineer',
+    avatar: '👩‍💻',
+    rating: 5,
+    text: 'GlowSpace has completely transformed my approach to mental health. The AI emotion detection is incredibly accurate, and the mood tracking helps me understand my patterns better than ever before.',
+    highlight: 'transformed my approach to mental health',
+    color: '#2C7A7B'
   },
   {
     id: 2,
-    name: 'James R.',
-    role: 'Professional',
-    image: '/images/testimonials/james.jpg',
-    quote: 'The emotion detection feature helped me understand my emotional patterns better. It\'s like having a personal mental wellness coach.',
-    challenge: 'Emotion Detection',
-    rating: 5
+    name: 'Michael Chen',
+    role: 'Student',
+    avatar: '👨‍🎓',
+    rating: 5,
+    text: 'As a student dealing with anxiety, this platform has been a lifesaver. The community support is amazing, and the guided exercises help me stay grounded during stressful periods.',
+    highlight: 'lifesaver for dealing with anxiety',
+    color: '#9F7AEA'
   },
   {
     id: 3,
-    name: 'Emily L.',
+    name: 'Emily Rodriguez',
+    role: 'Healthcare Worker',
+    avatar: '👩‍⚕️',
+    rating: 5,
+    text: 'Working in healthcare can be emotionally draining. GlowSpace provides the perfect balance of professional tools and personal support that I need to maintain my well-being.',
+    highlight: 'perfect balance of professional tools',
+    color: '#805AD5'
+  },
+  {
+    id: 4,
+    name: 'David Thompson',
+    role: 'Entrepreneur',
+    avatar: '👨‍💼',
+    rating: 5,
+    text: 'The privacy features and AI insights are game-changing. I can track my mental health progress without worrying about data security, and the recommendations are surprisingly accurate.',
+    highlight: 'privacy features and AI insights are game-changing',
+    color: '#2C7A7B'
+  },
+  {
+    id: 5,
+    name: 'Lisa Park',
     role: 'Teacher',
-    image: '/images/testimonials/emily.jpg',
-    quote: 'The guided meditation sessions are perfect for my busy schedule. I\'ve noticed a significant improvement in my stress levels.',
-    challenge: 'Meditation Program',
-    rating: 5
+    avatar: '👩‍🏫',
+    rating: 5,
+    text: 'Teaching during these challenging times has been tough, but GlowSpace gives me the tools and support I need to stay mentally healthy and be there for my students.',
+    highlight: 'gives me the tools and support I need',
+    color: '#9F7AEA'
   }
 ];
 
+const stats = [
+  { number: '98%', label: 'User Satisfaction', icon: '😊' },
+  { number: '10K+', label: 'Active Users', icon: '👥' },
+  { number: '24/7', label: 'Support Available', icon: '🔄' },
+  { number: '4.9★', label: 'App Store Rating', icon: '⭐' }
+];
+
 const TestimonialsSection = () => {
-  const { isDarkMode } = useTheme();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const intervalRef = useRef(null);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    setIsVisible(true);
+    
     // Auto-rotate testimonials
-    intervalRef.current = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
+    const interval = setInterval(() => {
+      setActiveTestimonial(prev => (prev + 1) % testimonials.length);
+    }, 6000);
+    
+    return () => clearInterval(interval);
   }, []);
 
-  const handleDotClick = (index) => {
-    setActiveIndex(index);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = setInterval(() => {
-        setActiveIndex((prev) => (prev + 1) % testimonials.length);
-      }, 5000);
-    }
-  };
-
   return (
-    <section className={`testimonials-section ${isDarkMode ? 'dark' : ''}`}>
-      <div className="testimonials-content">
-        <h2 className="section-title">What Our Users Say</h2>
-        <p className="section-subtitle">
-          Real stories from our community members who have experienced positive changes
-          in their mental wellness journey.
-        </p>
+    <section className="testimonials-section">
+      {/* Background elements */}
+      <div className="testimonials-bg">
+        <div className="bg-circle circle-1"></div>
+        <div className="bg-circle circle-2"></div>
+        <div className="bg-circle circle-3"></div>
+        <div className="bg-pattern"></div>
+      </div>
 
-        <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={testimonial.id}
-              className={`testimonial-card ${index === activeIndex ? 'active' : ''}`}
+      <div className="testimonials-container">
+        <div className="testimonials-header">
+          <div className="section-badge">
+            <span className="badge-icon">💬</span>
+            <span className="badge-text">User Testimonials</span>
+          </div>
+          
+          <h2 className="section-title">
+            What Our Users
+            <span className="title-accent"> Say</span>
+          </h2>
+          
+          <p className="section-description">
+            Join thousands of satisfied users who have transformed their mental health journey 
+            with GlowSpace's innovative approach to wellness.
+          </p>
+        </div>
+
+        {/* Stats showcase */}
+        <div className="stats-showcase">
+          {stats.map((stat, index) => (
+            <div 
+              key={index} 
+              className="stat-card"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
+              <div className="stat-icon">{stat.icon}</div>
+              <div className="stat-number">{stat.number}</div>
+              <div className="stat-label">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main testimonial showcase */}
+        <div className="testimonial-showcase">
+          <div className="testimonial-content">
+            <div className="testimonial-card">
               <div className="testimonial-header">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="testimonial-image"
-                />
-                <div className="testimonial-info">
-                  <h3 className="testimonial-name">{testimonial.name}</h3>
-                  <span className="testimonial-role">{testimonial.role}</span>
+                <div className="user-info">
+                  <div className="user-avatar">{testimonials[activeTestimonial].avatar}</div>
+                  <div className="user-details">
+                    <div className="user-name">{testimonials[activeTestimonial].name}</div>
+                    <div className="user-role">{testimonials[activeTestimonial].role}</div>
+                  </div>
+                </div>
+                <div className="rating">
+                  {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
+                    <span key={i} className="star">⭐</span>
+                  ))}
                 </div>
               </div>
-
-              <div className="testimonial-rating">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <span key={i} className="star">⭐</span>
-                ))}
+              
+              <div className="testimonial-text">
+                <p>
+                  {testimonials[activeTestimonial].text.split(testimonials[activeTestimonial].highlight).map((part, index, array) => (
+                    <React.Fragment key={index}>
+                      {part}
+                      {index < array.length - 1 && (
+                        <span className="highlight">{testimonials[activeTestimonial].highlight}</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </p>
               </div>
-
-              <blockquote className="testimonial-quote">
-                "{testimonial.quote}"
-              </blockquote>
-
+              
               <div className="testimonial-footer">
-                <span className="challenge-tag">{testimonial.challenge}</span>
+                <div className="quote-icon">"</div>
+                <div className="testimonial-meta">
+                  <div className="verified-badge">✓ Verified User</div>
+                  <div className="date">2 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Testimonial navigation */}
+          <div className="testimonial-nav">
+            <button 
+              className="nav-button"
+              onClick={() => setActiveTestimonial(prev => prev === 0 ? testimonials.length - 1 : prev - 1)}
+            >
+              <span className="nav-icon">←</span>
+            </button>
+            
+            <div className="testimonial-indicators">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  className={`indicator ${index === activeTestimonial ? 'active' : ''}`}
+                  onClick={() => setActiveTestimonial(index)}
+                  style={{ '--indicator-color': testimonials[index].color }}
+                />
+              ))}
+            </div>
+            
+            <button 
+              className="nav-button"
+              onClick={() => setActiveTestimonial(prev => (prev + 1) % testimonials.length)}
+            >
+              <span className="nav-icon">→</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Additional testimonials grid */}
+        <div className="testimonials-grid">
+          {testimonials.slice(0, 3).map((testimonial, index) => (
+            <div 
+              key={testimonial.id} 
+              className="mini-testimonial"
+              style={{ '--card-color': testimonial.color }}
+            >
+              <div className="mini-header">
+                <div className="mini-avatar">{testimonial.avatar}</div>
+                <div className="mini-rating">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <span key={i} className="mini-star">⭐</span>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mini-text">
+                <p>{testimonial.text.substring(0, 120)}...</p>
+              </div>
+              
+              <div className="mini-footer">
+                <div className="mini-name">{testimonial.name}</div>
+                <div className="mini-role">{testimonial.role}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="testimonial-dots">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              className={`dot ${index === activeIndex ? 'active' : ''}`}
-              onClick={() => handleDotClick(index)}
-              aria-label={`Go to testimonial ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        <div className="testimonial-cta">
-          <h3>Ready to Start Your Journey?</h3>
-          <p>Join thousands of others who have transformed their mental well-being with GlowSpace.</p>
-          <a href="/register" className="cta-button">Get Started Today</a>
+        {/* Call to action */}
+        <div className="testimonials-cta">
+          <div className="cta-content">
+            <h3 className="cta-title">Join Our Community</h3>
+            <p className="cta-description">
+              Start your mental wellness journey today and become part of our growing community of users.
+            </p>
+            <div className="cta-buttons">
+              <Link to="/register" className="cta-button primary">
+                <span className="button-text">Get Started Free</span>
+                <span className="button-icon">🚀</span>
+              </Link>
+              <Link to="/demo" className="cta-button secondary">
+                <span className="button-text">Watch Demo</span>
+                <span className="button-icon">▶️</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

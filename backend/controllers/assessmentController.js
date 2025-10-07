@@ -1,140 +1,172 @@
-// TEMPORARILY DISABLED - ASSESSMENT FUNCTIONALITY COMING SOON
-// This entire controller is commented out for the "Coming Soon" feature
-// All assessment functionality will be restored when the feature is ready
-
-/*
+// Comprehensive Mental Health Assessment Controller
+// Supports two optional sections: Tell About Yourself and Scenario-Based Testing
 const Assessment = require('../models/Assessment');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
-// Assessment templates with questions and scoring
+// Comprehensive Mental Health Assessment Templates
 const assessmentTemplates = {
-  depression: {
-    name: 'Depression Assessment (PHQ-9)',
-    description: 'Patient Health Questionnaire for depression screening',
-    timeEstimate: '3-5 minutes',
-    questions: [
-      {
-        id: 'phq1',
-        question: 'Little interest or pleasure in doing things',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
+  comprehensive: {
+    name: 'Comprehensive Mental Health Assessment',
+    description: 'A personalized assessment with two optional sections to understand your mental well-being',
+    timeEstimate: '5-10 minutes',
+    sections: {
+      section1: {
+        title: 'Tell About Yourself',
+        description: 'Share basic information about your lifestyle and current state',
+        questions: [
+          {
+            id: 'name',
+            question: 'What should we call you? (Optional)',
+            type: 'text',
+            required: false,
+            placeholder: 'Enter your name or preferred nickname'
+          },
+          {
+            id: 'ageGroup',
+            question: 'What is your age group?',
+            type: 'multiple_choice',
+            required: true,
+            options: ['Under 18', '18-25', '26-35', '36-45', '46-55', '56-65', 'Over 65']
+          },
+          {
+            id: 'gender',
+            question: 'How do you identify? (Optional)',
+            type: 'multiple_choice',
+            required: false,
+            options: ['Male', 'Female', 'Non-binary', 'Prefer not to say', 'Other']
+          },
+          {
+            id: 'occupation',
+            question: 'What is your current occupation or main activity?',
+            type: 'text',
+            required: true,
+            placeholder: 'e.g., Student, Software Engineer, Teacher, Retired, etc.'
+          },
+          {
+            id: 'stressLevel',
+            question: 'On a scale of 1-10, how would you rate your current stress level?',
+            type: 'scale',
+            required: true,
+            scale: { 
+              min: 1, 
+              max: 10, 
+              labels: ['Very Low', 'Low', 'Somewhat Low', 'Moderate', 'Somewhat High', 'High', 'Very High', 'Extremely High', 'Overwhelming', 'Unmanageable'] 
+            }
+          },
+          {
+            id: 'sleepQuality',
+            question: 'How would you describe your recent sleep quality?',
+            type: 'multiple_choice',
+            required: true,
+            options: ['Excellent - I sleep deeply and wake refreshed', 'Good - I usually sleep well', 'Average - My sleep is okay but could be better', 'Poor - I often have trouble sleeping', 'Very Poor - I rarely get good sleep']
+          },
+          {
+            id: 'exerciseFrequency',
+            question: 'How often do you engage in physical exercise or activity?',
+            type: 'multiple_choice',
+            required: true,
+            options: ['Daily', '4-6 times per week', '2-3 times per week', 'Once a week', 'Rarely', 'Never']
+          },
+          {
+            id: 'socialInteraction',
+            question: 'How would you describe your current social interactions?',
+            type: 'multiple_choice',
+            required: true,
+            options: ['Very active - I socialize frequently', 'Moderately active - I have regular social contact', 'Somewhat active - I socialize occasionally', 'Limited - I have minimal social contact', 'Isolated - I rarely interact with others']
+          },
+          {
+            id: 'screenTime',
+            question: 'How much time do you spend on screens daily (phones, computers, TV)?',
+            type: 'multiple_choice',
+            required: true,
+            options: ['Less than 2 hours', '2-4 hours', '4-6 hours', '6-8 hours', 'More than 8 hours']
+          },
+          {
+            id: 'pastExperiences',
+            question: 'Have you experienced any significant life changes, challenges, or traumas recently? (Optional)',
+            type: 'text',
+            required: false,
+            placeholder: 'Share only what you feel comfortable discussing...'
+          }
+        ]
       },
-      {
-        id: 'phq2',
-        question: 'Feeling down, depressed, or hopeless',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq3',
-        question: 'Trouble falling or staying asleep, or sleeping too much',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq4',
-        question: 'Feeling tired or having little energy',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq5',
-        question: 'Poor appetite or overeating',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq6',
-        question: 'Feeling bad about yourself or that you are a failure or have let yourself or your family down',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq7',
-        question: 'Trouble concentrating on things, such as reading the newspaper or watching television',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq8',
-        question: 'Moving or speaking so slowly that other people could have noticed, or being so fidgety or restless that you have been moving around a lot more than usual',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'phq9',
-        question: 'Thoughts that you would be better off dead, or thoughts of hurting yourself in some way',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
+      section2: {
+        title: 'Scenario-Based Testing',
+        description: 'How would you respond in these everyday situations?',
+        questions: [
+          {
+            id: 'scenario1',
+            question: 'If you had an important exam or meeting tomorrow but couldn\'t sleep well, what would you do?',
+            type: 'multiple_choice',
+            required: true,
+            options: [
+              'Stay up all night studying/preparing to make up for lost sleep',
+              'Try relaxation techniques and go to bed early, accepting whatever happens',
+              'Cancel or reschedule the exam/meeting if possible',
+              'Take caffeine or energy supplements to power through',
+              'Worry about it all night and feel anxious'
+            ],
+            traits: ['perfectionist', 'adaptive', 'avoidant', 'anxious', 'anxious']
+          },
+          {
+            id: 'scenario2',
+            question: 'A close friend cancels on you at the last minute, how would you react?',
+            type: 'multiple_choice',
+            required: true,
+            options: [
+              'Feel disappointed but understand and make other plans',
+              'Feel hurt and wonder if they\'re avoiding you',
+              'Get angry and confront them about their unreliability',
+              'Feel relieved and enjoy the unexpected free time',
+              'Feel anxious about what might be wrong with them'
+            ],
+            traits: ['resilient', 'sensitive', 'confrontational', 'independent', 'anxious']
+          },
+          {
+            id: 'scenario3',
+            question: 'If your work is rejected, what\'s your first thought?',
+            type: 'multiple_choice',
+            required: true,
+            options: [
+              'This is a learning opportunity - what can I improve?',
+              'I\'m not good enough and should give up',
+              'They don\'t understand my vision or approach',
+              'I need to work harder and try again immediately',
+              'This confirms my worst fears about my abilities'
+            ],
+            traits: ['growth_minded', 'self_doubting', 'defensive', 'perfectionist', 'pessimistic']
+          },
+          {
+            id: 'scenario4',
+            question: 'You\'re running late for an important appointment. What do you do?',
+            type: 'multiple_choice',
+            required: true,
+            options: [
+              'Call ahead to let them know and stay calm',
+              'Panic and rush, making mistakes along the way',
+              'Cancel the appointment to avoid the embarrassment',
+              'Blame external factors and get frustrated',
+              'Feel overwhelmed and consider not going at all'
+            ],
+            traits: ['organized', 'anxious', 'avoidant', 'external_locus', 'overwhelmed']
+          },
+          {
+            id: 'scenario5',
+            question: 'Someone gives you constructive criticism. How do you typically respond?',
+            type: 'multiple_choice',
+            required: true,
+            options: [
+              'Listen carefully and ask for specific examples to improve',
+              'Feel defensive but try to understand their perspective',
+              'Get upset and question their motives',
+              'Dismiss it as their personal opinion',
+              'Feel hurt and take it personally'
+            ],
+            traits: ['open_minded', 'defensive', 'confrontational', 'dismissive', 'sensitive']
+          }
+        ]
       }
-    ],
-    scoring: {
-      ranges: [
-        { min: 0, max: 4, level: 'minimal', color: '#22C55E', description: 'Minimal depression' },
-        { min: 5, max: 9, level: 'mild', color: '#EAB308', description: 'Mild depression' },
-        { min: 10, max: 14, level: 'moderate', color: '#F97316', description: 'Moderate depression' },
-        { min: 15, max: 19, level: 'moderately_severe', color: '#EF4444', description: 'Moderately severe depression' },
-        { min: 20, max: 27, level: 'severe', color: '#DC2626', description: 'Severe depression' }
-      ]
-    }
-  },
-
-  anxiety: {
-    name: 'Anxiety Assessment (GAD-7)',
-    description: 'Generalized Anxiety Disorder 7-item scale',
-    timeEstimate: '2-4 minutes',
-    questions: [
-      {
-        id: 'gad1',
-        question: 'Feeling nervous, anxious, or on edge',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad2',
-        question: 'Not being able to stop or control worrying',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad3',
-        question: 'Worrying too much about different things',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad4',
-        question: 'Trouble relaxing',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad5',
-        question: 'Being so restless that it is hard to sit still',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad6',
-        question: 'Becoming easily annoyed or irritable',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      },
-      {
-        id: 'gad7',
-        question: 'Feeling afraid, as if something awful might happen',
-        type: 'scale',
-        scale: { min: 0, max: 3, labels: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'] }
-      }
-    ],
-    scoring: {
-      ranges: [
-        { min: 0, max: 4, level: 'minimal', color: '#22C55E', description: 'Minimal anxiety' },
-        { min: 5, max: 9, level: 'mild', color: '#EAB308', description: 'Mild anxiety' },
-        { min: 10, max: 14, level: 'moderate', color: '#F97316', description: 'Moderate anxiety' },
-        { min: 15, max: 21, level: 'severe', color: '#DC2626', description: 'Severe anxiety' }
-      ]
     }
   }
 };
@@ -142,13 +174,28 @@ const assessmentTemplates = {
 // Get available assessment templates
 exports.getTemplates = async (req, res) => {
   try {
-    const templates = Object.keys(assessmentTemplates).map(key => ({
-      type: key,
-      name: assessmentTemplates[key].name,
-      description: assessmentTemplates[key].description,
-      timeEstimate: assessmentTemplates[key].timeEstimate,
-      questionCount: assessmentTemplates[key].questions.length
-    }));
+    const templates = Object.keys(assessmentTemplates).map(key => {
+      const template = assessmentTemplates[key];
+      let questionCount = 0;
+      
+      // Calculate total questions across all sections
+      if (template.sections) {
+        Object.values(template.sections).forEach(section => {
+          questionCount += section.questions.length;
+        });
+      } else if (template.questions) {
+        questionCount = template.questions.length;
+      }
+
+      return {
+        type: key,
+        name: template.name,
+        description: template.description,
+        timeEstimate: template.timeEstimate,
+        questionCount,
+        hasSections: !!template.sections
+      };
+    });
 
     res.json({
       success: true,
@@ -168,6 +215,7 @@ exports.getTemplates = async (req, res) => {
 exports.getTemplate = async (req, res) => {
   try {
     const { type } = req.params;
+    const { sections } = req.query; // Optional: specify which sections to return
     
     if (!assessmentTemplates[type]) {
       return res.status(404).json({
@@ -176,9 +224,26 @@ exports.getTemplate = async (req, res) => {
       });
     }
 
+    const template = assessmentTemplates[type];
+    let responseData = { ...template };
+
+    // If sections parameter is provided, filter sections
+    if (sections && template.sections) {
+      const requestedSections = sections.split(',');
+      const filteredSections = {};
+      
+      requestedSections.forEach(sectionKey => {
+        if (template.sections[sectionKey]) {
+          filteredSections[sectionKey] = template.sections[sectionKey];
+        }
+      });
+      
+      responseData.sections = filteredSections;
+    }
+
     res.json({
       success: true,
-      data: assessmentTemplates[type]
+      data: responseData
     });
   } catch (error) {
     console.error('Error fetching template:', error);
@@ -202,8 +267,16 @@ exports.submitAssessment = async (req, res) => {
       });
     }
 
-    const { type, responses } = req.body;
-    const userId = req.user.id;
+    const { type, responses, completedSections } = req.body;
+    const mongoose = require('mongoose');
+    
+    // Use authenticated user ID if available, otherwise use a default user ID for non-authenticated users
+    let userId = req.user?.id;
+    if (!userId) {
+      // For non-authenticated users, use a consistent default user ID
+      // This allows them to see their assessment history
+      userId = new mongoose.Types.ObjectId('000000000000000000000000');
+    }
 
     // Validate assessment type
     if (!assessmentTemplates[type]) {
@@ -215,48 +288,63 @@ exports.submitAssessment = async (req, res) => {
 
     const template = assessmentTemplates[type];
 
-    // Calculate score and interpretation
-    const scoringCalc = calculateScore(type, responses || {}, template);
-    const recommendations = generateRecommendations(type, scoringCalc);
+    // Process responses based on assessment type
+    let processedResponses = {};
+    let scoringResults = {};
 
-    // Map flat responses into structured responses.ratings expected by schema
-    const ratings = template.questions
-      .filter(q => q.type === 'scale')
-      .map(q => {
-        const val = responses ? responses[q.id] : undefined;
-        if (val === undefined || val === null || val === '') return null;
-        return {
-          questionId: q.id,
-          rating: Number(val),
-          scale: {
-            min: q.scale?.min ?? 0,
-            max: q.scale?.max ?? 3,
-            labels: {
-              low: Array.isArray(q.scale?.labels) ? q.scale.labels[0] : 'Low',
-              high: Array.isArray(q.scale?.labels) ? q.scale.labels[q.scale.labels.length - 1] : 'High'
-            }
-          }
-        };
-      })
-      .filter(Boolean);
+    if (type === 'comprehensive') {
+      // Handle comprehensive assessment with sections
+      processedResponses = processComprehensiveResponses(responses, completedSections, template);
+      scoringResults = calculateComprehensiveScore(responses, completedSections, template);
+    } else {
+      // Handle legacy single-section assessments
+      const scoringCalc = calculateScore(type, responses || {}, template);
+      scoringResults = {
+        totalScore: scoringCalc.totalScore,
+        maxScore: scoringCalc.maxScore,
+        interpretation: scoringCalc.interpretation,
+        level: scoringCalc.level,
+        color: scoringCalc.color
+      };
+    }
 
-    // Create assessment record matching schema
+    const recommendations = generateComprehensiveRecommendations(type, scoringResults, completedSections);
+
+    // Create assessment record with comprehensive data
     const assessment = new Assessment({
       userId,
       type,
       title: template.name,
       description: template.description,
-      // Save questions optionally for traceability (no answers stored here)
-      // questions: template.questions,
-      responses: {
-        ratings
-      },
+      responses: processedResponses,
       scoring: {
-        totalScore: scoringCalc.totalScore,
-        recommendations // riskLevel will be computed in pre-save based on responses
+        totalScore: scoringResults.totalScore,
+        maxScore: scoringResults.maxScore,
+        recommendations,
+        riskLevel: scoringResults.riskLevel || 'low',
+        sectionScores: scoringResults.sectionScores || {},
+        insights: scoringResults.insights || {},
+        interpretation: scoringResults.interpretation,
+        level: scoringResults.level,
+        color: scoringResults.color
       },
       status: 'completed',
-      completedAt: new Date()
+      completedAt: new Date(),
+      metadata: {
+        completedSections: completedSections || [],
+        assessmentVersion: '2.0',
+        // Store personal assessment details for history display
+        personalDetails: type === 'comprehensive' && completedSections?.includes('section1') ? {
+          stressLevel: responses.stressLevel,
+          sleepQuality: responses.sleepQuality,
+          exerciseFrequency: responses.exerciseFrequency,
+          socialInteraction: responses.socialInteraction,
+          screenTime: responses.screenTime,
+          ageGroup: responses.ageGroup,
+          gender: responses.gender,
+          occupation: responses.occupation
+        } : null
+      }
     });
 
     await assessment.save();
@@ -264,21 +352,24 @@ exports.submitAssessment = async (req, res) => {
     res.status(201).json({
       success: true,
       data: {
-        _id: assessment._id, // for frontend navigation contract
-        assessmentId: assessment._id, // backward compatible
+        _id: assessment._id,
+        assessmentId: assessment._id,
         type,
         title: assessment.title,
         description: assessment.description,
         score: {
-          total: scoringCalc.totalScore,
-          max: scoringCalc.maxScore,
-          interpretation: scoringCalc.interpretation,
-          level: scoringCalc.level,
-          color: scoringCalc.color
+          total: scoringResults.totalScore,
+          max: scoringResults.maxScore,
+          interpretation: scoringResults.interpretation,
+          level: scoringResults.level,
+          color: scoringResults.color
         },
         recommendations,
         riskLevel: assessment.scoring?.riskLevel || 'low',
-        completedAt: assessment.completedAt
+        completedAt: assessment.completedAt,
+        insights: scoringResults.insights || {},
+        completedSections: completedSections || [],
+        personalDetails: assessment.metadata?.personalDetails || null
       }
     });
 
@@ -297,10 +388,17 @@ exports.submitAssessment = async (req, res) => {
 exports.getHistory = async (req, res) => {
   try {
     const { type, timeRange } = req.query;
-    const userId = req.user.id;
+    
+    // Handle both authenticated and non-authenticated users
+    const mongoose = require('mongoose');
+    let userId = req.user?.id;
+    if (!userId) {
+      // For non-authenticated users, use the same default user ID as in submitAssessment
+      userId = new mongoose.Types.ObjectId('000000000000000000000000');
+    }
 
     // Build query
-    let query = { userId };
+    let query = { userId, status: 'completed' };
     
     // Filter by assessment type if specified
     if (type && type !== 'all') {
@@ -330,14 +428,40 @@ exports.getHistory = async (req, res) => {
       }
       
       if (startDate) {
-        query.createdAt = { $gte: startDate };
+        query.completedAt = { $gte: startDate };
       }
     }
 
-    // Get assessments
+    // Get assessments with comprehensive data
     const assessments = await Assessment.find(query)
-      .sort({ createdAt: -1 })
-      .limit(50);
+      .sort({ completedAt: -1 })
+      .limit(50)
+      .select('type title description responses scoring completedAt metadata createdAt');
+
+    // Transform assessments for frontend display
+    const transformedHistory = assessments.map(assessment => ({
+      _id: assessment._id,
+      type: assessment.type,
+      title: assessment.title,
+      description: assessment.description,
+      completedAt: assessment.completedAt,
+      createdAt: assessment.createdAt,
+      score: {
+        total: assessment.scoring?.totalScore || 0,
+        max: assessment.scoring?.maxScore || 100,
+        interpretation: assessment.scoring?.interpretation || 'No interpretation available',
+        level: assessment.scoring?.level || 'unknown',
+        color: assessment.scoring?.color || '#64748B'
+      },
+      riskLevel: assessment.scoring?.riskLevel || 'low',
+      recommendations: assessment.scoring?.recommendations || [],
+      insights: assessment.scoring?.insights || {},
+      sectionScores: assessment.scoring?.sectionScores || {},
+      completedSections: assessment.metadata?.completedSections || [],
+      personalDetails: assessment.metadata?.personalDetails || null,
+      // Include raw responses for detailed view
+      responses: assessment.responses
+    }));
 
     // Calculate chart data and insights
     const chartData = calculateHistoryInsights(assessments);
@@ -345,7 +469,7 @@ exports.getHistory = async (req, res) => {
     res.json({
       success: true,
       data: {
-        history: assessments,
+        history: transformedHistory,
         chartData
       }
     });
@@ -476,36 +600,449 @@ const calculateHistoryInsights = (assessments) => {
     mostCommonType
   };
 };
-*/
 
-// Placeholder exports for "Coming Soon" functionality
-module.exports = {
-  getTemplates: (req, res) => {
-    res.status(503).json({
-      success: false,
-      message: 'Assessment templates coming soon! We\'re building something amazing.',
-      comingSoon: true
+// Process comprehensive assessment responses
+const processComprehensiveResponses = (responses, completedSections, template) => {
+  const processedResponses = {
+    textResponses: [],
+    ratings: [],
+    multipleChoice: []
+  };
+
+  // Process each completed section
+  completedSections.forEach(sectionKey => {
+    const section = template.sections[sectionKey];
+    if (!section) return;
+
+    section.questions.forEach(question => {
+      const response = responses[question.id];
+      if (response === undefined || response === null || response === '') return;
+
+      switch (question.type) {
+        case 'text':
+          processedResponses.textResponses.push({
+            questionId: question.id,
+            response: response,
+            section: sectionKey
+          });
+          break;
+        
+        case 'scale':
+          processedResponses.ratings.push({
+            questionId: question.id,
+            rating: Number(response),
+            scale: {
+              min: question.scale?.min ?? 1,
+              max: question.scale?.max ?? 10,
+              labels: {
+                low: Array.isArray(question.scale?.labels) ? question.scale.labels[0] : 'Low',
+                high: Array.isArray(question.scale?.labels) ? question.scale.labels[question.scale.labels.length - 1] : 'High'
+              }
+            },
+            section: sectionKey
+          });
+          break;
+        
+        case 'multiple_choice':
+          processedResponses.multipleChoice.push({
+            questionId: question.id,
+            selectedOption: response,
+            allOptions: question.options,
+            section: sectionKey
+          });
+          break;
+      }
     });
-  },
-  getTemplate: (req, res) => {
-    res.status(503).json({
-      success: false,
-      message: 'Assessment templates coming soon! We\'re building something amazing.',
-      comingSoon: true
-    });
-  },
-  submitAssessment: (req, res) => {
-    res.status(503).json({
-      success: false,
-      message: 'Assessment submission coming soon! We\'re building something amazing.',
-      comingSoon: true
-    });
-  },
-  getHistory: (req, res) => {
-    res.status(503).json({
-      success: false,
-      message: 'Assessment history coming soon! We\'re building something amazing.',
-      comingSoon: true
-    });
+  });
+
+  return processedResponses;
+};
+
+// Calculate comprehensive assessment score
+const calculateComprehensiveScore = (responses, completedSections, template) => {
+  const sectionScores = {};
+  const insights = {};
+  let totalScore = 0;
+  let maxScore = 0;
+
+  // Process Section 1: Tell About Yourself
+  if (completedSections.includes('section1')) {
+    const section1Score = calculateSection1Score(responses, template.sections.section1);
+    sectionScores.section1 = section1Score;
+    insights.lifestyle = generateLifestyleInsights(section1Score, responses);
+    totalScore += section1Score.score;
+    maxScore += section1Score.maxScore;
   }
+
+  // Process Section 2: Scenario-Based Testing
+  if (completedSections.includes('section2')) {
+    const section2Score = calculateSection2Score(responses, template.sections.section2);
+    sectionScores.section2 = section2Score;
+    insights.personality = generatePersonalityInsights(section2Score, responses);
+    totalScore += section2Score.score;
+    maxScore += section2Score.maxScore;
+  }
+
+  // Generate combined insights if both sections completed
+  if (completedSections.length === 2) {
+    insights.combined = generateCombinedInsights(sectionScores, insights);
+  }
+
+  // Determine overall risk level
+  const riskLevel = determineRiskLevel(totalScore, maxScore, insights);
+
+  return {
+    totalScore,
+    maxScore,
+    sectionScores,
+    insights,
+    riskLevel,
+    interpretation: generateOverallInterpretation(totalScore, maxScore, completedSections.length),
+    level: getScoreLevel(totalScore, maxScore),
+    color: getScoreColor(totalScore, maxScore)
+  };
+};
+
+// Calculate Section 1 (Tell About Yourself) score
+const calculateSection1Score = (responses, section) => {
+  let score = 0;
+  let maxScore = 0;
+  const factors = {};
+
+  section.questions.forEach(question => {
+    const response = responses[question.id];
+    if (response === undefined || response === null || response === '') return;
+
+    switch (question.id) {
+      case 'stressLevel':
+        const stressScore = Number(response);
+        factors.stress = stressScore;
+        score += (11 - stressScore); // Invert so lower stress = higher score
+        maxScore += 10;
+        break;
+      
+      case 'sleepQuality':
+        const sleepScores = {
+          'Excellent - I sleep deeply and wake refreshed': 5,
+          'Good - I usually sleep well': 4,
+          'Average - My sleep is okay but could be better': 3,
+          'Poor - I often have trouble sleeping': 2,
+          'Very Poor - I rarely get good sleep': 1
+        };
+        factors.sleep = sleepScores[response] || 0;
+        score += factors.sleep;
+        maxScore += 5;
+        break;
+      
+      case 'exerciseFrequency':
+        const exerciseScores = {
+          'Daily': 5,
+          '4-6 times per week': 4,
+          '2-3 times per week': 3,
+          'Once a week': 2,
+          'Rarely': 1,
+          'Never': 0
+        };
+        factors.exercise = exerciseScores[response] || 0;
+        score += factors.exercise;
+        maxScore += 5;
+        break;
+      
+      case 'socialInteraction':
+        const socialScores = {
+          'Very active - I socialize frequently': 5,
+          'Moderately active - I have regular social contact': 4,
+          'Somewhat active - I socialize occasionally': 3,
+          'Limited - I have minimal social contact': 2,
+          'Isolated - I rarely interact with others': 1
+        };
+        factors.social = socialScores[response] || 0;
+        score += factors.social;
+        maxScore += 5;
+        break;
+      
+      case 'screenTime':
+        const screenScores = {
+          'Less than 2 hours': 5,
+          '2-4 hours': 4,
+          '4-6 hours': 3,
+          '6-8 hours': 2,
+          'More than 8 hours': 1
+        };
+        factors.screenTime = screenScores[response] || 0;
+        score += factors.screenTime;
+        maxScore += 5;
+        break;
+    }
+  });
+
+  return { score, maxScore, factors };
+};
+
+// Calculate Section 2 (Scenario-Based Testing) score
+const calculateSection2Score = (responses, section) => {
+  let score = 0;
+  let maxScore = 0;
+  const traitScores = {};
+
+  section.questions.forEach(question => {
+    const response = responses[question.id];
+    if (response === undefined || response === null || response === '') return;
+
+    const selectedIndex = question.options.indexOf(response);
+    if (selectedIndex === -1) return;
+
+    const trait = question.traits[selectedIndex];
+    if (!trait) return;
+
+    // Score based on positive vs negative traits
+    const traitValue = getTraitValue(trait);
+    traitScores[trait] = (traitScores[trait] || 0) + traitValue;
+    
+    score += traitValue;
+    maxScore += 5; // Each question worth 5 points max
+  });
+
+  return { score, maxScore, traitScores };
+};
+
+// Get trait value for scoring
+const getTraitValue = (trait) => {
+  const positiveTraits = {
+    'adaptive': 5, 'resilient': 5, 'growth_minded': 5, 'organized': 5, 'open_minded': 5,
+    'independent': 4
+  };
+  
+  const neutralTraits = {
+    'perfectionist': 3, 'defensive': 2, 'sensitive': 2
+  };
+  
+  const negativeTraits = {
+    'anxious': 1, 'avoidant': 1, 'self_doubting': 1, 'confrontational': 1, 'dismissive': 1,
+    'external_locus': 1, 'overwhelmed': 1, 'pessimistic': 1
+  };
+
+  return positiveTraits[trait] || neutralTraits[trait] || negativeTraits[trait] || 2;
+};
+
+// Generate lifestyle insights
+const generateLifestyleInsights = (section1Score, responses) => {
+  const insights = {
+    strengths: [],
+    concerns: [],
+    recommendations: []
+  };
+
+  const { factors } = section1Score;
+
+  // Analyze stress level
+  if (factors.stress <= 3) {
+    insights.strengths.push('You maintain low stress levels');
+  } else if (factors.stress >= 8) {
+    insights.concerns.push('High stress levels may be impacting your wellbeing');
+    insights.recommendations.push('Consider stress management techniques like meditation or deep breathing');
+  }
+
+  // Analyze sleep quality
+  if (factors.sleep >= 4) {
+    insights.strengths.push('Good sleep habits support your mental health');
+  } else if (factors.sleep <= 2) {
+    insights.concerns.push('Poor sleep quality may be affecting your mental wellbeing');
+    insights.recommendations.push('Establish a consistent bedtime routine and limit screen time before bed');
+  }
+
+  // Analyze exercise
+  if (factors.exercise >= 4) {
+    insights.strengths.push('Regular physical activity supports your mental health');
+  } else if (factors.exercise <= 2) {
+    insights.concerns.push('Limited physical activity may impact your mood and energy');
+    insights.recommendations.push('Try to incorporate 30 minutes of physical activity most days');
+  }
+
+  // Analyze social interaction
+  if (factors.social >= 4) {
+    insights.strengths.push('Strong social connections support your wellbeing');
+  } else if (factors.social <= 2) {
+    insights.concerns.push('Limited social interaction may affect your mental health');
+    insights.recommendations.push('Consider reaching out to friends or joining social activities');
+  }
+
+  return insights;
+};
+
+// Generate personality insights
+const generatePersonalityInsights = (section2Score, responses) => {
+  const insights = {
+    strengths: [],
+    concerns: [],
+    recommendations: []
+  };
+
+  const { traitScores } = section2Score;
+
+  // Analyze trait patterns
+  Object.entries(traitScores).forEach(([trait, score]) => {
+    if (score >= 3) {
+      switch (trait) {
+        case 'resilient':
+          insights.strengths.push('You show resilience in challenging situations');
+          break;
+        case 'adaptive':
+          insights.strengths.push('You adapt well to changing circumstances');
+          break;
+        case 'growth_minded':
+          insights.strengths.push('You have a growth mindset and learn from feedback');
+          break;
+        case 'organized':
+          insights.strengths.push('You handle time management and planning well');
+          break;
+        case 'open_minded':
+          insights.strengths.push('You are open to feedback and new perspectives');
+          break;
+      }
+    } else if (score <= 1) {
+      switch (trait) {
+        case 'anxious':
+          insights.concerns.push('You may experience anxiety in stressful situations');
+          insights.recommendations.push('Practice relaxation techniques and consider professional support');
+          break;
+        case 'avoidant':
+          insights.concerns.push('You may avoid challenging situations');
+          insights.recommendations.push('Try gradual exposure to build confidence');
+          break;
+        case 'self_doubting':
+          insights.concerns.push('You may struggle with self-confidence');
+          insights.recommendations.push('Practice positive self-talk and celebrate small wins');
+          break;
+        case 'overwhelmed':
+          insights.concerns.push('You may feel overwhelmed easily');
+          insights.recommendations.push('Break tasks into smaller steps and practice time management');
+          break;
+      }
+    }
+  });
+
+  return insights;
+};
+
+// Generate combined insights
+const generateCombinedInsights = (sectionScores, insights) => {
+  const combined = {
+    strengths: [...insights.lifestyle.strengths, ...insights.personality.strengths],
+    concerns: [...insights.lifestyle.concerns, ...insights.personality.concerns],
+    recommendations: [...insights.lifestyle.recommendations, ...insights.personality.recommendations]
+  };
+
+  // Remove duplicates
+  combined.strengths = [...new Set(combined.strengths)];
+  combined.concerns = [...new Set(combined.concerns)];
+  combined.recommendations = [...new Set(combined.recommendations)];
+
+  return combined;
+};
+
+// Determine risk level
+const determineRiskLevel = (totalScore, maxScore, insights) => {
+  const percentage = (totalScore / maxScore) * 100;
+  
+  // Check for high-risk indicators
+  const hasHighStress = insights.lifestyle?.concerns?.some(concern => 
+    concern.includes('High stress levels') || concern.includes('Poor sleep quality')
+  );
+  
+  const hasAnxietyConcerns = insights.personality?.concerns?.some(concern => 
+    concern.includes('anxiety') || concern.includes('overwhelmed')
+  );
+
+  if (percentage < 30 || hasHighStress || hasAnxietyConcerns) {
+    return 'high';
+  } else if (percentage < 60) {
+    return 'moderate';
+  } else {
+    return 'low';
+  }
+};
+
+// Generate overall interpretation
+const generateOverallInterpretation = (totalScore, maxScore, sectionsCompleted) => {
+  const percentage = (totalScore / maxScore) * 100;
+  
+  if (sectionsCompleted === 1) {
+    return percentage >= 70 ? 'Your responses suggest good mental health indicators' : 
+           percentage >= 50 ? 'Your responses show some areas for improvement' : 
+           'Your responses indicate some concerns that may benefit from attention';
+  } else {
+    return percentage >= 70 ? 'Your comprehensive assessment shows strong mental health indicators' : 
+           percentage >= 50 ? 'Your assessment reveals some areas for growth and improvement' : 
+           'Your assessment indicates several areas that may benefit from professional support';
+  }
+};
+
+// Get score level
+const getScoreLevel = (totalScore, maxScore) => {
+  const percentage = (totalScore / maxScore) * 100;
+  if (percentage >= 80) return 'excellent';
+  if (percentage >= 60) return 'good';
+  if (percentage >= 40) return 'fair';
+  return 'needs_attention';
+};
+
+// Get score color
+const getScoreColor = (totalScore, maxScore) => {
+  const percentage = (totalScore / maxScore) * 100;
+  if (percentage >= 80) return '#22C55E';
+  if (percentage >= 60) return '#EAB308';
+  if (percentage >= 40) return '#F97316';
+  return '#EF4444';
+};
+
+// Generate comprehensive recommendations
+const generateComprehensiveRecommendations = (type, scoringResults, completedSections) => {
+  const recommendations = [];
+
+  if (type === 'comprehensive') {
+    const { insights, riskLevel } = scoringResults;
+    
+    // Add specific recommendations based on completed sections
+    if (completedSections.includes('section1')) {
+      recommendations.push('Focus on maintaining healthy lifestyle habits');
+      if (insights.lifestyle?.recommendations) {
+        recommendations.push(...insights.lifestyle.recommendations);
+      }
+    }
+    
+    if (completedSections.includes('section2')) {
+      recommendations.push('Work on developing emotional resilience');
+      if (insights.personality?.recommendations) {
+        recommendations.push(...insights.personality.recommendations);
+      }
+    }
+    
+    // Add risk-based recommendations
+    if (riskLevel === 'high') {
+      recommendations.push('Consider speaking with a mental health professional');
+      recommendations.push('Practice daily stress management techniques');
+    } else if (riskLevel === 'moderate') {
+      recommendations.push('Continue monitoring your mental health');
+      recommendations.push('Consider joining a support group or community');
+    } else {
+      recommendations.push('Maintain your positive mental health practices');
+      recommendations.push('Consider helping others as a way to maintain wellbeing');
+    }
+  } else {
+    // Legacy recommendations for other assessment types
+    return generateRecommendations(type, scoringResults);
+  }
+
+  return [...new Set(recommendations)]; // Remove duplicates
+};
+
+
+// Module exports will be at the end of the file
+
+module.exports = {
+  getTemplates: exports.getTemplates,
+  getTemplate: exports.getTemplate,
+  submitAssessment: exports.submitAssessment,
+  getHistory: exports.getHistory
 };

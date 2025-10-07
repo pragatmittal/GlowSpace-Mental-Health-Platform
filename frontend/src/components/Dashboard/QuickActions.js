@@ -7,56 +7,40 @@ const QuickActions = () => {
 
   const quickActions = [
     {
+      id: 'mood-check',
+      title: 'Track Mood',
+      description: 'Quick mood check-in',
+      icon: '😊',
+      color: '#2196F3',
+      path: '/moodtracking'
+    },
+    {
       id: 'emotion-detection',
-      title: 'Emotion Detection',
-      description: 'Analyze your emotions in real-time',
+      title: 'Emotion AI',
+      description: 'Analyze emotions',
       icon: '🎭',
       color: '#4CAF50',
       path: '/emotion-detector'
     },
     {
-      id: 'mood-check',
-      title: 'Mood Check-in',
-      description: 'Track your current mood',
-      icon: '😊',
-      color: '#2196F3',
-      path: '/mood-tracker'
-    },
-    {
-      id: 'journal',
-      title: 'Write Journal',
-      description: 'Express your thoughts',
-      icon: '📝',
-      color: '#2196F3',
-      path: '/journal'
-    },
-    {
-      id: 'meditation',
-      title: 'Start Meditation',
-      description: 'Find your inner peace',
-      icon: '🧘',
-      color: '#9C27B0',
-      path: '/meditation'
-    },
-    {
       id: 'appointment',
-      title: 'Book Appointment',
-      description: 'Schedule with therapist',
+      title: 'Book Session',
+      description: 'Schedule therapy',
       icon: '📅',
       color: '#FF9800',
-      path: '/appointments'
+      path: '/counseling'
     },
     {
-      id: 'resources',
-      title: 'Browse Resources',
-      description: 'Educational materials',
-      icon: '📚',
-      color: '#795548',
-      path: '/resources'
+      id: 'assessment',
+      title: 'Assessment',
+      description: 'Mental health check',
+      icon: '📋',
+      color: '#9C27B0',
+      path: '/assessment'
     },
     {
       id: 'community',
-      title: 'Join Community',
+      title: 'Community',
       description: 'Connect with others',
       icon: '👥',
       color: '#607D8B',

@@ -144,7 +144,7 @@ const validateGoogleAuth = [
 // Assessment validation
 const validateAssessment = [
   body('type')
-    .isIn(['depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'])
+    .isIn(['comprehensive', 'depression', 'anxiety', 'sleep', 'stress', 'trauma', 'medication', 'voice', 'mood'])
     .withMessage('Invalid assessment type'),
   
   handleValidationErrors

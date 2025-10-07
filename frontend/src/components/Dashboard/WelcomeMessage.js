@@ -1,7 +1,7 @@
 import React from 'react';
 import './WelcomeMessage.css';
 
-const WelcomeMessage = ({ user }) => {
+const WelcomeMessage = ({ user, moodStreaks }) => {
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -37,8 +37,8 @@ const WelcomeMessage = ({ user }) => {
       
       <div className="wellness-streak">
         <div className="streak-info">
-          <span className="streak-number">{user?.wellnessStreak || 0}</span>
-          <span className="streak-label">Day Streak</span>
+          <span className="streak-number">{moodStreaks?.currentPositiveStreak || 0}</span>
+          <span className="streak-label">Days of positive moods</span>
         </div>
         <div className="streak-icon">🌟</div>
       </div>

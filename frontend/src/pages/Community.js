@@ -13,6 +13,7 @@ const Community = () => {
   const [view, setView] = useState('list'); // 'list', 'chat', 'create'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshCommunities, setRefreshCommunities] = useState(0);
 
   useEffect(() => {
     // Set initial view based on URL params or default to list
@@ -60,6 +61,16 @@ const Community = () => {
     setView('list');
   };
 
+  const handleCommunityLeft = (communityId) => {
+    // Trigger refresh of community list
+    setRefreshCommunities(prev => prev + 1);
+  };
+
+  const handleCommunityJoined = (communityId) => {
+    // Trigger refresh of community list
+    setRefreshCommunities(prev => prev + 1);
+  };
+
   if (!user) {
     return (
       <div className="community-container">
@@ -73,26 +84,12 @@ const Community = () => {
 
   return (
     <div className="community-container">
-      <div className="community-header">
-        <div className="community-header-content">
-          <h1>Support Community</h1>
-          <p>Connect with others, share experiences, and find support in our mental health community</p>
-        </div>
-        <div className="community-header-actions">
-          <button 
-            className="btn btn-primary"
-            onClick={handleCreateCommunity}
-          >
-            Create Community
-          </button>
-        </div>
-      </div>
-
       <div className="community-content">
         <CommunitySidebar 
           selectedCommunity={selectedCommunity}
           onCommunitySelect={handleCommunitySelect}
           onCreateCommunity={handleCreateCommunity}
+          refreshTrigger={refreshCommunities}
         />
 
         <div className="community-main">
@@ -107,6 +104,8 @@ const Community = () => {
             <CommunityChat 
               communityId={selectedCommunity}
               onBackToList={handleBackToList}
+              onCommunityLeft={handleCommunityLeft}
+              onCommunityJoined={handleCommunityJoined}
             />
           )}
 

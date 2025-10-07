@@ -612,6 +612,15 @@ exports.getMoodAnalytics = async (req, res) => {
     // Get mood streaks
     const streaks = await MoodEntry.getMoodStreaks(req.user.id);
 
+    // Get tracking consistency
+    const consistency = await MoodEntry.getTrackingConsistency(req.user.id, days);
+
+    // Get weekly mood change
+    const weeklyChange = await MoodEntry.getWeeklyMoodChange(req.user.id);
+
+    // Get personalized activity suggestions
+    const activitySuggestions = await MoodEntry.getPersonalizedActivitySuggestions(req.user.id);
+
     // Get insights
     const insights = await MoodEntry.generateInsights(req.user.id, days);
 
@@ -672,17 +681,40 @@ exports.getMoodAnalytics = async (req, res) => {
       socialMood[social].average = socialMood[social].sum / socialMood[social].total;
     });
 
+    // Calculate overall average mood
+    let avgMood = 0;
+    if (entries.length > 0) {
+      const moodValues = {
+        'very_sad': 1,
+        'sad': 2,
+        'neutral': 3,
+        'happy': 4,
+        'very_happy': 5
+      };
+      
+      let totalMoodValue = 0;
+      entries.forEach(entry => {
+        totalMoodValue += moodValues[entry.mood] || 3;
+      });
+      
+      avgMood = totalMoodValue / entries.length;
+    }
+
     res.status(200).json({
       success: true,
       data: {
         trends: entries.length > 0 ? trends : [],
         patterns: entries.length > 0 ? patterns : [],
         streaks: entries.length > 0 ? streaks : { currentPositiveStreak: 0, maxPositiveStreak: 0, currentTrackingStreak: 0, maxTrackingStreak: 0 },
+        consistency: consistency,
+        weeklyChange: weeklyChange,
+        activitySuggestions: activitySuggestions,
         insights: entries.length > 0 ? insights : [],
         summary: {
           totalEntries: entries.length,
+          avgMood: Math.round(avgMood * 100) / 100,
           moodDistribution: moodCounts,
-          averageIntensity: entries.length > 0 ? entries.reduce((sum, e) => sum + e.intensity, 0) / entries.length : 0,
+          averageIntensity: entries.length > 0 ? entries.reduce((sum, e) => sum + (e.intensity || 0), 0) / entries.length : 0,
           activityCorrelation: activityMood,
           timeCorrelation: timeMood,
           socialCorrelation: socialMood

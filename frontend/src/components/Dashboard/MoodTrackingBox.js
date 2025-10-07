@@ -109,12 +109,7 @@ const MoodTrackingBox = () => {
 
       setMoodData(data);
 
-      // Dispatch event for other components (but don't call parent callback to prevent loops)
-      const event = new CustomEvent('moodDataUpdated', { 
-        detail: data,
-        bubbles: true 
-      });
-      window.dispatchEvent(event);
+      // No event dispatching to prevent circular dependencies and flickering
 
     } catch (err) {
       if (err.name === 'AbortError') {
@@ -256,8 +251,8 @@ const MoodTrackingBox = () => {
           <div className="stat-item">
             <div className="stat-icon">🔥</div>
             <div className="stat-info">
-              <div className="stat-value">{moodData.streaks?.currentTrackingStreak || 0}</div>
-              <div className="stat-label">Day Streak</div>
+              <div className="stat-value">{moodData.streaks?.currentPositiveStreak || 0}</div>
+              <div className="stat-label">Positive Streak</div>
             </div>
           </div>
           

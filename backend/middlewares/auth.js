@@ -131,6 +131,12 @@ exports.rateLimitAuth = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   const attempts = new Map();
 
   return (req, res, next) => {
+    // Disable rate limiting in development
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+      console.log('🔧 Rate limiting disabled in development mode for:', req.route?.path || req.path);
+      return next();
+    }
+
     const key = req.ip + req.route.path;
     const now = Date.now();
     

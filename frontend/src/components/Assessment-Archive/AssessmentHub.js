@@ -26,6 +26,7 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
   }, [fetchAssessmentTypes]);
 
   const assessmentIcons = {
+    comprehensive: '🧠',
     depression: '😔',
     anxiety: '😰',
     sleep: '😴',
@@ -33,6 +34,7 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
   };
 
   const assessmentColors = {
+    comprehensive: '#8B5CF6',
     depression: '#3B82F6',
     anxiety: '#8B5CF6',
     sleep: '#06B6D4',
@@ -51,13 +53,14 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
   return (
     <div className="assessment-hub">
       <div className="assessment-hub-header">
-        <h1>Mental Health Assessments</h1>
-        <p>Take scientifically-backed assessments to better understand your mental well-being</p>
-        
-        <div className="assessment-hub-actions">
+        <div className="header-content">
+          <div className="header-text">
+            <h1>Mental Health Assessments</h1>
+            <p>Take scientifically-backed assessments to better understand your mental well-being</p>
+          </div>
           <button 
             onClick={onViewHistory}
-            className="btn btn-secondary"
+            className="view-history-btn"
           >
             📊 View History
           </button>
@@ -75,7 +78,7 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
           assessmentTypes.map((assessment) => (
             <div 
               key={assessment.type}
-              className="assessment-type-card"
+              className={`assessment-type-card ${assessment.type === 'comprehensive' ? 'comprehensive' : ''}`}
               style={{ '--card-color': assessmentColors[assessment.type] || '#6B7280' }}
               onClick={() => onStartAssessment(assessment)}
             >
@@ -117,6 +120,7 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
         )}
       </div>
 
+
       <div className="assessment-hub-info">
         <div className="info-section">
           <h3>Why Take Assessments?</h3>
@@ -125,11 +129,6 @@ const AssessmentHub = ({ onStartAssessment, onViewHistory, error }) => {
               <div className="info-icon">🎯</div>
               <h4>Get Personalized Insights</h4>
               <p>Understand your mental health patterns and receive tailored recommendations</p>
-            </div>
-            <div className="info-item">
-              <div className="info-icon">📈</div>
-              <h4>Track Progress</h4>
-              <p>Monitor your mental health journey over time with detailed analytics</p>
             </div>
             <div className="info-item">
               <div className="info-icon">🛡️</div>

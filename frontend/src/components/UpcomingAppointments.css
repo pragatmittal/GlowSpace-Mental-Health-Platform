@@ -1,15 +1,15 @@
 .upcoming-appointments {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
-  border: 1px solid #e5e8eb;
+  box-shadow: 0 4px 20px rgba(44, 122, 123, 0.08);
+  border: 1px solid var(--border-color);
   height: fit-content;
   transition: all 0.3s ease;
 }
 
 .upcoming-appointments:hover {
-  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 8px 30px rgba(76, 175, 80, 0.12);
   transform: translateY(-2px);
 }
 
@@ -21,23 +21,23 @@
   padding-bottom: 1rem;
   border-bottom: 2px solid transparent;
   background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, #6366f1, #8b5cf6) border-box;
+              var(--primary-gradient) border-box;
   border-bottom: 2px solid;
 }
 
 .appointments-header h3 {
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 1.375rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .view-all-btn {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--primary-gradient);
   border: none;
   color: white;
   font-size: 0.875rem;
@@ -46,12 +46,12 @@
   padding: 8px 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
 }
 
 .view-all-btn:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  background: var(--secondary-gradient);
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
   transform: translateY(-1px);
 }
 
@@ -62,14 +62,14 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #6366f1;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 12px;
@@ -87,11 +87,11 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: #dc2626;
+  color: #e74c3c;
 }
 
 .retry-btn {
-  background: #6366f1;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -103,7 +103,7 @@
 }
 
 .retry-btn:hover {
-  background: #4f46e5;
+  background: var(--secondary-color);
 }
 
 /* No Appointments State */
@@ -113,7 +113,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .no-appointments-icon {
@@ -128,7 +128,7 @@
 }
 
 .schedule-btn {
-  background: #6366f1;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -140,7 +140,7 @@
 }
 
 .schedule-btn:hover {
-  background: #4f46e5;
+  background: var(--secondary-color);
 }
 
 /* Appointments List */
@@ -152,16 +152,16 @@
 }
 
 .appointment-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
-  background: #fafafa;
+  background: var(--card-bg);
   transition: all 0.2s;
 }
 
 .appointment-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+  border-color: var(--primary-color);
 }
 
 .appointment-main {
@@ -182,19 +182,19 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-color);
 }
 
 .therapist-details h4 {
   margin: 0 0 4px 0;
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 600;
 }
 
 .specialty {
   margin: 0;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -210,13 +210,13 @@
 }
 
 .date {
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 600;
 }
 
 .time {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -227,7 +227,7 @@
 }
 
 .type {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -257,48 +257,48 @@
 }
 
 .join-btn {
-  background: #10b981;
+  background: var(--primary-color);
   color: white;
-  border-color: #10b981;
+  border-color: var(--primary-color);
 }
 
 .join-btn:hover {
-  background: #059669;
-  border-color: #059669;
+  background: var(--secondary-color);
+  border-color: var(--secondary-color);
 }
 
 .reschedule-btn {
-  background: #f59e0b;
+  background: #f39c12;
   color: white;
-  border-color: #f59e0b;
+  border-color: #f39c12;
 }
 
 .reschedule-btn:hover {
-  background: #d97706;
-  border-color: #d97706;
+  background: #e67e22;
+  border-color: #e67e22;
 }
 
 .cancel-btn {
   background: transparent;
-  color: #dc2626;
-  border-color: #dc2626;
+  color: #e74c3c;
+  border-color: #e74c3c;
 }
 
 .cancel-btn:hover {
-  background: #fef2f2;
-  border-color: #b91c1c;
+  background: rgba(231, 76, 60, 0.1);
+  border-color: #c0392b;
 }
 
 /* Footer */
 .appointments-footer {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
   padding-top: 20px;
   display: flex;
   justify-content: center;
 }
 
 .schedule-new-btn {
-  background: #6366f1;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -313,7 +313,7 @@
 }
 
 .schedule-new-btn:hover {
-  background: #4f46e5;
+  background: var(--secondary-color);
 }
 
 /* Mobile Responsive */

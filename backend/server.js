@@ -40,7 +40,33 @@ const io = socketIo(server, {
 
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable for development
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'",
+        "https://apis.google.com",
+        "https://accounts.google.com",
+        "http://localhost:3001",
+        "http://localhost:3000"
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: [
+        "'self'", 
+        "http://localhost:3001", 
+        "http://localhost:3000", 
+        "http://localhost:5001",
+        "https://api.openai.com"
+      ],
+      frameSrc: ["'self'", "https://accounts.google.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
   crossOriginEmbedderPolicy: false
 }));
 
@@ -57,12 +83,12 @@ app.use(cookieParser());
 // Rate limiting
 const defaultLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100 // Much higher limit in development
 });
 
 const emotionsLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 60, // 1 request per second average (more reasonable for real-time)
+  max: process.env.NODE_ENV === 'development' ? 300 : 60, // Higher limit in development
   message: {
     success: false,
     message: 'Too many emotion analysis requests, please try again later'
@@ -71,17 +97,43 @@ const emotionsLimiter = rateLimit({
 
 const emotionAnalysisLimiter = rateLimit({
   windowMs: 10 * 1000, // 10 seconds
-  max: 5, // Allow 5 requests per 10 seconds (1 every 2 seconds)
+  max: process.env.NODE_ENV === 'development' ? 50 : 5, // Higher limit in development
   message: {
     success: false,
     message: 'Please wait a moment before sending more emotion data'
   }
 });
 
+// Development-friendly mood limiter
+const moodLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: process.env.NODE_ENV === 'development' ? 500 : 100, // Very high limit in development
+  message: {
+    success: false,
+    message: 'Too many mood tracking requests, please try again later'
+  }
+});
+
 // Apply rate limiting
 app.use('/api/emotions/analyze', emotionAnalysisLimiter); // Stricter limit for emotion analysis
 app.use('/api/emotions', emotionsLimiter); // General limit for other emotion routes
-app.use('/api/', defaultLimiter); // Default limit for other routes
+
+// Apply development-friendly rate limiting
+app.use('/api/dashboard', defaultLimiter);
+app.use('/api/emotions', defaultLimiter);
+app.use('/api/assessments', defaultLimiter);
+app.use('/api/community', defaultLimiter);
+app.use('/api/appointments', defaultLimiter);
+app.use('/api/mood', moodLimiter); // Use special mood limiter with higher limits
+app.use('/api/goals', defaultLimiter);
+
+// Log rate limiting configuration
+console.log('🔧 Rate Limiting Configuration:');
+console.log(`   Environment: ${process.env.NODE_ENV}`);
+console.log(`   Default: ${process.env.NODE_ENV === 'development' ? '1000' : '100'} requests per 15 minutes`);
+console.log(`   Mood: ${process.env.NODE_ENV === 'development' ? '500' : '100'} requests per minute`);
+console.log(`   Emotions: ${process.env.NODE_ENV === 'development' ? '300' : '60'} requests per minute`);
+console.log(`   Emotion Analysis: ${process.env.NODE_ENV === 'development' ? '50' : '5'} requests per 10 seconds`);
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -100,6 +152,16 @@ app.get('/', (req, res) => {
     success: true,
     message: 'GlowSpace API Server',
     version: '1.0.0'
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date(),
+    onlineUsers: onlineUsers.size
   });
 });
 
@@ -358,15 +420,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date(),
-    onlineUsers: onlineUsers.size
-  });
-});
+
 
 // Database connection
 const connectDB = async () => {
@@ -412,10 +466,12 @@ const connectDB = async () => {
         return;
       } catch (localError) {
         console.error('❌ Local MongoDB connection also failed:', localError.message);
+        console.log('⚠️  Continuing without database connection...');
+        throw new Error('Database connection failed');
       }
     }
     
-    process.exit(1);
+    throw new Error('Database connection failed');
   }
 };
 
@@ -435,7 +491,13 @@ process.on('SIGTERM', () => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await connectDB();
+  try {
+    await connectDB();
+  } catch (error) {
+    console.error('Database connection failed, but continuing with server startup...');
+    console.error('Some features may not work without database connection.');
+  }
+  
   if (process.env.NODE_ENV !== 'test') {
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

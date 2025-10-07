@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { moodAPI } from '../../services/api';
-import { validateAnalyticsResponse } from '../../utils/moodDataValidation';
 import './MoodInsights.css';
 
 const MoodInsights = ({ refreshTrigger }) => {
@@ -8,37 +7,110 @@ const MoodInsights = ({ refreshTrigger }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mood emoji mapping
-  const moodEmojis = {
-    'very_sad': '😢',
-    'sad': '😞',
-    'neutral': '😐',
-    'happy': '😊',
-    'very_happy': '😄'
-  };
+
 
   // Fetch insights data
-  const fetchInsights = async () => {
+  const fetchInsights = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch multiple data sources for comprehensive insights with error handling
-      const requests = [
-        moodAPI.getAnalytics({ timeRange: '30d' }).catch(err => ({ error: err, data: { success: false } })),
-        moodAPI.getStreaks().catch(err => ({ error: err, data: { success: false } })),
-        moodAPI.getPatterns({ days: 30 }).catch(err => ({ error: err, data: { success: false } }))
-      ];
+      // Fetch analytics data with better error handling
+      const analyticsResponse = await moodAPI.getAnalytics({ timeRange: '30d' });
+      
+      if (!analyticsResponse?.data?.success) {
+        throw new Error('Failed to fetch analytics data');
+      }
 
-      const [analyticsResponse, streaksResponse, patternsResponse] = await Promise.all(requests);
+      const analytics = analyticsResponse.data.data;
+      
+      // Calculate comprehensive insights with proper data validation
+      if (!analytics) {
+        setInsights(getEmptyInsights());
+        return;
+      }
 
-      // Validate and extract data using the validation utility
-      const analytics = validateAnalyticsResponse(analyticsResponse);
-      const streaks = streaksResponse?.data?.success ? streaksResponse.data.data : {};
-      const patterns = patternsResponse?.data?.success ? patternsResponse.data.data : [];
+      const summary = analytics.summary || {};
+      const trends = Array.isArray(analytics.trends) ? analytics.trends : [];
+      const streaks = analytics.streaks || {};
+      const consistency = analytics.consistency || {};
+      const weeklyChange = analytics.weeklyChange || {};
+      const activitySuggestions = analytics.activitySuggestions || {};
+      
+      // Calculate total moods with validation
+      const totalMoods = Number(summary.totalEntries) || 0;
+      
+      // Get streak information with fallbacks
+      const currentStreak = Number(streaks.currentPositiveStreak) || 0;
+      const longestStreak = Number(streaks.maxPositiveStreak) || 0;
+      
+      // Get weekly change data from backend
+      const weeklyImprovement = Number(weeklyChange.percentageChange) || 0;
+      const changeDirection = weeklyChange.changeDirection || 'stable';
+      const changeDescription = weeklyChange.changeDescription || 'No change';
+      const currentWeekAvg = Number(weeklyChange.currentWeekAvg) || 0;
+      const previousWeekAvg = Number(weeklyChange.previousWeekAvg) || 0;
+      const currentWeekEntries = Number(weeklyChange.currentWeekEntries) || 0;
+      const previousWeekEntries = Number(weeklyChange.previousWeekEntries) || 0;
+      
+      // Activity analysis
+      const activityCorrelation = summary.activityCorrelation || {};
+      let bestActivity = null;
+      let bestActivityAvg = 0;
+      
+      Object.entries(activityCorrelation).forEach(([activity, data]) => {
+        if (data && typeof data.average === 'number' && data.average > bestActivityAvg) {
+          bestActivityAvg = data.average;
+          bestActivity = activity;
+        }
+      });
+      
+      // Time analysis
+      const timeCorrelation = summary.timeCorrelation || {};
+      let bestTime = null;
+      let bestTimeAvg = 0;
+      
+      Object.entries(timeCorrelation).forEach(([time, data]) => {
+        if (data && typeof data.average === 'number' && data.average > bestTimeAvg) {
+          bestTimeAvg = data.average;
+          bestTime = time;
+        }
+      });
 
-      // Calculate comprehensive insights with validated data
-      const calculatedInsights = calculateInsights(analytics, streaks, patterns);
+      // Get consistency data from backend
+      const consistencyScore = Number(consistency.consistencyScore) || 0;
+      const daysTracked = Number(consistency.daysTracked) || 0;
+      const totalDays = Number(consistency.totalDays) || 30;
+      const trackingPattern = consistency.trackingPattern || 'none';
+
+      const calculatedInsights = {
+        totalMoods,
+        currentStreak,
+        longestStreak,
+        weeklyImprovement: Math.round(weeklyImprovement * 10) / 10,
+        changeDirection,
+        changeDescription,
+        currentWeekAvg,
+        previousWeekAvg,
+        currentWeekEntries,
+        previousWeekEntries,
+        bestActivity: bestActivity ? {
+          name: bestActivity,
+          average: Math.round(bestActivityAvg * 10) / 10
+        } : null,
+        bestTime: bestTime ? {
+          name: bestTime,
+          average: Math.round(bestTimeAvg * 10) / 10
+        } : null,
+        consistencyScore,
+        daysTracked,
+        totalDays,
+        trackingPattern,
+        activitySuggestions: activitySuggestions.suggestions || [],
+        moodPattern: activitySuggestions.moodPattern || 'balanced',
+        suggestionConfidence: activitySuggestions.confidence || 0.5
+      };
+
       setInsights(calculatedInsights);
 
     } catch (err) {
@@ -52,181 +124,51 @@ const MoodInsights = ({ refreshTrigger }) => {
       } else if (!navigator.onLine) {
         setError('Please check your internet connection');
       } else {
-        setError('Failed to load insights');
+        setError('Failed to load insights. Please try again.');
       }
       
       setInsights(getEmptyInsights());
     } finally {
       setLoading(false);
     }
-  };
-
-  // Calculate insights from data
-  const calculateInsights = (analytics, streaks, patterns) => {
-    // Safely extract data with fallbacks
-    const summary = analytics?.summary || {};
-    const trends = Array.isArray(analytics?.trends) ? analytics.trends : [];
-    
-    // Calculate statistics with validation
-    const totalMoods = Number(summary.totalEntries) || 0;
-    
-    // Find most frequent mood with validation
-    const moodCounts = summary.moodCounts || {};
-    const validMoodCounts = Object.keys(moodCounts).filter(mood => 
-      ['very_sad', 'sad', 'neutral', 'happy', 'very_happy'].includes(mood)
-    );
-    
-    const mostFrequentMood = validMoodCounts.length > 0 
-      ? validMoodCounts.reduce((a, b) => (moodCounts[a] || 0) > (moodCounts[b] || 0) ? a : b, 'neutral')
-      : 'neutral';
-    
-    // Calculate best and worst days with validation
-    const validTrends = trends.filter(trend => trend && typeof trend.avgMood === 'number' && !isNaN(trend.avgMood));
-    const sortedTrends = validTrends.sort((a, b) => (b.avgMood || 0) - (a.avgMood || 0));
-    const bestDay = sortedTrends[0];
-    const worstDay = sortedTrends[sortedTrends.length - 1];
-    
-    // Calculate weekly improvement with validation
-    const recentWeek = validTrends.slice(-7);
-    const previousWeek = validTrends.slice(-14, -7);
-    
-    const recentAvg = recentWeek.length > 0 
-      ? recentWeek.reduce((sum, t) => sum + (t.avgMood || 0), 0) / recentWeek.length 
-      : 0;
-    const previousAvg = previousWeek.length > 0 
-      ? previousWeek.reduce((sum, t) => sum + (t.avgMood || 0), 0) / previousWeek.length 
-      : 0;
-    
-    const weeklyImprovement = previousAvg > 0 
-      ? ((recentAvg - previousAvg) / previousAvg * 100) 
-      : 0;
-    
-    // Monthly mood distribution with validation
-    const safeMoodCounts = {
-      'very_happy': Number(moodCounts.very_happy) || 0,
-      'happy': Number(moodCounts.happy) || 0,
-      'neutral': Number(moodCounts.neutral) || 0,
-      'sad': Number(moodCounts.sad) || 0,
-      'very_sad': Number(moodCounts.very_sad) || 0
-    };
-    
-    const moodDistribution = {};
-    Object.keys(safeMoodCounts).forEach(mood => {
-      moodDistribution[mood] = totalMoods > 0 ? (safeMoodCounts[mood] / totalMoods * 100) : 0;
-    });
-    
-    // Activity analysis with validation
-    const activityCorrelation = summary.activityCorrelation || {};
-    const validActivities = Object.entries(activityCorrelation)
-      .filter(([, data]) => data && typeof data.average === 'number' && !isNaN(data.average));
-    const bestActivity = validActivities.length > 0 
-      ? validActivities.sort(([,a], [,b]) => (b.average || 0) - (a.average || 0))[0]
-      : null;
-    
-    // Time analysis with validation
-    const timeCorrelation = summary.timeCorrelation || {};
-    const validTimes = Object.entries(timeCorrelation)
-      .filter(([, data]) => data && typeof data.average === 'number' && !isNaN(data.average));
-    const bestTime = validTimes.length > 0 
-      ? validTimes.sort(([,a], [,b]) => (b.average || 0) - (a.average || 0))[0]
-      : null;
-
-    return {
-      totalMoods,
-      avgMood: isNaN(Number(summary.avgMood) || 3) ? 0 : Math.round((Number(summary.avgMood) || 3) * 10) / 10,
-      mostFrequentMood,
-      currentStreak: Number(streaks?.currentPositiveStreak) || 0,
-      longestStreak: Number(streaks?.maxPositiveStreak) || 0,
-      bestDay: bestDay ? {
-        date: bestDay.date,
-        mood: Math.round(bestDay.avgMood || 0),
-        formatted: formatDate(bestDay.date)
-      } : null,
-      worstDay: worstDay ? {
-        date: worstDay.date,
-        mood: Math.round(worstDay.avgMood || 0),
-        formatted: formatDate(worstDay.date)
-      } : null,
-      weeklyImprovement: isNaN(weeklyImprovement) ? 0 : Math.round(weeklyImprovement * 10) / 10,
-      moodDistribution,
-      bestActivity: bestActivity ? {
-        name: bestActivity[0],
-        average: Math.round((bestActivity[1].average || 0) * 10) / 10
-      } : null,
-      bestTime: bestTime ? {
-        name: bestTime[0],
-        average: Math.round((bestTime[1].average || 0) * 10) / 10
-      } : null,
-      consistencyScore: Math.round((totalMoods / 30) * 100) || 0 // percentage of days tracked in last 30 days
-    };
-  };
+  }, []);
 
   // Get empty insights for new users
   const getEmptyInsights = () => ({
     totalMoods: 0,
-    avgMood: 0,
-    mostFrequentMood: 'neutral',
     currentStreak: 0,
     longestStreak: 0,
-    bestDay: null,
-    worstDay: null,
     weeklyImprovement: 0,
-    moodDistribution: {
-      'very_happy': 0,
-      'happy': 0,
-      'neutral': 0,
-      'sad': 0,
-      'very_sad': 0
-    },
+    changeDirection: 'stable',
+    changeDescription: 'No change',
+    currentWeekAvg: 0,
+    previousWeekAvg: 0,
+    currentWeekEntries: 0,
+    previousWeekEntries: 0,
     bestActivity: null,
     bestTime: null,
-    consistencyScore: 0
+    consistencyScore: 0,
+    daysTracked: 0,
+    totalDays: 30,
+    trackingPattern: 'none',
+    activitySuggestions: [],
+    moodPattern: 'new_user',
+    suggestionConfidence: 0.5
   });
 
-  // Format date
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
-  // Get mood label
-  const getMoodLabel = (moodValue) => {
-    const labels = {
-      1: 'Very Sad',
-      2: 'Sad', 
-      3: 'Neutral',
-      4: 'Happy',
-      5: 'Very Happy'
-    };
-    return labels[moodValue] || 'Neutral';
-  };
-
-  // Get mood color
-  const getMoodColor = (mood) => {
-    const colors = {
-      'very_sad': '#e74c3c',
-      'sad': '#f39c12',
-      'neutral': '#f1c40f',
-      'happy': '#2ecc71',
-      'very_happy': '#27ae60'
-    };
-    return colors[mood] || colors.neutral;
-  };
 
   // Fetch data on mount and when refreshTrigger changes
   useEffect(() => {
     fetchInsights();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, fetchInsights]);
 
   if (loading) {
     return (
       <div className="mood-insights">
         <div className="insights-header">
-          <h3>💡 Mood Insights</h3>
-          <p>Personal analytics and patterns</p>
+          <h3>💡 Wellness Insights</h3>
+          <p>Discover personalized recommendations and patterns</p>
         </div>
         <div className="loading-state">
           <div className="loading-spinner-small"></div>
@@ -240,7 +182,7 @@ const MoodInsights = ({ refreshTrigger }) => {
     return (
       <div className="mood-insights">
         <div className="insights-header">
-          <h3>💡 Mood Insights</h3>
+          <h3>💡 Wellness Insights</h3>
         </div>
         <div className="error-state">
           <div className="error-icon">⚠️</div>
@@ -257,12 +199,6 @@ const MoodInsights = ({ refreshTrigger }) => {
 
   return (
     <div className="mood-insights">
-      {/* Header */}
-      <div className="insights-header">
-        <h3>💡 Mood Insights</h3>
-        <p>Personal analytics and patterns from your mood tracking journey</p>
-      </div>
-
       {/* Content */}
       <div className="insights-content">
         {isEmpty ? (
@@ -278,62 +214,25 @@ const MoodInsights = ({ refreshTrigger }) => {
             <div className="insight-card primary">
               <div className="insight-icon">📊</div>
               <div className="insight-content">
-                <h4>Total Moods</h4>
+                <h4>Total Entries</h4>
                 <div className="insight-value">{insights.totalMoods}</div>
-                <p>Entries recorded</p>
+                <p>Mood records tracked</p>
               </div>
             </div>
 
-            {/* Average Mood */}
-            <div className="insight-card secondary">
-              <div className="insight-icon">
-                {moodEmojis[insights.mostFrequentMood]}
-              </div>
-              <div className="insight-content">
-                <h4>Average Mood</h4>
-                <div className="insight-value">{insights.avgMood}/5</div>
-                <p>{getMoodLabel(Math.round(insights.avgMood))}</p>
-              </div>
-            </div>
 
-            {/* Most Frequent Mood */}
-            <div className="insight-card tertiary">
-              <div 
-                className="insight-icon mood-circle"
-                style={{ backgroundColor: getMoodColor(insights.mostFrequentMood) }}
-              >
-                {moodEmojis[insights.mostFrequentMood]}
-              </div>
-              <div className="insight-content">
-                <h4>Most Frequent</h4>
-                <div className="insight-value">
-                  {insights.mostFrequentMood.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </div>
-                <p>Your common mood</p>
-              </div>
-            </div>
 
             {/* Current Streak */}
             <div className="insight-card success">
               <div className="insight-icon">🔥</div>
               <div className="insight-content">
-                <h4>Current Streak</h4>
+                <h4>Positive Streak</h4>
                 <div className="insight-value">{insights.currentStreak}</div>
                 <p>Days of positive moods</p>
               </div>
             </div>
 
-            {/* Best Day */}
-            {insights.bestDay && (
-              <div className="insight-card highlight">
-                <div className="insight-icon">⭐</div>
-                <div className="insight-content">
-                  <h4>Best Day</h4>
-                  <div className="insight-value">{insights.bestDay.formatted}</div>
-                  <p>{getMoodLabel(insights.bestDay.mood)} mood</p>
-                </div>
-              </div>
-            )}
+
 
             {/* Consistency Score */}
             <div className="insight-card info">
@@ -341,37 +240,137 @@ const MoodInsights = ({ refreshTrigger }) => {
               <div className="insight-content">
                 <h4>Consistency</h4>
                 <div className="insight-value">{insights.consistencyScore}%</div>
-                <p>Tracking regularity</p>
+                <p>{insights.daysTracked} of {insights.totalDays} days tracked</p>
+                <div className="tracking-pattern" style={{
+                  fontSize: '0.8rem',
+                  color: insights.trackingPattern === 'excellent' ? '#10B981' :
+                         insights.trackingPattern === 'good' ? '#3B82F6' :
+                         insights.trackingPattern === 'moderate' ? '#F59E0B' :
+                         insights.trackingPattern === 'poor' ? '#EF4444' : '#6B7280',
+                  fontWeight: '600',
+                  marginTop: '4px'
+                }}>
+                  {insights.trackingPattern === 'excellent' && '🌟 Excellent tracking!'}
+                  {insights.trackingPattern === 'good' && '👍 Good consistency'}
+                  {insights.trackingPattern === 'moderate' && '📊 Moderate tracking'}
+                  {insights.trackingPattern === 'poor' && '⚠️ Inconsistent tracking'}
+                  {insights.trackingPattern === 'very_poor' && '❌ Very inconsistent'}
+                  {insights.trackingPattern === 'none' && '📝 Start tracking to see consistency'}
+                </div>
               </div>
             </div>
 
-            {/* Weekly Improvement */}
-            <div className={`insight-card ${insights.weeklyImprovement >= 0 ? 'positive' : 'negative'}`}>
+            {/* Weekly Change */}
+            <div className={`insight-card ${insights.changeDirection === 'improving' ? 'positive' : insights.changeDirection === 'declining' ? 'negative' : 'neutral'}`}>
               <div className="insight-icon">
-                {insights.weeklyImprovement >= 0 ? '📈' : '📉'}
+                {insights.changeDirection === 'improving' ? '📈' : 
+                 insights.changeDirection === 'declining' ? '📉' : '➡️'}
               </div>
               <div className="insight-content">
                 <h4>Weekly Change</h4>
                 <div className="insight-value">
                   {insights.weeklyImprovement > 0 ? '+' : ''}{insights.weeklyImprovement}%
                 </div>
-                <p>{insights.weeklyImprovement >= 0 ? 'Improving' : 'Declining'}</p>
+                <p>{insights.changeDescription}</p>
+                <div className="weekly-details" style={{
+                  fontSize: '0.8rem',
+                  color: '#6B7280',
+                  marginTop: '4px'
+                }}>
+                  {insights.currentWeekEntries > 0 && insights.previousWeekEntries > 0 && (
+                    <>
+                      This week: {insights.currentWeekAvg}/5 ({insights.currentWeekEntries} entries)<br/>
+                      Last week: {insights.previousWeekAvg}/5 ({insights.previousWeekEntries} entries)
+                    </>
+                  )}
+                  {insights.currentWeekEntries > 0 && insights.previousWeekEntries === 0 && (
+                    <>This week: {insights.currentWeekAvg}/5 ({insights.currentWeekEntries} entries)<br/>
+                    Last week: No entries</>
+                  )}
+                  {insights.currentWeekEntries === 0 && insights.previousWeekEntries > 0 && (
+                    <>This week: No entries<br/>
+                    Last week: {insights.previousWeekAvg}/5 ({insights.previousWeekEntries} entries)</>
+                  )}
+                  {insights.currentWeekEntries === 0 && insights.previousWeekEntries === 0 && (
+                    <>No entries this week or last week</>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Best Activity */}
-            {insights.bestActivity && (
-              <div className="insight-card activity">
-                <div className="insight-icon">🎯</div>
+            {/* Personalized Activity Suggestions */}
+            {insights.activitySuggestions && insights.activitySuggestions.length > 0 && (
+              <div className="insight-card suggestions" style={{
+                gridColumn: 'span 2',
+                minHeight: '200px'
+              }}>
+                <div className="insight-icon">💡</div>
                 <div className="insight-content">
-                  <h4>Best Activity</h4>
-                  <div className="insight-value">
-                    {insights.bestActivity.name.charAt(0).toUpperCase() + insights.bestActivity.name.slice(1)}
+                  <h4>Recommended for You</h4>
+                  <div className="suggestions-list" style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '12px',
+                    marginTop: '12px'
+                  }}>
+                    {insights.activitySuggestions.slice(0, 2).map((suggestion, index) => (
+                      <div key={index} className="suggestion-item" style={{
+                        padding: '12px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer'
+                      }}>
+                        <div className="suggestion-header" style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          marginBottom: '8px'
+                        }}>
+                          <span style={{ marginRight: '10px', fontSize: '1.5rem' }}>{suggestion.icon}</span>
+                          <span style={{ 
+                            fontWeight: '600', 
+                            fontSize: '1rem',
+                            color: suggestion.priority === 'critical' ? '#EF4444' :
+                                   suggestion.priority === 'high' ? '#F59E0B' :
+                                   suggestion.priority === 'medium' ? '#3B82F6' : '#6B7280'
+                          }}>
+                            {suggestion.title}
+                          </span>
+                        </div>
+                        <p style={{ 
+                          fontSize: '0.85rem', 
+                          color: '#9CA3AF',
+                          margin: '0 0 8px 0',
+                          lineHeight: '1.4'
+                        }}>
+                          {suggestion.description}
+                        </p>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: '#6B7280',
+                          fontStyle: 'italic',
+                          lineHeight: '1.3'
+                        }}>
+                          {suggestion.reason}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <p>Boosts your mood most</p>
+                  <div style={{
+                    marginTop: '12px',
+                    fontSize: '0.8rem',
+                    color: '#6B7280',
+                    textAlign: 'center',
+                    fontStyle: 'italic'
+                  }}>
+                    Based on your mood patterns
+                  </div>
                 </div>
               </div>
             )}
+
+
 
           </div>
         )}

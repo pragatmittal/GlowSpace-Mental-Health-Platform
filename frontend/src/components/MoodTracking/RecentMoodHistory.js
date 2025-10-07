@@ -159,9 +159,6 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
                   {moodLabels[recentMood.mood]}
                 </h4>
                 <div className="mood-meta">
-                  <span className="mood-intensity">
-                    Intensity: {recentMood.intensity}/10
-                  </span>
                   <span className="mood-timestamp">
                     {formatTimestamp(recentMood.createdAt)}
                   </span>
@@ -169,36 +166,7 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
               </div>
             </div>
 
-            {/* Description */}
-            {recentMood.notes && (
-              <div className="mood-description">
-                <p>"{truncateText(recentMood.notes)}"</p>
-              </div>
-            )}
 
-            {/* Quote */}
-            {recentMood.quote && (
-              <div className="mood-quote">
-                <div className="quote-mark">"</div>
-                <p className="quote-text">{recentMood.quote.text}</p>
-              </div>
-            )}
-
-            {/* Context Info */}
-            <div className="mood-context">
-              <div className="context-item">
-                <span className="context-icon">🕐</span>
-                <span className="context-label">
-                  {recentMood.timeOfDay || 'Unknown time'}
-                </span>
-              </div>
-              <div className="context-item">
-                <span className="context-icon">🎯</span>
-                <span className="context-label">
-                  {recentMood.activity || 'No activity'}
-                </span>
-              </div>
-            </div>
 
             {/* Update Animation */}
             <div className="entry-animation">

@@ -3,16 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import LoadingSpinner from '../common/LoadingSpinner';
 import DashboardErrorBoundary from '../common/DashboardErrorBoundary';
-import MoodChart from './MoodChart';
 import MoodTrackingBox from './MoodTrackingBox';
 import EmotionInsights from './EmotionInsights';
 import UpcomingAppointments from './UpcomingAppointments';
 import QuickActions from './QuickActions';
 import WelcomeMessage from './WelcomeMessage';
 import { dashboardAPI } from '../../services/apiWrapper';
+import { moodAPI } from '../../services/api';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [moodStreaks, setMoodStreaks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -23,10 +24,22 @@ const Dashboard = () => {
   const lastFetchTimeRef = useRef(0);
   const isMountedRef = useRef(true);
 
+  // Function to fetch mood streaks
+  const fetchMoodStreaks = async () => {
+    try {
+      const response = await moodAPI.getStreaks();
+      if (response.data && response.data.success) {
+        setMoodStreaks(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching mood streaks:', error);
+    }
+  };
+
   // Debounced fetch function to prevent spam
   const fetchDashboardData = useCallback(async () => {
     const now = Date.now();
-    const minInterval = 2000; // Minimum 2 seconds between fetches
+    const minInterval = 5000; // Minimum 5 seconds between fetches to prevent flickering
     
     // Prevent too frequent calls
     if (now - lastFetchTimeRef.current < minInterval) {
@@ -44,55 +57,48 @@ const Dashboard = () => {
     lastFetchTimeRef.current = now;
     
     try {
-      setLoading(true);
+      // Only set loading to true if we don't have data yet
+      if (!dashboardData) {
+        setLoading(true);
+      }
       setError(null);
       
       console.log('🌐 Fetching dashboard data...');
-      const response = await dashboardAPI.getDashboardData();
+      const [dashboardResponse, streaksResponse] = await Promise.allSettled([
+        dashboardAPI.getDashboardData(),
+        moodAPI.getStreaks()
+      ]);
       
       // Check if component is still mounted
       if (!isMountedRef.current) return;
       
       // Transform backend data to match frontend expectations
-      console.log('🌐 Raw dashboard API response:', response.data);
+      const response = dashboardResponse.status === 'fulfilled' ? dashboardResponse.value : null;
+      console.log('🌐 Raw dashboard API response:', response?.data);
+      
+      // Handle mood streaks
+      if (streaksResponse.status === 'fulfilled' && streaksResponse.value.data.success) {
+        setMoodStreaks(streaksResponse.value.data.data);
+      }
       
       const transformedData = {
-        ...response.data,
-        // Use the new moodData field if available, fallback to moodTrends
-        moodData: response.data.moodData?.map(entry => ({
-          date: entry.createdAt,
-          mood: entry.moodValue,
-          intensity: entry.intensity,
-          timeOfDay: entry.timeOfDay,
-          activity: entry.activity,
-          label: entry.formattedDate,
-          notes: entry.notes || ''
-        })) || response.data.moodTrends?.map(trend => ({
-          date: trend.date || trend._id?.date,
-          mood: Math.round(trend.avgMood || 3), // Fallback to neutral
-          intensity: Math.round(trend.avgIntensity || 5),
-          label: new Date(trend.date || trend._id?.date).toLocaleDateString('en-US', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
-          })
-        })) || [],
-        // Enhanced mood statistics
-        moodStats: response.data.moodStats || {
+        ...response?.data,
+        // Enhanced mood statistics for MoodTrackingBox
+        moodStats: response?.data?.moodStats || {
           totalEntries: 0,
           thisWeekEntries: 0,
           averageMood: 0,
           lastEntry: null
         },
-        emotionData: response.data.emotionTrends || [],
-        appointments: response.data.recentAppointments || []
+        emotionData: response?.data?.emotionTrends || [],
+        appointments: response?.data?.recentAppointments || []
       };
       
       console.log('📊 Dashboard Data Loaded:', {
-        moodDataCount: transformedData.moodData.length,
         moodStats: transformedData.moodStats,
-        hasRecentData: transformedData.moodData.length > 0,
-        rawMoodDataSample: transformedData.moodData.slice(0, 2)
+        hasRecentData: transformedData.moodStats.totalEntries > 0,
+        emotionDataCount: transformedData.emotionData.length,
+        appointmentsCount: transformedData.appointments.length
       });
       
       if (isMountedRef.current) {
@@ -114,33 +120,18 @@ const Dashboard = () => {
       }
       abortControllerRef.current = null;
     }
-  }, []);
+  }, [dashboardData]);
 
   // Single useEffect for initial load and cleanup
   useEffect(() => {
     isMountedRef.current = true;
     
-    // Initial fetch
+    // Initial fetch only - no event listeners to prevent circular dependencies
     fetchDashboardData();
-    
-    // Listen for mood data updates (but debounced)
-    const handleMoodDataUpdate = (event) => {
-      console.log('🔄 Mood data updated event received');
-      // Add delay to prevent immediate refetch
-      setTimeout(() => {
-        if (isMountedRef.current) {
-          fetchDashboardData();
-        }
-      }, 1000);
-    };
-
-    // Only listen for specific events, not all visibility changes
-    window.addEventListener('moodDataUpdated', handleMoodDataUpdate);
     
     // Cleanup function
     return () => {
       isMountedRef.current = false;
-      window.removeEventListener('moodDataUpdated', handleMoodDataUpdate);
       
       // Cancel any pending requests
       if (abortControllerRef.current) {
@@ -148,6 +139,22 @@ const Dashboard = () => {
       }
     };
   }, []); // Empty dependency array - only run once
+
+  // Listen for mood data updates to refresh streaks
+  useEffect(() => {
+    const handleMoodDataUpdate = () => {
+      console.log('🔄 Mood data update detected in Dashboard, refreshing streaks...');
+      fetchMoodStreaks();
+    };
+
+    window.addEventListener('moodDataUpdated', handleMoodDataUpdate);
+    window.addEventListener('moodEntryAdded', handleMoodDataUpdate);
+
+    return () => {
+      window.removeEventListener('moodDataUpdated', handleMoodDataUpdate);
+      window.removeEventListener('moodEntryAdded', handleMoodDataUpdate);
+    };
+  }, []);
 
   // Separate effect for location-based refresh (more controlled)
   useEffect(() => {
@@ -213,26 +220,24 @@ const Dashboard = () => {
     <DashboardErrorBoundary>
       <div className="dashboard-container">
         <div className="dashboard-header">
-          <WelcomeMessage user={dashboardData?.user} />
+          <WelcomeMessage user={dashboardData?.user} moodStreaks={moodStreaks} />
         </div>
 
         <div className="dashboard-content">
-          <div className="dashboard-grid">
+          {/* Top Row - Quick Actions */}
+          <div className="dashboard-top-row">
             <DashboardErrorBoundary>
-              <div className="grid-item quick-actions">
+              <div className="top-row-item quick-actions">
                 <QuickActions onAction={handleQuickAction} />
               </div>
             </DashboardErrorBoundary>
-            
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="dashboard-main-grid">
             <DashboardErrorBoundary>
               <div className="grid-item mood-tracking">
                 <MoodTrackingBox />
-              </div>
-            </DashboardErrorBoundary>
-            
-            <DashboardErrorBoundary>
-              <div className="grid-item mood-chart">
-                <MoodChart data={dashboardData?.moodData} />
               </div>
             </DashboardErrorBoundary>
             

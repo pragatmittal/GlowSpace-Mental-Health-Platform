@@ -10,10 +10,22 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+      const heroHeight = window.innerHeight; // Approximate hero section height
+      
+      // Hide navbar during hero section (first 100vh)
+      if (scrollY < heroHeight * 0.8) {
+        setIsVisible(false);
+        setIsScrolled(false);
+      } else {
+        // Show navbar after scrolling past hero section
+        setIsVisible(true);
+        setIsScrolled(scrollY > heroHeight);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -30,7 +42,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`navbar ${isScrolled ? 'scrolled' : ''} ${isDarkMode ? 'dark' : ''}`}>
+    <nav className={`navbar ${isVisible ? 'visible' : ''} ${isScrolled ? 'scrolled' : ''} ${isDarkMode ? 'dark' : ''}`}>
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
           <span className="logo-text">GlowSpace</span>

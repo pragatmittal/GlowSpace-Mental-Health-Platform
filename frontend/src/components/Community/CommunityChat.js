@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaArrowLeft, FaPaperPlane, FaSmile, FaSearch, FaEllipsisV, FaHeart, FaThumbsUp, FaLaugh, FaPin, FaFlag, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaSmile, FaSearch, FaEllipsisV, FaHeart, FaThumbsUp, FaLaugh, FaPin, FaEdit, FaTrash, FaSignOutAlt, FaUsers, FaCog, FaInfoCircle, FaDownload, FaShare } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { communityAPI } from '../../services/api';
 import './CommunityChat.css';
 
-const CommunityChat = ({ communityId, onBackToList }) => {
+const CommunityChat = ({ communityId, onBackToList, onCommunityLeft, onCommunityJoined }) => {
   const { user } = useAuth();
   const [community, setCommunity] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -19,6 +19,11 @@ const CommunityChat = ({ communityId, onBackToList }) => {
   const [editingMessage, setEditingMessage] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
+  const [showCommunityInfoModal, setShowCommunityInfoModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [userRole, setUserRole] = useState(null);
@@ -26,6 +31,7 @@ const CommunityChat = ({ communityId, onBackToList }) => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const messageInputRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   const emojis = ['😊', '😢', '😂', '😍', '😮', '😡', '👍', '👎', '❤️', '🎉'];
   const reactions = ['👍', '❤️', '😂', '😮', '😢', '😡'];
@@ -38,6 +44,20 @@ const CommunityChat = ({ communityId, onBackToList }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Close overflow menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showOverflowMenu && !event.target.closest('.overflow-menu-container')) {
+        setShowOverflowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showOverflowMenu]);
 
   const loadCommunity = async () => {
     try {
@@ -168,17 +188,6 @@ const CommunityChat = ({ communityId, onBackToList }) => {
     }
   };
 
-  const reportMessage = async (messageId, reason, description) => {
-    try {
-      await communityAPI.reportMessage(messageId, { reason, description });
-      setShowMessageActions(false);
-      setSelectedMessage(null);
-      // Show success message
-    } catch (error) {
-      console.error('Error reporting message:', error);
-      setError('Failed to report message');
-    }
-  };
 
   const insertEmoji = (emoji) => {
     setNewMessage(prev => prev + emoji);
@@ -186,9 +195,118 @@ const CommunityChat = ({ communityId, onBackToList }) => {
     messageInputRef.current?.focus();
   };
 
+  const searchMessages = async (query) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      setSearchError(null);
+      console.log('Searching messages with query:', query);
+      const response = await communityAPI.searchMessages(communityId, query);
+      console.log('Search results:', response.data);
+      setSearchResults(response.data.data.messages);
+    } catch (error) {
+      console.error('Error searching messages:', error);
+      setSearchError('Failed to search messages');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    // Debounce search to avoid too many API calls
+    clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      searchMessages(query);
+    }, 500);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchError(null);
+    setShowSearch(false);
+  };
+
+  const leaveCommunity = async () => {
+    if (window.confirm('Are you sure you want to leave this community? You will need to rejoin to access it again.')) {
+      try {
+        await communityAPI.leaveCommunity(communityId);
+        alert('You have left the community successfully.');
+        // Notify parent component that community was left
+        if (onCommunityLeft) {
+          onCommunityLeft(communityId);
+        }
+        onBackToList(); // Go back to community list
+      } catch (error) {
+        console.error('Error leaving community:', error);
+        alert('Failed to leave community. Please try again.');
+      }
+    }
+  };
+
+  const viewCommunityInfo = () => {
+    setShowCommunityInfoModal(true);
+  };
+
+  const exportChat = () => {
+    const chatData = {
+      community: community?.name,
+      messages: messages.map(msg => ({
+        sender: msg.senderId.name,
+        content: msg.content,
+        timestamp: msg.createdAt,
+        type: msg.messageType
+      })),
+      exportedAt: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(chatData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${community?.name}_chat_export.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shareCommunity = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('Community link copied to clipboard! You can now share it with others.');
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Community link copied to clipboard! You can now share it with others.');
+    }
+  };
+
+  const toggleOverflowMenu = () => {
+    setShowOverflowMenu(!showOverflowMenu);
+  };
+
   const joinCommunity = async () => {
     try {
       await communityAPI.joinCommunity(communityId);
+      // Notify parent component that community was joined
+      if (onCommunityJoined) {
+        onCommunityJoined(communityId);
+      }
       // Reload community to get updated user role
       await loadCommunity();
       // Reload messages
@@ -284,7 +402,9 @@ const CommunityChat = ({ communityId, onBackToList }) => {
     );
   }
 
-  const messageGroups = groupMessagesByDate(messages);
+  // Use search results if searching, otherwise use regular messages
+  const displayMessages = searchQuery.trim() ? searchResults : messages;
+  const messageGroups = groupMessagesByDate(displayMessages);
 
   return (
     <div className="community-chat-container">
@@ -307,9 +427,64 @@ const CommunityChat = ({ communityId, onBackToList }) => {
           >
             <FaSearch />
           </button>
-          <button className="btn btn-secondary">
-            <FaEllipsisV />
-          </button>
+          <div className="overflow-menu-container">
+            <button 
+              className="btn btn-secondary"
+              onClick={toggleOverflowMenu}
+            >
+              <FaEllipsisV />
+            </button>
+            
+            {showOverflowMenu && (
+              <div className="overflow-menu">
+                <button 
+                  className="overflow-menu-item"
+                  onClick={() => {
+                    viewCommunityInfo();
+                    setShowOverflowMenu(false);
+                  }}
+                >
+                  <FaInfoCircle />
+                  <span>Community Info</span>
+                </button>
+                
+                <button 
+                  className="overflow-menu-item"
+                  onClick={() => {
+                    exportChat();
+                    setShowOverflowMenu(false);
+                  }}
+                >
+                  <FaDownload />
+                  <span>Export Chat</span>
+                </button>
+                
+                <button 
+                  className="overflow-menu-item"
+                  onClick={() => {
+                    shareCommunity();
+                    setShowOverflowMenu(false);
+                  }}
+                >
+                  <FaShare />
+                  <span>Copy Community Link</span>
+                </button>
+                
+                <hr className="overflow-menu-divider" />
+                
+                <button 
+                  className="overflow-menu-item danger"
+                  onClick={() => {
+                    leaveCommunity();
+                    setShowOverflowMenu(false);
+                  }}
+                >
+                  <FaSignOutAlt />
+                  <span>Leave Community</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -318,11 +493,20 @@ const CommunityChat = ({ communityId, onBackToList }) => {
         <div className="search-bar">
           <input
             type="text"
-            placeholder="Search messages..."
+            placeholder="Search messages... (min 2 characters)"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="search-input"
           />
+          {searchQuery && (
+            <button 
+              className="btn btn-secondary"
+              onClick={clearSearch}
+              style={{ marginLeft: '0.5rem' }}
+            >
+              Clear
+            </button>
+          )}
         </div>
       )}
 
@@ -335,7 +519,22 @@ const CommunityChat = ({ communityId, onBackToList }) => {
           </div>
         ) : (
           <>
-            {hasMoreMessages && (
+            {/* Search Status */}
+            {searchQuery.trim() && (
+              <div className="search-status">
+                {isSearching ? (
+                  <p>Searching for "{searchQuery}"...</p>
+                ) : searchError ? (
+                  <p style={{ color: '#e53e3e' }}>Search error: {searchError}</p>
+                ) : searchResults.length > 0 ? (
+                  <p>Found {searchResults.length} message(s) for "{searchQuery}"</p>
+                ) : (
+                  <p>No messages found for "{searchQuery}"</p>
+                )}
+              </div>
+            )}
+
+            {!searchQuery.trim() && hasMoreMessages && (
               <button 
                 className="btn btn-secondary load-more-btn"
                 onClick={() => loadMessages(currentPage + 1)}
@@ -452,14 +651,6 @@ const CommunityChat = ({ communityId, onBackToList }) => {
                           </button>
                         )}
                         
-                        {!isOwnMessage(message) && (
-                          <button
-                            className="action-btn"
-                            onClick={() => reportMessage(message._id, 'inappropriate', '')}
-                          >
-                            <FaFlag />
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -518,6 +709,71 @@ const CommunityChat = ({ communityId, onBackToList }) => {
       {typingUsers.length > 0 && (
         <div className="typing-indicator">
           <span>{typingUsers.join(', ')} is typing...</span>
+        </div>
+      )}
+
+      {/* Community Info Modal */}
+      {showCommunityInfoModal && (
+        <div className="modal-overlay" onClick={() => setShowCommunityInfoModal(false)}>
+          <div className="community-info-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Community Information</h2>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setShowCommunityInfoModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="community-details">
+                <h3 className="community-name">{community?.name}</h3>
+                <p className="community-description">{community?.description}</p>
+                
+                <div className="community-stats">
+                  <div className="stat-item">
+                    <FaUsers className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-label">Members</span>
+                      <span className="stat-value">{community?.members?.length || community?.memberCount || 0}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="stat-item">
+                    <FaInfoCircle className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-label">Type</span>
+                      <span className="stat-value capitalize">{community?.type || 'Public'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="stat-item">
+                    <FaCog className="stat-icon" />
+                    <div className="stat-content">
+                      <span className="stat-label">Status</span>
+                      <span className="stat-value capitalize">{community?.isActive ? 'Active' : 'Inactive'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="community-meta">
+                  <p className="created-date">
+                    Created: {community?.createdAt ? new Date(community.createdAt).toLocaleDateString() : 'Unknown'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-primary"
+                onClick={() => setShowCommunityInfoModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

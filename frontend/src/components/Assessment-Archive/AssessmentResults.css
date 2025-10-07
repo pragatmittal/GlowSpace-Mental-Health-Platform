@@ -10,13 +10,13 @@
   gap: 2rem;
   margin-bottom: 3rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .back-btn {
-  background: #f1f5f9;
-  color: #475569;
-  border: 2px solid #e2e8f0;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 600;
@@ -25,7 +25,7 @@
 }
 
 .back-btn:hover {
-  background: #e2e8f0;
+  background: var(--border-color);
   transform: translateY(-1px);
 }
 
@@ -37,7 +37,7 @@
 .results-title h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -45,7 +45,7 @@
 }
 
 .results-title p {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .score-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -104,12 +104,12 @@
 .score-info h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .completion-date {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
@@ -127,7 +127,7 @@
 .score-interpretation {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
 }
 
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 1.5rem;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border: 2px solid #f59e0b;
+  border: 2px solid #f39c12;
   border-radius: 16px;
   padding: 2rem;
 }
@@ -158,7 +158,7 @@
 }
 
 .notice-content h3 {
-  color: #92400e;
+  color: #8e4a0e;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
@@ -174,7 +174,7 @@
 .resources-section h3 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
   text-align: center;
 }
@@ -186,11 +186,11 @@
 }
 
 .recommendation-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.06);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -221,7 +221,7 @@
 }
 
 .next-step-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 2rem;
   text-align: center;
@@ -248,7 +248,7 @@
 }
 
 .next-step-card p {
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 1.5rem;
 }
@@ -261,7 +261,7 @@
 }
 
 .resource-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -288,7 +288,7 @@
 }
 
 .resource-card p {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 1rem;
@@ -373,7 +373,7 @@
 .assessment-results-error {
   text-align: center;
   padding: 4rem 2rem;
-  background: white;
+  background: var(--card-bg);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
@@ -384,7 +384,7 @@
 }
 
 .assessment-results-error p {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 

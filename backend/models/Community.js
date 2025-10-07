@@ -146,10 +146,17 @@ communitySchema.statics.getByCategory = async function(category, page = 1, limit
 // Static method to get user's communities
 communitySchema.statics.getUserCommunities = async function(userId) {
   return await this.find({
-    'members.userId': userId,
-    'members.isActive': true,
-    isActive: true,
-    isArchived: false
+    $and: [
+      { isActive: true, isArchived: false },
+      {
+        members: {
+          $elemMatch: {
+            userId: userId,
+            isActive: true
+          }
+        }
+      }
+    ]
   })
   .populate('createdBy', 'name avatar')
   .populate('moderators', 'name avatar')

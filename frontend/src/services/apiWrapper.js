@@ -1,7 +1,7 @@
 import axios from 'axios';
 import requestManager from '../utils/requestManager';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002/api';
 
 // Enhanced API wrapper with rate limiting and error handling
 class ApiWrapper {

@@ -1,48 +1,41 @@
+/* Assessments Page Styles */
 .assessments-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  padding: 2rem 0;
+  background: var(--primary-gradient);
+  padding: 20px;
 }
 
 .assessments-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .assessments-page {
-    padding: 1rem 0;
-  }
-  
-  .assessments-container {
-    padding: 0 0.5rem;
-  }
-}
-
-/* Error states */
-.assessment-error {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem 0;
-  color: #dc2626;
+/* Loading Spinner */
+.assessment-hub-loading {
   text-align: center;
+  padding: 60px 20px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.assessment-error button {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  margin-top: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
 }
 
-.assessment-error button:hover {
-  background: #b91c1c;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.assessment-hub-loading p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
 }

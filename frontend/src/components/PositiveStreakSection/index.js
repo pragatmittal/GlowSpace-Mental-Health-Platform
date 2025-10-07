@@ -98,6 +98,17 @@ const PositiveStreakSection = () => {
       ref={sectionRef} 
       className={`positive-streak-section ${isDarkMode ? 'dark' : ''}`}
     >
+      {/* Floating Elements */}
+      <div className="floating-elements">
+        <div className="float-element float-1"></div>
+        <div className="float-element float-2"></div>
+        <div className="float-element float-3"></div>
+      </div>
+
+      {/* Decorative Lines */}
+      <div className="deco-line line-1"></div>
+      <div className="deco-line line-2"></div>
+
       <div className="section-content">
         <h2 className="section-title">Start Your Positive Streak</h2>
         <p className="section-subtitle">
@@ -112,7 +123,9 @@ const PositiveStreakSection = () => {
               ref={el => cardsRef.current[index] = el}
               className="challenge-card"
             >
-              <div className="challenge-icon">{challenge.icon}</div>
+              <div className="challenge-icon">
+                <span>{challenge.icon}</span>
+              </div>
               <h3 className="challenge-title">{challenge.title}</h3>
               <p className="challenge-description">{challenge.description}</p>
               <div className="challenge-meta">
@@ -128,6 +141,20 @@ const PositiveStreakSection = () => {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* Call to Action Section */}
+        <div className="cta-section">
+          <div className="cta-content">
+            <h3 className="cta-title">Ready to Transform Your Life?</h3>
+            <p className="cta-description">
+              Join thousands of users who have already started their mental wellness journey. 
+              Every challenge completed brings you closer to a healthier, happier you.
+            </p>
+            <Link to="/register" className="cta-button">
+              Get Started Today
+            </Link>
+          </div>
         </div>
       </div>
     </section>

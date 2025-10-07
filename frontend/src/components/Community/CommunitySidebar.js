@@ -1,29 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaPlus, FaHome, FaSearch, FaBookmark, FaCog } from 'react-icons/fa';
-import { useAuth } from '../../contexts/AuthContext';
+import { FaSearch, FaPlus, FaUsers, FaComments, FaClock, FaTag } from 'react-icons/fa';
 import { communityAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import './CommunitySidebar.css';
 
-const CommunitySidebar = ({ selectedCommunity, onCommunitySelect, onCreateCommunity }) => {
-  const { user } = useAuth();
+const CommunitySidebar = ({ onCommunitySelect, onCreateCommunity, refreshTrigger }) => {
   const [userCommunities, setUserCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('my-communities');
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    loadUserCommunities();
-  }, []);
+    if (isAuthenticated && user) {
+      loadUserCommunities();
+    } else {
+      setLoading(false);
+      setError('User not authenticated');
+    }
+  }, [isAuthenticated, user]);
+
+  // Reload communities when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0 && isAuthenticated && user) {
+      loadUserCommunities();
+    }
+  }, [refreshTrigger, isAuthenticated, user]);
+
+
 
   const loadUserCommunities = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+
+      
+      const TOKEN_KEY = btoa('glow_access_token');
+      const REFRESH_KEY = btoa('glow_refresh_token');
+      const accessToken = localStorage.getItem(TOKEN_KEY);
+      const refreshToken = localStorage.getItem(REFRESH_KEY);
+      
+      if (!accessToken) {
+        throw new Error('No access token available');
+      }
+      
       const response = await communityAPI.getUserCommunities();
-      setUserCommunities(response.data.data);
+      
+      if (response.data && response.data.data) {
+        setUserCommunities(response.data.data);
+      } else {
+        setUserCommunities([]);
+      }
     } catch (error) {
       console.error('Error loading user communities:', error);
-      setError('Failed to load your communities');
+      
+      if (error.response?.status === 401) {
+        setError('Authentication failed. Please log in again.');
+        // Try to redirect to login
+        window.location.href = '/login';
+      } else if (error.message === 'No access token available') {
+        setError('No access token available. Please log in again.');
+        window.location.href = '/login';
+      } else {
+        setError('Failed to load your communities. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -68,6 +109,25 @@ const CommunitySidebar = ({ selectedCommunity, onCommunitySelect, onCreateCommun
     // Search functionality can be implemented here
   };
 
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="community-sidebar">
+        <div className="sidebar-header">
+          <h3>Communities</h3>
+        </div>
+        <div className="auth-error">
+          <p>Please log in to view your communities</p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => window.location.href = '/login'}
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="community-sidebar">
@@ -77,6 +137,28 @@ const CommunitySidebar = ({ selectedCommunity, onCommunitySelect, onCreateCommun
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading communities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="community-sidebar">
+        <div className="sidebar-header">
+          <h3>Communities</h3>
+        </div>
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button 
+              className="btn btn-primary"
+              onClick={loadUserCommunities}
+            >
+              Retry
+            </button>
+
+          </div>
         </div>
       </div>
     );
@@ -113,155 +195,86 @@ const CommunitySidebar = ({ selectedCommunity, onCommunitySelect, onCreateCommun
 
       {/* Navigation Tabs */}
       <div className="sidebar-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'my-communities' ? 'active' : ''}`}
-          onClick={() => setActiveTab('my-communities')}
-        >
-          <FaUsers />
-          My Communities
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'discover' ? 'active' : ''}`}
-          onClick={() => setActiveTab('discover')}
-        >
-          <FaSearch />
-          Discover
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'bookmarks' ? 'active' : ''}`}
-          onClick={() => setActiveTab('bookmarks')}
-        >
-          <FaBookmark />
-          Bookmarks
-        </button>
+        <button className="tab active">My Communities</button>
+        <button className="tab">Discover</button>
       </div>
 
-      {/* Content */}
-      <div className="sidebar-content">
-        {activeTab === 'my-communities' && (
-          <div className="communities-list">
-            {error ? (
-              <div className="error-message">
-                <p>{error}</p>
-                <button 
-                  className="btn btn-secondary btn-sm"
-                  onClick={loadUserCommunities}
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : filteredCommunities.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">🏘️</div>
-                <h4>No communities yet</h4>
-                <p>Join or create your first community to get started</p>
-                <button 
-                  className="btn btn-primary btn-sm"
-                  onClick={onCreateCommunity}
-                >
-                  <FaPlus />
-                  Create Community
-                </button>
-              </div>
-            ) : (
-              filteredCommunities.map((community) => (
-                <div
-                  key={community._id}
-                  className={`community-item ${selectedCommunity === community._id ? 'active' : ''}`}
-                  onClick={() => handleCommunityClick(community)}
-                >
-                  <div className="community-item-header">
-                    <div className="community-item-icon">
-                      {getCategoryIcon(community.category)}
-                    </div>
-                    <div className="community-item-info">
-                      <h4>{community.name}</h4>
-                      <p>{community.description}</p>
-                    </div>
-                  </div>
-                  <div className="community-item-stats">
-                    <span className="member-count">
-                      <FaUsers />
-                      {formatMemberCount(community.stats.totalMembers)}
-                    </span>
-                    <span className="community-type public">
-                      Public
-                    </span>
-                  </div>
+      {/* Communities List */}
+      <div className="communities-list">
+        {filteredCommunities.length === 0 ? (
+          <div className="no-communities">
+            <p>You haven't joined any communities yet.</p>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => window.location.href = '/community'}
+            >
+              Discover Communities
+            </button>
+          </div>
+        ) : (
+          filteredCommunities.map((community) => (
+            <div
+              key={community._id}
+              className="community-item"
+              onClick={() => handleCommunityClick(community)}
+            >
+              <div className="community-item-header">
+                <div className="community-item-title">
+                  <h4>{community.name}</h4>
+                  <span className="community-type public">
+                    Public
+                  </span>
                 </div>
-              ))
-            )}
-          </div>
-        )}
+                <div className="community-category">
+                  {getCategoryIcon(community.category)} {community.category}
+                </div>
+              </div>
 
-        {activeTab === 'discover' && (
-          <div className="discover-section">
-            <div className="discover-header">
-              <h4>Discover Communities</h4>
-              <p>Find new communities to join</p>
-            </div>
-            <div className="discover-categories">
-              <button className="category-btn">
-                🌐 General
-              </button>
-              <button className="category-btn">
-                😰 Anxiety
-              </button>
-              <button className="category-btn">
-                😔 Depression
-              </button>
-              <button className="category-btn">
-                😤 Stress
-              </button>
-              <button className="category-btn">
-                💕 Relationships
-              </button>
-              <button className="category-btn">
-                🧘 Self-Care
-              </button>
-              <button className="category-btn">
-                🛋️ Therapy
-              </button>
-              <button className="category-btn">
-                🧘‍♀️ Meditation
-              </button>
-              <button className="category-btn">
-                💪 Fitness
-              </button>
-              <button className="category-btn">
-                🥗 Nutrition
-              </button>
-            </div>
-          </div>
-        )}
+              <div className="community-item-description">
+                <p>{community.description}</p>
+              </div>
 
-        {activeTab === 'bookmarks' && (
-          <div className="bookmarks-section">
-            <div className="empty-state">
-              <div className="empty-icon">🔖</div>
-              <h4>No bookmarks yet</h4>
-              <p>Bookmark communities you want to revisit later</p>
+              <div className="community-item-tags">
+                {community.tags.slice(0, 2).map((tag, index) => (
+                  <span key={index} className="tag">
+                    <FaTag /> {tag}
+                  </span>
+                ))}
+                {community.tags.length > 2 && (
+                  <span className="tag-more">+{community.tags.length - 2} more</span>
+                )}
+              </div>
+
+              <div className="community-item-stats">
+                <div className="stat">
+                  <FaUsers />
+                  <span>{formatMemberCount(community.stats?.totalMembers || 0)} members</span>
+                </div>
+                <div className="stat">
+                  <FaComments />
+                  <span>{formatMemberCount(community.stats?.totalMessages || 0)} messages</span>
+                </div>
+                <div className="stat">
+                  <FaClock />
+                  <span>{community.stats?.lastActivity ? 'Active' : 'Inactive'}</span>
+                </div>
+              </div>
             </div>
-          </div>
+          ))
         )}
       </div>
 
-      {/* User Info */}
+      {/* Footer */}
       <div className="sidebar-footer">
-        <div className="user-info">
-          <img
-            src={user?.avatar || '/default-avatar.png'}
-            alt={user?.name}
-            className="user-avatar"
-          />
-          <div className="user-details">
-            <h4>{user?.name}</h4>
-            <p>{userCommunities.length} communities</p>
-          </div>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <button 
+            className="btn btn-secondary btn-sm"
+            onClick={loadUserCommunities}
+          >
+            Refresh Communities
+          </button>
+
         </div>
-        <button className="settings-btn">
-          <FaCog />
-        </button>
       </div>
     </div>
   );

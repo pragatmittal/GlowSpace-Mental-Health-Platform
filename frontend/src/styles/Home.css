@@ -1,65 +1,127 @@
+/* Home page styles with Proper Light/Dark Theme Support */
 .home-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .hero-section {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  color: white;
-  padding: 80px 20px;
+  background: var(--primary-gradient);
+  padding: 80px 0;
   text-align: center;
+  color: var(--card-bg);
 }
 
 .services-section {
-  padding: 60px 20px;
-  background: var(--bg-light);
-}
-
-.streak-section {
-  padding: 60px 20px;
-  background: white;
+  background: var(--bg-primary);
+  padding: 80px 0;
+  color: var(--text-primary);
 }
 
 .testimonials-section {
-  padding: 60px 20px;
-  background: var(--bg-light);
+  background: var(--primary-gradient);
+  padding: 80px 0;
+  color: var(--card-bg);
 }
 
-.section-title {
-  font-size: 2.5rem;
+.positive-streak-section {
+  background: var(--bg-primary);
+  padding: 80px 0;
+  color: var(--text-primary);
+}
+
+/* Service cards */
+.service-card {
+  background: var(--card-bg);
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  border: 1px solid var(--border-color);
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
+}
+
+.service-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.service-card p {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* Testimonial cards */
+.testimonial-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.testimonial-card h4 {
+  color: var(--card-bg);
+  margin-bottom: 10px;
+}
+
+.testimonial-card p {
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Positive streak section */
+.streak-card {
+  background: var(--card-bg);
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+
+.streak-number {
+  font-size: 3rem;
   font-weight: bold;
-  margin-bottom: 1.5rem;
-  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 10px;
 }
 
-.section-subtitle {
+.streak-text {
+  color: var(--text-primary);
   font-size: 1.2rem;
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
-  text-align: center;
 }
 
-.cta-button {
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
+/* Responsive design */
 @media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
+  .hero-section,
+  .services-section,
+  .testimonials-section,
+  .positive-streak-section {
+    padding: 60px 0;
   }
-
-  .section-subtitle {
-    font-size: 1rem;
+  
+  .service-card {
+    padding: 25px;
+    margin: 15px;
+  }
+  
+  .streak-card {
+    padding: 25px;
+  }
+  
+  .streak-number {
+    font-size: 2.5rem;
   }
 } 

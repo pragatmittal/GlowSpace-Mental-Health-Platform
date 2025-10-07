@@ -1,19 +1,20 @@
 /* MoodTrackingBox.css */
 .mood-tracking-box {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 400px;
 }
 
 .mood-tracking-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Header */
@@ -21,26 +22,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f1f5f9;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .box-header h3 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .view-details-btn {
   background: none;
-  border: 2px solid #667eea;
-  color: #667eea;
-  padding: 8px 16px;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -49,7 +50,7 @@
 }
 
 .view-details-btn:hover {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
   transform: translateY(-1px);
 }
@@ -78,8 +79,8 @@
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -91,32 +92,33 @@
 }
 
 .error-state p {
-  color: #e53e3e;
+  color: var(--text-secondary);
   margin-bottom: 16px;
 }
 
 .retry-btn {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  cursor: pointer;
+  font-size: 0.9rem;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .retry-btn:hover {
-  background: #5a67d8;
+  background: var(--secondary-color);
   transform: translateY(-1px);
 }
 
 /* Welcome State */
 .welcome-state {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 30px 20px;
-  border: 2px dashed #cbd5e0;
+  border: 2px dashed var(--border-color);
 }
 
 .welcome-icon {
@@ -127,20 +129,20 @@
 .welcome-state h4 {
   margin: 0 0 12px 0;
   font-size: 1.2rem;
-  color: #2d3748;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .welcome-state p {
   margin: 0 0 20px 0;
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.5;
   max-width: 280px;
 }
 
 .track-mood-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -149,12 +151,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
 .track-mood-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
 /* Recent Mood Section */
@@ -162,7 +164,7 @@
   margin: 0 0 16px 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
 }
 
 .recent-mood-display {
@@ -170,15 +172,15 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: #f7fafc;
+  background: var(--bg-secondary);
   border-radius: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
 .recent-mood-display:hover {
-  background: #edf2f7;
-  border-color: #cbd5e0;
+  background: var(--border-color);
+  border-color: var(--primary-color);
 }
 
 .mood-emoji-circle {
@@ -202,26 +204,26 @@
 .mood-label {
   font-size: 1rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 4px;
   text-transform: capitalize;
 }
 
 .mood-time {
   font-size: 0.85rem;
-  color: #718096;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .mood-notes {
   font-size: 0.9rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-style: italic;
   line-height: 1.4;
-  background: white;
+  background: var(--card-bg);
   padding: 8px 12px;
   border-radius: 8px;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--primary-color);
 }
 
 /* Quick Stats */
@@ -237,15 +239,15 @@
   align-items: center;
   text-align: center;
   padding: 16px 12px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  background: var(--bg-secondary);
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
 .stat-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
 }
 
 .stat-icon {
@@ -256,13 +258,13 @@
 .stat-value {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: #718096;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -273,7 +275,7 @@
 
 .quick-track-btn {
   width: 100%;
-  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  background: var(--primary-gradient);
   color: white;
   border: none;
   padding: 14px 20px;
@@ -286,13 +288,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
 .quick-track-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
-  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  background: var(--secondary-gradient);
 }
 
 .btn-icon {

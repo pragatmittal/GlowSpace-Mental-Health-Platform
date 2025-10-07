@@ -28,13 +28,14 @@ const {
   validateUpdateProfile
 } = require('../middlewares/validators');
 
-// Public routes
-router.post('/register', rateLimitAuth(5, 15 * 60 * 1000), validateRegister, register);
-router.post('/login', rateLimitAuth(10, 15 * 60 * 1000), validateLogin, login);
+// Public routes - More lenient rate limits for development
+// In development, rate limiting is disabled by the middleware
+router.post('/register', rateLimitAuth(1000, 1 * 60 * 1000), validateRegister, register); // 1000 attempts per minute in dev
+router.post('/login', rateLimitAuth(1000, 1 * 60 * 1000), validateLogin, login); // 1000 attempts per minute in dev  
 router.post('/google', validateGoogleAuth, googleAuth);
 router.get('/verify-email/:token', verifyEmail);
-router.post('/forgot-password', rateLimitAuth(5, 15 * 60 * 1000), validateForgotPassword, forgotPassword);
-router.put('/reset-password/:token', rateLimitAuth(5, 15 * 60 * 1000), validateResetPassword, resetPassword);
+router.post('/forgot-password', rateLimitAuth(20, 15 * 60 * 1000), validateForgotPassword, forgotPassword);
+router.put('/reset-password/:token', rateLimitAuth(20, 15 * 60 * 1000), validateResetPassword, resetPassword);
 router.post('/refresh', refreshToken);
 
 // Protected routes

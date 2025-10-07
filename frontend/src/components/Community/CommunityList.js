@@ -236,56 +236,58 @@ const CommunityList = ({ onCommunitySelect, onCreateCommunity }) => {
             className="community-card"
             onClick={() => onCommunitySelect(community)}
           >
-            <div className="community-card-header">
-              <div className="community-card-title">
-                <h3>{community.name}</h3>
-                <span className="community-type public">
-                  Public
-                </span>
+            <div className="community-card-content">
+              <div className="community-card-header">
+                <div className="community-card-title">
+                  <h3>{community.name}</h3>
+                  <span className="community-type public">
+                    Public
+                  </span>
+                </div>
+                <div className="community-category">
+                  {getCategoryIcon(community.category)} {community.category}
+                </div>
               </div>
-              <div className="community-category">
-                {getCategoryIcon(community.category)} {community.category}
-              </div>
-            </div>
 
-            <div className="community-card-description">
-              <p>{community.description}</p>
-            </div>
-
-            <div className="community-card-tags">
-              {community.tags.slice(0, 3).map((tag, index) => (
-                <span key={index} className="tag">
-                  <FaTag /> {tag}
-                </span>
-              ))}
-              {community.tags.length > 3 && (
-                <span className="tag-more">+{community.tags.length - 3} more</span>
-              )}
-            </div>
-
-            <div className="community-card-stats">
-              <div className="stat">
-                <FaUsers />
-                <span>{formatMemberCount(community.stats.totalMembers)} members</span>
+              <div className="community-card-description">
+                <p>{community.description}</p>
               </div>
-              <div className="stat">
-                <FaComments />
-                <span>{formatMemberCount(community.stats.totalMessages)} messages</span>
-              </div>
-              <div className="stat">
-                <FaClock />
-                <span>{formatLastActivity(community.stats.lastActivity)}</span>
-              </div>
-            </div>
 
-            <div className="community-card-footer">
-              <div className="community-creator">
-                <img
-                  src={community.createdBy.avatar || '/default-avatar.png'}
-                  alt={community.createdBy.name}
-                  className="creator-avatar"
-                />
-                <span>Created by {community.createdBy.name}</span>
+              <div className="community-card-tags">
+                {community.tags.slice(0, 3).map((tag, index) => (
+                  <span key={index} className="tag">
+                    <FaTag /> {tag}
+                  </span>
+                ))}
+                {community.tags.length > 3 && (
+                  <span className="tag-more">+{community.tags.length - 3} more</span>
+                )}
+              </div>
+
+              <div className="community-card-stats">
+                <div className="stat">
+                  <FaUsers />
+                  <span>{formatMemberCount(community.stats.totalMembers)} members</span>
+                </div>
+                <div className="stat">
+                  <FaComments />
+                  <span>{formatMemberCount(community.stats.totalMessages)} messages</span>
+                </div>
+                <div className="stat">
+                  <FaClock />
+                  <span>{formatLastActivity(community.stats.lastActivity)}</span>
+                </div>
+              </div>
+
+              <div className="community-card-footer">
+                <div className="community-creator">
+                  <img
+                    src={community.createdBy.avatar || '/default-avatar.png'}
+                    alt={community.createdBy.name}
+                    className="creator-avatar"
+                  />
+                  <span>Created by {community.createdBy.name}</span>
+                </div>
               </div>
             </div>
           </div>

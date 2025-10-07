@@ -1,15 +1,15 @@
 .emotion-insights {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #FAFAFA 100%);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
-  border: 1px solid #e5e8eb;
+  box-shadow: 0 4px 20px rgba(110, 198, 178, 0.08);
+  border: 1px solid rgba(110, 198, 178, 0.2);
   height: fit-content;
   transition: all 0.3s ease;
 }
 
 .emotion-insights:hover {
-  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 8px 30px rgba(110, 198, 178, 0.12);
   transform: translateY(-2px);
 }
 
@@ -40,7 +40,7 @@
   padding-bottom: 1rem;
   border-bottom: 2px solid transparent;
   background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, #6366f1, #8b5cf6) border-box;
+              linear-gradient(135deg, #6EC6B2, #B39DDB) border-box;
   border-bottom: 2px solid;
 }
 
@@ -48,7 +48,7 @@
   margin: 0;
   font-size: 1.375rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #6EC6B2, #B39DDB);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,12 +56,12 @@
 
 .insight-period {
   font-size: 0.875rem;
-  color: #6366f1;
-  background: linear-gradient(135deg, #f0f2ff 0%, #e0e7ff 100%);
+  color: #6EC6B2;
+  background: linear-gradient(135deg, #F5F5F5 0%, #FAFAFA 100%);
   padding: 6px 14px;
   border-radius: 20px;
   font-weight: 500;
-  border: 1px solid #c7d2fe;
+  border: 1px solid rgba(110, 198, 178, 0.3);
 }
 
 /* Loading States */
@@ -234,82 +234,6 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.3s ease;
-}
-
-/* Insights & Patterns */
-.insights-patterns {
-  margin-bottom: 24px;
-}
-
-.insights-patterns h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.patterns-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.insight-card {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
-}
-
-.insight-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.insight-card.positive {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
-
-.insight-card.neutral {
-  background: #fafafa;
-  border-color: #e5e7eb;
-}
-
-.insight-card.helpful {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-
-.insight-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.insight-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.insight-title {
-  font-weight: 600;
-  color: #1f2937;
-  flex-grow: 1;
-}
-
-.sentiment-indicator {
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.insight-description {
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
-  margin-left: 32px;
 }
 
 /* Quick Actions */

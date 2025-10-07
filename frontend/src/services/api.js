@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { handleApiError, validateMoodData } from '../utils/errorHandler';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002/api';
 console.log('API URL being used:', API_URL);
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -12,14 +11,69 @@ const api = axios.create({
   }
 });
 
-// Add token to requests
+// Helper functions for token management
+const getStoredToken = () => {
+  try {
+    const TOKEN_KEY = btoa('glow_access_token');
+    const obfuscatedToken = localStorage.getItem(TOKEN_KEY);
+    return obfuscatedToken ? atob(obfuscatedToken) : null;
+  } catch (error) {
+    console.error('Error retrieving token:', error);
+    return null;
+  }
+};
+
+const getStoredRefreshToken = () => {
+  try {
+    const REFRESH_KEY = btoa('glow_refresh_token');
+    const obfuscatedToken = localStorage.getItem(REFRESH_KEY);
+    return obfuscatedToken ? atob(obfuscatedToken) : null;
+  } catch (error) {
+    console.error('Error retrieving refresh token:', error);
+    return null;
+  }
+};
+
+const storeToken = (token) => {
+  try {
+    const TOKEN_KEY = btoa('glow_access_token');
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, btoa(token));
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  } catch (error) {
+    console.error('Error storing token:', error);
+  }
+};
+
+const storeRefreshToken = (token) => {
+  try {
+    const REFRESH_KEY = btoa('glow_refresh_token');
+    if (token) {
+      localStorage.setItem(REFRESH_KEY, btoa(token));
+    } else {
+      localStorage.removeItem(REFRESH_KEY);
+    }
+  } catch (error) {
+    console.error('Error storing refresh token:', error);
+  }
+};
+
+// Create a separate axios instance for token refresh to avoid circular dependency
+const refreshApi = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 api.interceptors.request.use(
   async (config) => {
-    const TOKEN_KEY = btoa('glow_access_token');
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getStoredToken();
     if (token) {
       console.log('Adding token to request:', config.url);
-      config.headers.Authorization = `Bearer ${atob(token)}`;
+      config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.log('No token found for request:', config.url);
     }
@@ -38,29 +92,43 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const TOKEN_KEY = btoa('glow_access_token');
-      const REFRESH_KEY = btoa('glow_refresh_token');
       
       try {
-        const refreshToken = localStorage.getItem(REFRESH_KEY);
+        const refreshToken = getStoredRefreshToken();
         if (!refreshToken) {
-          throw new Error('No refresh token available');
+          console.error('No refresh token available');
+          // Clear tokens and redirect to login
+          storeToken(null);
+          storeRefreshToken(null);
+          window.location.href = '/login';
+          return Promise.reject(error);
         }
 
-        const response = await api.post('/auth/refresh', {
-          refreshToken: atob(refreshToken)
+        console.log('Attempting token refresh...');
+        
+        // Use the separate refresh API instance to avoid circular dependency
+        const response = await refreshApi.post('/auth/refresh', {
+          refreshToken: refreshToken
         });
 
         if (response.data.success) {
-          localStorage.setItem(TOKEN_KEY, btoa(response.data.accessToken));
+          console.log('Token refresh successful');
+          storeToken(response.data.accessToken);
           if (response.data.refreshToken) {
-            localStorage.setItem(REFRESH_KEY, btoa(response.data.refreshToken));
+            storeRefreshToken(response.data.refreshToken);
           }
           originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
           return api(originalRequest);
+        } else {
+          throw new Error('Token refresh failed');
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
+        // Clear tokens and redirect to login
+        storeToken(null);
+        storeRefreshToken(null);
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
     }
     return Promise.reject(error);
@@ -325,72 +393,79 @@ export const goalAPI = {
   }
 };
 
-// Assessment API - TEMPORARILY DISABLED FOR COMING SOON FEATURE
+// Assessment API - Comprehensive Mental Health Assessment
 export const assessmentAPI = {
   // Get assessment templates
   getTemplates: async () => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment templates coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+    try {
+      const response = await api.get('/assessments/templates');
+      return response;
+    } catch (error) {
+      console.error('Error fetching assessment templates:', error);
+      throw error;
+    }
   },
 
   // Get specific assessment by type
-  getByType: async (type) => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment templates coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+  getByType: async (type, sections = null) => {
+    try {
+      const url = sections ? 
+        `/assessments/templates/${type}?sections=${sections.join(',')}` : 
+        `/assessments/templates/${type}`;
+      
+      const response = await api.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error fetching assessment template:', error);
+      throw error;
+    }
   },
 
   // Submit assessment
   submit: async (assessmentData) => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment submission coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+    try {
+      const response = await api.post('/assessments/submit', assessmentData);
+      return response;
+    } catch (error) {
+      console.error('Error submitting assessment:', error);
+      throw error;
+    }
   },
 
   // Get assessment history
   getHistory: async (params = {}) => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment history coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const url = queryString ? `/assessments/history?${queryString}` : '/assessments/history';
+      
+      const response = await api.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error fetching assessment history:', error);
+      throw error;
+    }
   },
 
   // Get assessment results by ID
   getResults: async (id) => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment results coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+    try {
+      const response = await api.get(`/assessments/${id}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching assessment results:', error);
+      throw error;
+    }
   },
 
   // Get analytics
   getAnalytics: async () => {
-    return {
-      data: {
-        success: false,
-        message: 'Assessment analytics coming soon! We\'re building something amazing.',
-        comingSoon: true
-      }
-    };
+    try {
+      const response = await api.get('/assessments/analytics');
+      return response;
+    } catch (error) {
+      console.error('Error fetching assessment analytics:', error);
+      throw error;
+    }
   }
 };
 

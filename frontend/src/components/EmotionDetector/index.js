@@ -134,8 +134,6 @@ const EmotionDetector = () => {
   const [emotionHistory, setEmotionHistory] = useState([]);
   const [wellnessScore, setWellnessScore] = useState(0);
   const [isRateLimited, setIsRateLimited] = useState(false);
-  const [requestCount, setRequestCount] = useState(0);
-  const [bufferSize, setBufferSize] = useState(0);
   
   // Frame counter ref for accurate counting
   const frameCounter = useRef(0);
@@ -183,15 +181,7 @@ const EmotionDetector = () => {
     };
   }, []);
 
-  // Update request count and buffer size when they change
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRequestCount(requestManager.current.requestHistory.length);
-      setBufferSize(frameBuffer.current.buffer.length);
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+
 
   // Send emotion data with proper rate limiting
   const sendEmotionData = useCallback(async (batchData) => {
@@ -204,7 +194,6 @@ const EmotionDetector = () => {
 
       if (success) {
         setIsRateLimited(false);
-        setRequestCount(requestManager.current.requestHistory.length);
         if (error && error.includes('rate limit')) {
           setError(null);
         }
@@ -262,8 +251,13 @@ const EmotionDetector = () => {
           normalizedEmotions[emotion] = Math.round((score / totalScore) * 100);
       });
 
-      // Update state
+              // Update state
         setEmotions(normalizedEmotions);
+        
+        // Clear any "No face detected" error when face is successfully detected
+        if (error === 'No face detected') {
+          setError(null);
+        }
         
         // Calculate wellness score
         const score = calculateWellnessScore(normalizedEmotions);
@@ -305,7 +299,11 @@ const EmotionDetector = () => {
           }
         }
       } else {
-        setError('No face detected');
+        // Don't show "No face detected" error - it's not needed when detection is working
+        // Just clear any existing error
+        if (error === 'No face detected') {
+          setError(null);
+        }
       }
     } catch (err) {
       setError('Error processing video frame');
@@ -316,20 +314,27 @@ const EmotionDetector = () => {
   // Calculate wellness score
   const calculateWellnessScore = (emotions) => {
     const weights = {
-      happy: 1.5,
-      neutral: 1.0,
-      surprised: 0.5,
-      sad: -1.0,
-      angry: -1.0,
-      fearful: -1.0,
-      disgusted: -1.0
+      happy: 3.0,        // Increased positive weight for happiness
+      neutral: 0.5,      // Reduced neutral weight
+      surprised: 1.5,    // Increased positive weight for surprise
+      sad: -2.5,         // Increased negative weight for sadness
+      angry: -3.0,       // Increased negative weight for anger
+      fearful: -2.5,     // Increased negative weight for fear
+      disgusted: -2.5    // Increased negative weight for disgust
     };
 
     let score = 50; // Base score
+    
+    // Calculate weighted score with better scaling
     Object.entries(emotions).forEach(([emotion, value]) => {
-      score += (value * weights[emotion]) / 50;
+      if (weights[emotion]) {
+        // Normalize emotion value (0-100) and apply stronger weights
+        const normalizedValue = value / 100;
+        score += normalizedValue * weights[emotion] * 15; // Increased multiplier for better range
+      }
     });
 
+    // Ensure score stays within 0-100 range
     return Math.max(0, Math.min(100, Math.round(score)));
   };
 
@@ -350,8 +355,6 @@ const EmotionDetector = () => {
     requestManager.current.reset();
     frameBuffer.current.reset();
     frameCounter.current = 0;
-    setRequestCount(0);
-    setBufferSize(0);
 
     // Process frames at 15 FPS
     const interval = setInterval(processFrame, 1000 / 15);
@@ -387,8 +390,6 @@ const EmotionDetector = () => {
     
     // Clear rate limiting state
     setIsRateLimited(false);
-    setRequestCount(0);
-    setBufferSize(0);
   };
 
   // Download session data
@@ -436,8 +437,8 @@ const EmotionDetector = () => {
           {error && (
             <div className="error-message">
               <p>{error}</p>
-                </div>
-              )}
+            </div>
+          )}
           
           {isRateLimited && (
             <div className="rate-limit-indicator">
@@ -445,10 +446,7 @@ const EmotionDetector = () => {
             </div>
           )}
           
-          <div className="status-indicator">
-            <p>📊 API Calls: {requestCount}/5 (10s window)</p>
-            <p>🔄 Buffer: {bufferSize} frames</p>
-          </div>
+
             </div>
 
         <div className="controls">
@@ -477,83 +475,81 @@ const EmotionDetector = () => {
               )}
           </div>
 
-        <div className="results">
-          <div className="current-emotions">
-            <h3>Current Emotions</h3>
-            <div className="emotion-bars">
-              {Object.entries(emotions).map(([emotion, value]) => (
-                <div key={emotion} className="emotion-bar">
-                  <span className="emotion-label">{emotion}</span>
-                  <div className="bar-container">
-                    <div
-                      className="bar-fill"
-                      style={{ width: `${value}%` }}
-                    />
-                </div>
-                  <span className="emotion-value">{value}%</span>
-                </div>
-              ))}
-              </div>
-            </div>
-
-          <div className="wellness-score">
-            <h3>Wellness Score</h3>
-            <div className="score-display">
-              <div className="score-value">{wellnessScore}</div>
-              <div className="score-label">/100</div>
-              </div>
-            </div>
-
-          {emotionHistory.length > 0 && (
-            <div className="emotion-chart">
-              <h3>Emotion Trends</h3>
-              <Line
-                id="emotion-chart"
-                data={{
-                  labels: emotionHistory.map((_, i) => i + 1),
-                  datasets: Object.keys(emotions).map(emotion => ({
-                    label: emotion,
-                    data: emotionHistory.map(entry => entry.emotions[emotion]),
-                    borderColor: getEmotionColor(emotion),
-                    backgroundColor: getEmotionColor(emotion),
-                    tension: 0.4,
-                    fill: false
-                  }))
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                      labels: {
-                        usePointStyle: true,
-                        padding: 20
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      max: 100,
-                      title: {
-                        display: true,
-                        text: 'Emotion Intensity (%)'
-                      }
-                    },
-                    x: {
-                      title: {
-                        display: true,
-                        text: 'Time'
-                      }
-                    }
-                  }
-                }}
-              />
-              </div>
-            )}
+                <div className="wellness-score">
+          <h3>Wellness Score</h3>
+          <div className="score-display">
+            <div className="score-value">{wellnessScore}</div>
+            <div className="score-label">/100</div>
           </div>
         </div>
+
+        <div className="current-emotions">
+          <h3>Current Emotions</h3>
+          <div className="emotion-bars">
+            {Object.entries(emotions).map(([emotion, value]) => (
+              <div key={emotion} className="emotion-bar">
+                <span className="emotion-label">{emotion}</span>
+                <div className="bar-container">
+                  <div
+                    className="bar-fill"
+                    style={{ width: `${value}%` }}
+                  />
+                </div>
+                <span className="emotion-value">{value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {emotionHistory.length > 0 && (
+          <div className="emotion-chart">
+            <h3>Emotion Trends</h3>
+            <Line
+              id="emotion-chart"
+              data={{
+                labels: emotionHistory.map((_, i) => i + 1),
+                datasets: Object.keys(emotions).map(emotion => ({
+                  label: emotion,
+                  data: emotionHistory.map(entry => entry.emotions[emotion]),
+                  borderColor: getEmotionColor(emotion),
+                  backgroundColor: getEmotionColor(emotion),
+                  tension: 0.4,
+                  fill: false
+                }))
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      padding: 20
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                      display: true,
+                      text: 'Emotion Intensity (%)'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Time'
+                    }
+                  }
+                }
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -134,6 +134,16 @@
 .tags-input-group .btn {
   white-space: nowrap;
   padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #2C7A7B 0%, #9F7AEA 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(44, 122, 123, 0.3) !important;
+}
+
+.tags-input-group .btn:hover {
+  background: linear-gradient(135deg, #256b6c 0%, #8e6ad1 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(44, 122, 123, 0.4) !important;
 }
 
 .tags-list {
@@ -253,6 +263,16 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  background: linear-gradient(135deg, #2C7A7B 0%, #9F7AEA 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(44, 122, 123, 0.3) !important;
+}
+
+.form-actions .btn:hover {
+  background: linear-gradient(135deg, #256b6c 0%, #8e6ad1 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(44, 122, 123, 0.4) !important;
 }
 
 /* Loading States */

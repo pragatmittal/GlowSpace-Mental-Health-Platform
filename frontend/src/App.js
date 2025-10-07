@@ -17,11 +17,11 @@ import Community from './pages/Community';
 import MoodTracking from './pages/MoodTracking';
 
 // Assessment Page
+import Assessments from './pages/Assessments-Archive';
 import ComingSoon from './pages/ComingSoon';
 
 // Components
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 
 // Styles
 import './App.css';
@@ -32,7 +32,12 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <MoodProvider>
-          <Router>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
             <div className="App">
               <Navbar />
               <main className="main-content">
@@ -84,16 +89,21 @@ function App() {
                   }
                 />
                 
-                {/* Assessment Routes - Coming Soon */}
-                <Route path="/assessments" element={<ComingSoon />} />
-                <Route path="/assessments/*" element={<ComingSoon />} />
+                {/* Assessment Routes */}
+                <Route
+                  path="/assessments"
+                  element={
+                    <ProtectedRoute>
+                      <Assessments />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/assessments-coming-soon" element={<ComingSoon />} />
                 
                 {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </main>
-            <Footer />
           </div>
         </Router>
         </MoodProvider>

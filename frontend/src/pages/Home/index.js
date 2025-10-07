@@ -6,7 +6,6 @@ import HeroSection from './HeroSection';
 import ServicesSection from './ServicesSection';
 import PositiveStreakSection from './PositiveStreakSection';
 import TestimonialsSection from './TestimonialsSection';
-import Footer from '../../components/Footer';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -72,7 +71,6 @@ const Home = () => {
         <PositiveStreakSection />
         <TestimonialsSection />
       </main>
-      <Footer />
     </div>
   );
 };

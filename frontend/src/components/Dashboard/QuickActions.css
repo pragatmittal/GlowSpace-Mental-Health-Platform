@@ -1,65 +1,54 @@
 .quick-actions {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
   width: 100%;
 }
 
 .quick-actions-header {
-  margin-bottom: 2rem;
   text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 .quick-actions-header h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2c3e50;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .quick-actions-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
   margin: 0;
-  color: #7f8c8d;
-  font-size: 1rem;
 }
 
 .quick-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: none;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .quick-action-card {
   display: flex;
   align-items: center;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-  border: 2px solid transparent;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
+  border: none;
   position: relative;
   overflow: hidden;
-  min-height: 100px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  min-height: 80px;
 }
 
-.quick-action-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: var(--action-color);
-  background: white;
-}
-
-.quick-action-card:hover::before {
+.quick-action-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -67,79 +56,83 @@
   right: 0;
   height: 3px;
   background: var(--action-color);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+.quick-action-card:hover::before {
+  transform: scaleX(1);
 }
 
 .quick-action-icon {
-  font-size: 2rem;
-  margin-right: 16px;
+  font-size: 1.75rem;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: var(--action-color);
+  background: linear-gradient(135deg, var(--action-color)20 0%, var(--action-color)10 100%);
   border-radius: 12px;
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.quick-action-card:hover .quick-action-icon {
-  transform: scale(1.1);
+  flex-shrink: 0;
 }
 
 .quick-action-content {
   flex: 1;
+  min-width: 0;
 }
 
 .quick-action-content h4 {
-  margin: 0 0 4px 0;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
 }
 
 .quick-action-content p {
-  margin: 0;
+  color: var(--text-secondary);
   font-size: 0.85rem;
-  color: #7f8c8d;
-  line-height: 1.4;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .quick-action-arrow {
-  font-size: 1.2rem;
-  color: var(--action-color);
-  margin-left: 12px;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  opacity: 0.7;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .quick-action-card:hover .quick-action-arrow {
+  opacity: 1;
   transform: translateX(4px);
+  color: var(--action-color);
 }
 
-.quick-action-card:active {
-  transform: translateY(0);
-}
-
-/* Responsive design */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .quick-actions {
-    padding: 16px;
-  }
-  
   .quick-actions-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
   }
   
   .quick-action-card {
-    padding: 16px;
+    padding: 0.75rem 1rem;
+    min-height: 70px;
   }
   
   .quick-action-icon {
-    font-size: 1.5rem;
     width: 40px;
     height: 40px;
-    margin-right: 12px;
+    font-size: 1.5rem;
   }
   
   .quick-action-content h4 {
@@ -153,28 +146,10 @@
 
 @media (max-width: 480px) {
   .quick-actions-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
   
   .quick-action-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 16px 8px;
-  }
-  
-  .quick-action-icon {
-    margin: 0 0 8px 0;
-  }
-  
-  .quick-action-content h4 {
-    font-size: 0.85rem;
-  }
-  
-  .quick-action-content p {
-    font-size: 0.75rem;
-  }
-  
-  .quick-action-arrow {
-    display: none;
+    min-height: 60px;
   }
 }

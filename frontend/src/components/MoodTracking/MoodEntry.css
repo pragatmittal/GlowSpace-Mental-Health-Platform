@@ -1,36 +1,21 @@
-/* MoodEntry.css */
+/* MoodEntry.css - Redesigned for Modern Mood Tracking */
 
 .mood-entry-component {
-  padding: 30px;
-  background: white;
-}
-
-/* Header */
-.mood-entry-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.mood-entry-header h2 {
-  color: #333;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.mood-entry-header p {
-  color: #666;
-  font-size: 1rem;
-  margin: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: transparent;
+  color: var(--text-primary, #333);
 }
 
 /* Success Message */
 .success-message {
   background: linear-gradient(135deg, #27ae60, #2ecc71);
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 25px;
-  animation: slideDown 0.3s ease;
+  border-radius: 15px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
 }
 
 .success-content {
@@ -40,186 +25,385 @@
   color: white;
   font-weight: 600;
   gap: 10px;
+  font-size: 1rem;
 }
 
 .success-icon {
   font-size: 1.2rem;
+  animation: bounce 0.6s ease-in-out;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Main Mood Entry Section */
+.mood-entry-section {
+  background: var(--bg-secondary, white);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: var(--card-shadow, 0 10px 30px rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--border-color, #f0f0f0);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin-bottom: 25px;
+  text-align: center;
 }
 
 /* Mood Selection */
 .mood-selection {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
   margin-bottom: 30px;
 }
 
-.mood-selection h3 {
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.mood-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 15px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.mood-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 15px;
-  border: 2px solid;
-  border-radius: 12px;
-  background: transparent;
+.mood-emoji-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  background: var(--bg-primary, #f8f9fa);
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  overflow: hidden;
 }
 
-.mood-button:hover {
+.mood-emoji-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px var(--shadow-color, rgba(0, 0, 0, 0.15));
 }
 
-.mood-button.selected {
+.mood-emoji-btn.selected {
+  border-color: var(--mood-color, #667eea);
+  background: var(--bg-primary, white);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px var(--shadow-color, rgba(0, 0, 0, 0.2));
 }
 
 .mood-emoji {
-  font-size: 2.5rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
-.mood-label {
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-/* Description */
-.mood-description {
+/* Mood Entry Card */
+.mood-entry-card {
+  display: grid;
+  gap: 25px;
   margin-bottom: 25px;
 }
 
-.mood-description h3 {
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 12px;
+/* Section Headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.mood-description textarea {
+.section-icon {
+  font-size: 1.3rem;
+}
+
+.section-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+  margin: 0;
+}
+
+/* Note Section */
+.note-section textarea {
   width: 100%;
   padding: 15px;
-  border: 2px solid #e1e8ed;
+  border: 2px solid var(--input-border, #e0e0e0);
   border-radius: 12px;
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.5;
   resize: vertical;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  background: var(--input-bg, #fafafa);
+  color: var(--text-primary, #333);
+  min-height: 100px;
 }
 
-.mood-description textarea:focus {
+.note-section textarea:focus {
   outline: none;
   border-color: #667eea;
+  background: var(--bg-secondary, white);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .character-count {
   text-align: right;
   font-size: 0.85rem;
-  color: #666;
-  margin-top: 5px;
-}
-
-/* Inspirational Quote */
-.inspirational-quote {
-  margin-bottom: 30px;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  padding: 20px;
-  border-radius: 12px;
-  border-left: 4px solid #667eea;
-}
-
-.quote-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.quote-icon {
-  font-size: 1.5rem;
-  opacity: 0.7;
-  margin-top: 2px;
-}
-
-.quote-text {
-  font-style: italic;
-  color: #555;
-  font-size: 1rem;
-  line-height: 1.6;
-  margin: 0;
+  color: var(--text-secondary, #666);
+  margin-top: 8px;
   font-weight: 500;
 }
 
-/* Submit Section */
-.submit-section {
-  text-align: center;
+/* Tags Section */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.submit-button {
+.tag {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 15px 40px;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-selected, #f0f2ff);
+  color: #667eea;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.remove-tag {
+  background: none;
   border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
+  color: #667eea;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.submit-button:hover:not(.disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.submit-button.disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.loading-spinner-small {
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0;
   width: 16px;
   height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.remove-tag:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #5a6fd8;
+}
+
+/* Add Tag Form */
+.add-tag-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-tag-input {
+  padding: 8px 12px;
+  border: 2px solid var(--input-border, #e0e0e0);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background: var(--input-bg, #fafafa);
+  color: var(--text-primary, #333);
+  flex: 1;
+  max-width: 150px;
+}
+
+.add-tag-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: var(--bg-secondary, white);
+}
+
+.add-tag-btn {
+  padding: 8px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-tag-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+/* Suggested Tags */
+.suggested-tags {
+  margin-top: 15px;
+}
+
+.suggested-tags p {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #666);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.tag-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-suggestion {
+  padding: 6px 12px;
+  background: var(--bg-primary, #f8f9fa);
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 15px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-suggestion:hover:not(:disabled) {
+  background: var(--bg-selected, #f0f2ff);
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.tag-suggestion.selected {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  cursor: default;
+}
+
+.tag-suggestion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Photo Section */
+.photo-upload {
+  border: 2px dashed var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.photo-upload:hover {
+  border-color: #667eea;
+  background: var(--bg-selected, #f8f9ff);
+}
+
+.photo-input {
+  display: none;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary, #666);
+}
+
+.upload-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.upload-label span:last-child {
+  font-weight: 500;
+}
+
+/* Photo Preview */
+.photo-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 12px;
+  border: 2px solid var(--border-color, #e0e0e0);
+}
+
+.remove-photo {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-photo:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+/* Submit Button */
+.submit-mood-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.submit-mood-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.submit-mood-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 18px;
+  height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+  60% { transform: translateY(-3px); }
 }
 
 @keyframes spin {
@@ -230,47 +414,94 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .mood-entry-component {
+    padding: 15px;
+  }
+  
+  .mood-entry-section {
     padding: 20px;
   }
-
-  .mood-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-  }
-
-  .mood-button {
-    padding: 15px 10px;
-  }
-
-  .mood-emoji {
-    font-size: 2rem;
-  }
-
-  .mood-label {
-    font-size: 0.8rem;
-  }
-
-  .mood-entry-header h2 {
+  
+  .section-title {
     font-size: 1.5rem;
   }
-
-  .submit-button {
-    padding: 12px 30px;
-    font-size: 1rem;
+  
+  .mood-selection {
+    gap: 10px;
+  }
+  
+  .mood-emoji-btn {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mood-emoji {
+    font-size: 1.5rem;
+  }
+  
+  .mood-entry-card {
+    gap: 20px;
+  }
+  
+  .tag-suggestions {
+    gap: 6px;
+  }
+  
+  .tag-suggestion {
+    font-size: 0.8rem;
+    padding: 5px 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .mood-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .quote-content {
-    flex-direction: column;
+  .mood-selection {
     gap: 8px;
   }
-
-  .quote-icon {
-    align-self: center;
+  
+  .mood-emoji-btn {
+    width: 45px;
+    height: 45px;
   }
+  
+  .mood-emoji {
+    font-size: 1.3rem;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
+  }
+  
+  .mood-entry-section {
+    padding: 15px;
+  }
+}
+
+/* Theme Support - CSS Custom Properties */
+:root {
+  /* Light Theme (Default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --bg-selected: #f8f9ff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  --input-bg: #fafafa;
+  --input-border: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  /* Dark Theme */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-selected: #2a2a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: #404040;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  --input-bg: #3a3a3a;
+  --input-border: #505050;
 }

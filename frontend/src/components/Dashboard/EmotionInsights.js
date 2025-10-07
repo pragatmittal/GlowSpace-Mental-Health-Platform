@@ -83,29 +83,6 @@ const EmotionInsights = () => {
     }
   };
 
-  const getEmotionColor = (emotion) => {
-    const colors = {
-      happy: '#4CAF50',
-      sad: '#2196F3',
-      angry: '#F44336',
-      fearful: '#9C27B0',
-      disgusted: '#795548',
-      surprised: '#FF9800',
-      neutral: '#9E9E9E'
-    };
-    return colors[emotion] || '#9E9E9E';
-  };
-
-  const getInsightIcon = (type) => {
-    const icons = {
-      dominant_emotion: '🎭',
-      wellness_score: '📊',
-      pattern: '📈',
-      recommendation: '💡'
-    };
-    return icons[type] || '📋';
-  };
-
   const getSentimentIcon = (sentiment) => {
     const icons = {
       positive: '😊',
@@ -119,9 +96,6 @@ const EmotionInsights = () => {
     return (
       <div className="emotion-insights">
         <div className="insights-loading">
-          <div className="loading-card">
-            <div className="loading-shimmer"></div>
-          </div>
           <div className="loading-card">
             <div className="loading-shimmer"></div>
           </div>
@@ -197,47 +171,6 @@ const EmotionInsights = () => {
           <p className="emotion-description">
             Your most frequent emotion in the last {insights.period || '7 days'}
           </p>
-        </div>
-      )}
-
-      {/* Insights */}
-      {insights.insights && insights.insights.length > 0 && (
-        <div className="insights-patterns">
-          <h4>Key Insights</h4>
-          <div className="patterns-list">
-            {insights.insights.map((insight, index) => (
-              <div key={index} className={`insight-card ${insight.trend || 'neutral'}`}>
-                <div className="insight-header">
-                  <span className="insight-icon">{getInsightIcon(insight.type)}</span>
-                  <span className="insight-title">{insight.title}</span>
-                  {insight.trend && (
-                    <span className="sentiment-indicator">
-                      {getSentimentIcon(insight.trend)}
-                    </span>
-                  )}
-                </div>
-                <div className="insight-description">{insight.description}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recommendations */}
-      {insights.recommendations && insights.recommendations.length > 0 && (
-        <div className="insights-patterns">
-          <h4>Recommendations</h4>
-          <div className="patterns-list">
-            {insights.recommendations.map((recommendation, index) => (
-              <div key={index} className="insight-card helpful">
-                <div className="insight-header">
-                  <span className="insight-icon">💡</span>
-                  <span className="insight-title">Suggestion {index + 1}</span>
-                </div>
-                <div className="insight-description">{recommendation}</div>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 

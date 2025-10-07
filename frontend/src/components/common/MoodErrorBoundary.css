@@ -4,9 +4,9 @@
   justify-content: center;
   min-height: 200px;
   padding: 20px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #eff2ff 100%);
+  background: var(--bg-secondary);
   border-radius: 12px;
-  border: 1px solid #e1e8ed;
+  border: 1px solid var(--border-color);
 }
 
 .error-container {
@@ -59,31 +59,31 @@
 }
 
 .retry-button {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
 }
 
 .retry-button:hover {
-  background: #5a6fd8;
+  background: var(--secondary-color);
   transform: translateY(-1px);
 }
 
 .refresh-button {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .refresh-button:hover {
-  background: #edf2f7;
+  background: var(--border-color);
   transform: translateY(-1px);
 }
 
 .error-details {
   margin-top: 16px;
   text-align: left;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
 }
@@ -91,13 +91,13 @@
 .error-details summary {
   cursor: pointer;
   font-weight: 500;
-  color: #4a5568;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .error-details pre {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 8px;
   margin: 8px 0;

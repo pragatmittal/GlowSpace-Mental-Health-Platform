@@ -7,12 +7,12 @@ const AssessmentHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
   const [timeRange, setTimeRange] = useState('3months');
   const [chartData, setChartData] = useState(null);
   const { token } = useAuth();
 
   const assessmentTypeNames = {
+    comprehensive: 'Comprehensive Mental Health Assessment',
     depression: 'Depression (PHQ-9)',
     anxiety: 'Anxiety (GAD-7)',
     sleep: 'Sleep Quality',
@@ -20,6 +20,7 @@ const AssessmentHistory = () => {
   };
 
   const assessmentIcons = {
+    comprehensive: '🧠',
     depression: '🧠',
     anxiety: '💙',
     sleep: '😴',
@@ -37,10 +38,12 @@ const AssessmentHistory = () => {
   const fetchAssessmentHistory = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await assessmentAPI.getHistory({
-        type: selectedType === 'all' ? undefined : selectedType,
-        timeRange: timeRange
-      });
+      const params = {};
+      if (timeRange !== 'all') {
+        params.timeRange = timeRange;
+      }
+      
+      const response = await assessmentAPI.getHistory(params);
       
       if (response.data.success) {
         setHistory(response.data.data.history);
@@ -52,7 +55,7 @@ const AssessmentHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedType, timeRange]);
+  }, [timeRange]);
 
   useEffect(() => {
     fetchAssessmentHistory();
@@ -66,8 +69,22 @@ const AssessmentHistory = () => {
     });
   };
 
-  const getScoreInterpretation = (score, type) => {
-    if (type === 'depression' || type === 'anxiety') {
+  const getScoreInterpretation = (assessment) => {
+    // Use the interpretation from the assessment if available
+    if (assessment.score?.interpretation) {
+      return assessment.score.interpretation;
+    }
+    
+    const score = assessment.score?.total || assessment.totalScore || 0;
+    const type = assessment.type;
+    
+    if (type === 'comprehensive') {
+      const percentage = (score / (assessment.score?.max || 100)) * 100;
+      if (percentage >= 80) return 'Excellent';
+      if (percentage >= 60) return 'Good';
+      if (percentage >= 40) return 'Fair';
+      return 'Needs Attention';
+    } else if (type === 'depression' || type === 'anxiety') {
       if (score >= 20) return 'Severe';
       if (score >= 15) return 'Moderately Severe';
       if (score >= 10) return 'Moderate';
@@ -97,6 +114,48 @@ const AssessmentHistory = () => {
     if (current < previous) return '📈'; // Improvement (lower scores are better for depression/anxiety/stress)
     if (current > previous) return '📉'; // Worsening
     return '➡️'; // No change
+  };
+
+  const renderPersonalDetails = (personalDetails) => {
+    if (!personalDetails) return null;
+
+    return (
+      <div className="personal-details">
+        <h5>Personal Assessment Details:</h5>
+        <div className="details-grid">
+          {personalDetails.stressLevel && (
+            <div className="detail-item">
+              <span className="detail-label">Stress Level:</span>
+              <span className="detail-value">{personalDetails.stressLevel}/10</span>
+            </div>
+          )}
+          {personalDetails.sleepQuality && (
+            <div className="detail-item">
+              <span className="detail-label">Sleep Quality:</span>
+              <span className="detail-value">{personalDetails.sleepQuality}</span>
+            </div>
+          )}
+          {personalDetails.exerciseFrequency && (
+            <div className="detail-item">
+              <span className="detail-label">Exercise:</span>
+              <span className="detail-value">{personalDetails.exerciseFrequency}</span>
+            </div>
+          )}
+          {personalDetails.socialInteraction && (
+            <div className="detail-item">
+              <span className="detail-label">Social Activity:</span>
+              <span className="detail-value">{personalDetails.socialInteraction}</span>
+            </div>
+          )}
+          {personalDetails.screenTime && (
+            <div className="detail-item">
+              <span className="detail-label">Screen Time:</span>
+              <span className="detail-value">{personalDetails.screenTime}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -135,22 +194,6 @@ const AssessmentHistory = () => {
 
       {/* Filters */}
       <div className="history-filters">
-        <div className="filter-group">
-          <label htmlFor="type-filter">Assessment Type:</label>
-          <select
-            id="type-filter"
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Assessments</option>
-            <option value="depression">Depression (PHQ-9)</option>
-            <option value="anxiety">Anxiety (GAD-7)</option>
-            <option value="sleep">Sleep Quality</option>
-            <option value="stress">Stress Level</option>
-          </select>
-        </div>
-
         <div className="filter-group">
           <label htmlFor="time-filter">Time Range:</label>
           <select
@@ -220,16 +263,18 @@ const AssessmentHistory = () => {
             <h3>Your Assessment Timeline</h3>
             <div className="timeline">
               {history.map((assessment, index) => {
-                const interpretation = getScoreInterpretation(assessment.totalScore, assessment.type);
+                const interpretation = getScoreInterpretation(assessment);
                 const severityKey = getSeverityKey(interpretation);
-                const trendIcon = index < history.length - 1 ? 
-                  getTrendIcon(assessment.totalScore, history[index + 1].totalScore) : '📊';
+                const currentScore = assessment.score?.total || assessment.totalScore || 0;
+                const previousScore = index < history.length - 1 ? 
+                  (history[index + 1].score?.total || history[index + 1].totalScore || 0) : null;
+                const trendIcon = getTrendIcon(currentScore, previousScore);
 
                 return (
                   <div key={assessment._id} className="timeline-item">
                     <div className="timeline-marker">
                       <span className="assessment-type-icon">
-                        {assessmentIcons[assessment.type]}
+                        {assessmentIcons[assessment.type] || '📊'}
                       </span>
                     </div>
                     
@@ -237,8 +282,8 @@ const AssessmentHistory = () => {
                       <div className="assessment-card">
                         <div className="assessment-header">
                           <div className="assessment-info">
-                            <h4>{assessmentTypeNames[assessment.type]}</h4>
-                            <p className="assessment-date">{formatDate(assessment.createdAt)}</p>
+                            <h4>{assessmentTypeNames[assessment.type] || assessment.title}</h4>
+                            <p className="assessment-date">{formatDate(assessment.completedAt || assessment.createdAt)}</p>
                           </div>
                           <div className="trend-indicator">
                             <span className="trend-icon">{trendIcon}</span>
@@ -248,18 +293,44 @@ const AssessmentHistory = () => {
                         <div className="assessment-score">
                           <div 
                             className="score-display"
-                            style={{ '--severity-color': severityColors[severityKey] }}
+                            style={{ '--severity-color': assessment.score?.color || severityColors[severityKey] }}
                           >
-                            <span className="score-number">{assessment.totalScore}</span>
-                            <span className="score-max">/{assessment.maxScore || 100}</span>
+                            <span className="score-number">{currentScore}</span>
+                            <span className="score-max">/{assessment.score?.max || assessment.maxScore || 100}</span>
                           </div>
                           <div 
                             className="severity-badge"
-                            style={{ backgroundColor: severityColors[severityKey] }}
+                            style={{ backgroundColor: assessment.score?.color || severityColors[severityKey] }}
                           >
                             {interpretation}
                           </div>
                         </div>
+
+                        {/* Personal Details for Comprehensive Assessments */}
+                        {assessment.personalDetails && (
+                          <div className="personal-details-section">
+                            {renderPersonalDetails(assessment.personalDetails)}
+                          </div>
+                        )}
+
+                        {/* Section Scores for Comprehensive Assessments */}
+                        {assessment.sectionScores && Object.keys(assessment.sectionScores).length > 0 && (
+                          <div className="section-scores">
+                            <h5>Section Breakdown:</h5>
+                            <div className="scores-grid">
+                              {Object.entries(assessment.sectionScores).map(([section, scoreData]) => (
+                                <div key={section} className="section-score-item">
+                                  <span className="section-name">
+                                    {section === 'section1' ? 'Personal Assessment' : 'Scenario Testing'}
+                                  </span>
+                                  <span className="section-score">
+                                    {scoreData.score}/{scoreData.maxScore}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {assessment.recommendations && assessment.recommendations.length > 0 && (
                           <div className="assessment-recommendations">
@@ -273,12 +344,6 @@ const AssessmentHistory = () => {
                         )}
 
                         <div className="assessment-actions">
-                          <button 
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => window.location.href = `/assessments/results/${assessment._id}`}
-                          >
-                            View Details
-                          </button>
                           <button 
                             className="btn btn-primary btn-sm"
                             onClick={() => window.location.href = `/assessments?type=${assessment.type}`}
