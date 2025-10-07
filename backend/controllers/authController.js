@@ -70,6 +70,8 @@ const sendTokenResponse = async (user, statusCode, res) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
+    console.log('Registration request body:', req.body);
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -143,8 +145,11 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
   try {
+    console.log('Login request body:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Login validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -153,6 +158,7 @@ exports.login = async (req, res) => {
     }
 
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
 
     // Find user and include password
     const user = await User.findByEmail(email).select('+password');
