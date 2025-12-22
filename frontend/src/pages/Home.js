@@ -2,7 +2,6 @@ import React from 'react';
 import HeroSection from '../components/HeroSection';
 import ServicesSection from '../components/ServicesSection';
 import PositiveStreakSection from '../components/PositiveStreakSection';
-import TestimonialsSection from '../components/TestimonialsSection';
 import '../styles/Home.css';
 
 function Home() {
@@ -11,7 +10,6 @@ function Home() {
       <HeroSection />
       <ServicesSection />
       <PositiveStreakSection />
-      <TestimonialsSection />
     </div>
   );
 }

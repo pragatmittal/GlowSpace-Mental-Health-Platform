@@ -862,9 +862,8 @@ const MoodTracking = () => {
           ? 'rgba(26, 32, 44, 0.95)'
           : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        borderTop: isDarkMode 
-          ? '1px solid rgba(129, 230, 217, 0.2)'
-          : '1px solid rgba(44, 122, 123, 0.2)',
+        borderTop: 'none',
+        borderBottom: 'none',
         marginBottom: '20px',
         position: 'relative',
         zIndex: 10
@@ -892,7 +891,7 @@ const MoodTracking = () => {
               zIndex: activeTab === 'overview' ? 15 : 10
             }}
           >
-            <span className="tab-icon">🏠</span>
+            <span className="tab-icon"></span>
             <span className="tab-label">Overview</span>
           </button>
 
@@ -918,7 +917,7 @@ const MoodTracking = () => {
               zIndex: activeTab === 'analytics' ? 15 : 10
             }}
           >
-            <span className="tab-icon">📈</span>
+            <span className="tab-icon"></span>
             <span className="tab-label">Analytics</span>
           </button>
           <button 
@@ -943,7 +942,7 @@ const MoodTracking = () => {
               zIndex: activeTab === 'insights' ? 15 : 10
             }}
           >
-            <span className="tab-icon">💡</span>
+            <span className="tab-icon"></span>
             <span className="tab-label">Insights</span>
           </button>
         </div>
@@ -1225,7 +1224,7 @@ const MoodTracking = () => {
             padding: '20px'
           }}>
                           <div className="analytics-header">
-                <h2 style={{ color: isDarkMode ? 'var(--text-primary)' : 'var(--text-primary)' }}>📊 Mood Analytics</h2>
+                <h2 style={{ color: isDarkMode ? 'var(--text-primary)' : 'var(--text-primary)' }}>Mood Analytics</h2>
               </div>
             <div className="analytics-content">
               <div className="analytics-grid">
@@ -1250,7 +1249,7 @@ const MoodTracking = () => {
             padding: '20px'
           }}>
                           <div className="insights-header">
-                <h2 style={{ color: isDarkMode ? 'var(--text-primary)' : 'var(--text-primary)' }}>💡 Wellness Insights</h2>
+                <h2 style={{ color: isDarkMode ? 'var(--text-primary)' : 'var(--text-primary)' }}>Wellness Insights</h2>
                               <p style={{ color: isDarkMode ? 'var(--text-secondary)' : 'var(--text-secondary)' }}>Discover personalized recommendations and patterns</p>
             </div>
             <div className="insights-content">

@@ -49,7 +49,7 @@
 }
 
 .recent-mood-header h3::before {
-  content: '📊';
+  content: '';
   font-size: 1.3rem;
 }
 

@@ -166,10 +166,19 @@
 }
 
 .title-accent {
-  color: var(--secondary-color);
+  color: #ffffff !important;
   display: block;
   font-size: 0.9em;
   font-weight: 600;
+  -webkit-text-fill-color: #ffffff !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+}
+
+.hero-title .title-accent {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .hero-description {

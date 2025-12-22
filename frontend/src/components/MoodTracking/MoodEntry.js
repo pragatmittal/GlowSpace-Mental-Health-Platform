@@ -237,7 +237,7 @@ const MoodEntry = ({ onMoodAdded }) => {
       {showSuccess && (
         <div className="success-message">
           <div className="success-content">
-            <span className="success-icon">✅</span>
+            <span className="success-icon"></span>
             <span>Mood saved successfully!</span>
           </div>
         </div>
@@ -266,7 +266,7 @@ const MoodEntry = ({ onMoodAdded }) => {
           {/* Note Section */}
           <div className="note-section">
             <div className="section-header">
-              <span className="section-icon">📝</span>
+              <span className="section-icon"></span>
               <h3>Note</h3>
             </div>
             <textarea
@@ -284,7 +284,7 @@ const MoodEntry = ({ onMoodAdded }) => {
           {/* Tags Section */}
           <div className="tags-section">
             <div className="section-header">
-              <span className="section-icon">🏷️</span>
+              <span className="section-icon"></span>
               <h3>Tags</h3>
             </div>
             <div className="tags-container">
@@ -335,7 +335,7 @@ const MoodEntry = ({ onMoodAdded }) => {
           {/* Photo Section */}
           <div className="photo-section">
             <div className="section-header">
-              <span className="section-icon">📸</span>
+              <span className="section-icon"></span>
               <h3>Photo</h3>
             </div>
             {photo ? (
@@ -355,7 +355,7 @@ const MoodEntry = ({ onMoodAdded }) => {
                   className="photo-input"
                 />
                 <label htmlFor="photo-upload" className="upload-label">
-                  <span className="upload-icon">📷</span>
+                  <span className="upload-icon"></span>
                   <span>Add a photo</span>
                 </label>
               </div>
