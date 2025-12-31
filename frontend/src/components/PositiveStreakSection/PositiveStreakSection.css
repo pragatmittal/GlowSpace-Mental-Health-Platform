@@ -43,13 +43,27 @@
   font-size: 3.5rem;
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 24px;
+  margin: 0 auto 24px !important;
   color: var(--text-primary);
   background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: titleGlow 3s ease-in-out infinite;
+  text-align: center !important;
+  display: block;
+  width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.section-content .section-title,
+.section-content h2.section-title {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  display: block !important;
 }
 
 @keyframes titleGlow {

@@ -34,7 +34,7 @@
 .navbar.scrolled {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(44, 122, 123, 0.1);
+  border-bottom: none;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
   height: 60px;
 }
@@ -61,7 +61,7 @@
 /* Dark theme support for scrolled state */
 .navbar.dark.scrolled {
   background: rgba(26, 32, 44, 0.95);
-  border-bottom: 1px solid rgba(129, 230, 217, 0.2);
+  border-bottom: none;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -224,6 +224,7 @@
   border-radius: 25px;
   transition: all var(--transition-normal);
   border: 1px solid transparent;
+  z-index: 1002;
 }
 
 .user-menu:hover {
@@ -240,6 +241,9 @@
   cursor: pointer;
   padding: 0;
   font-family: inherit;
+  position: relative;
+  z-index: 1003;
+  pointer-events: auto;
 }
 
 .profile-image {

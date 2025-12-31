@@ -167,7 +167,7 @@ const MoodInsights = ({ refreshTrigger }) => {
     return (
       <div className="mood-insights">
         <div className="insights-header">
-          <h3>💡 Wellness Insights</h3>
+          <h3>Wellness Insights</h3>
           <p>Discover personalized recommendations and patterns</p>
         </div>
         <div className="loading-state">
@@ -182,10 +182,10 @@ const MoodInsights = ({ refreshTrigger }) => {
     return (
       <div className="mood-insights">
         <div className="insights-header">
-          <h3>💡 Wellness Insights</h3>
+          <h3>Wellness Insights</h3>
         </div>
         <div className="error-state">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon"></div>
           <p>{error}</p>
           <button onClick={fetchInsights} className="retry-button">
             Try Again
@@ -203,7 +203,7 @@ const MoodInsights = ({ refreshTrigger }) => {
       <div className="insights-content">
         {isEmpty ? (
           <div className="empty-insights">
-            <div className="empty-icon">🔮</div>
+            <div className="empty-icon"></div>
             <h4>No insights yet</h4>
             <p>Start tracking your mood regularly to unlock personalized insights and discover patterns in your emotional wellbeing!</p>
           </div>
@@ -212,7 +212,7 @@ const MoodInsights = ({ refreshTrigger }) => {
             
             {/* Total Moods */}
             <div className="insight-card primary">
-              <div className="insight-icon">📊</div>
+              <div className="insight-icon"></div>
               <div className="insight-content">
                 <h4>Total Entries</h4>
                 <div className="insight-value">{insights.totalMoods}</div>
@@ -224,7 +224,7 @@ const MoodInsights = ({ refreshTrigger }) => {
 
             {/* Current Streak */}
             <div className="insight-card success">
-              <div className="insight-icon">🔥</div>
+              <div className="insight-icon"></div>
               <div className="insight-content">
                 <h4>Positive Streak</h4>
                 <div className="insight-value">{insights.currentStreak}</div>
@@ -236,7 +236,7 @@ const MoodInsights = ({ refreshTrigger }) => {
 
             {/* Consistency Score */}
             <div className="insight-card info">
-              <div className="insight-icon">📈</div>
+              <div className="insight-icon"></div>
               <div className="insight-content">
                 <h4>Consistency</h4>
                 <div className="insight-value">{insights.consistencyScore}%</div>
@@ -250,22 +250,19 @@ const MoodInsights = ({ refreshTrigger }) => {
                   fontWeight: '600',
                   marginTop: '4px'
                 }}>
-                  {insights.trackingPattern === 'excellent' && '🌟 Excellent tracking!'}
-                  {insights.trackingPattern === 'good' && '👍 Good consistency'}
-                  {insights.trackingPattern === 'moderate' && '📊 Moderate tracking'}
-                  {insights.trackingPattern === 'poor' && '⚠️ Inconsistent tracking'}
-                  {insights.trackingPattern === 'very_poor' && '❌ Very inconsistent'}
-                  {insights.trackingPattern === 'none' && '📝 Start tracking to see consistency'}
+                  {insights.trackingPattern === 'excellent' && 'Excellent tracking!'}
+                  {insights.trackingPattern === 'good' && 'Good consistency'}
+                  {insights.trackingPattern === 'moderate' && 'Moderate tracking'}
+                  {insights.trackingPattern === 'poor' && 'Inconsistent tracking'}
+                  {insights.trackingPattern === 'very_poor' && 'Very inconsistent'}
+                  {insights.trackingPattern === 'none' && 'Start tracking to see consistency'}
                 </div>
               </div>
             </div>
 
             {/* Weekly Change */}
             <div className={`insight-card ${insights.changeDirection === 'improving' ? 'positive' : insights.changeDirection === 'declining' ? 'negative' : 'neutral'}`}>
-              <div className="insight-icon">
-                {insights.changeDirection === 'improving' ? '📈' : 
-                 insights.changeDirection === 'declining' ? '📉' : '➡️'}
-              </div>
+              <div className="insight-icon"></div>
               <div className="insight-content">
                 <h4>Weekly Change</h4>
                 <div className="insight-value">
@@ -304,7 +301,7 @@ const MoodInsights = ({ refreshTrigger }) => {
                 gridColumn: 'span 2',
                 minHeight: '200px'
               }}>
-                <div className="insight-icon">💡</div>
+                <div className="insight-icon"></div>
                 <div className="insight-content">
                   <h4>Recommended for You</h4>
                   <div className="suggestions-list" style={{

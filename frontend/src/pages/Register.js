@@ -45,7 +45,7 @@ const Register = () => {
         password: formData.password
       });
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/');
       } else {
         setError(result.message || 'Failed to create account. Please try again.');
       }

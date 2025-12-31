@@ -7,7 +7,7 @@ const services = [
     id: 'emotion-detection',
     title: 'AI Emotion Detection',
     description: 'Advanced facial recognition technology that analyzes your emotions in real-time, providing instant feedback and mood tracking.',
-    icon: '😊',
+    icon: '',
     color: '#2C7A7B',
     gradient: 'linear-gradient(135deg, #2C7A7B 0%, #805AD5 100%)',
     features: ['Real-time analysis', 'Mood tracking', 'Personalized insights', 'Privacy protected'],
@@ -17,7 +17,7 @@ const services = [
     id: 'mood-tracking',
     title: 'Smart Mood Tracking',
     description: 'Intelligent mood monitoring with AI-powered insights, helping you understand patterns and triggers in your emotional wellbeing.',
-    icon: '📊',
+    icon: '',
     color: '#9F7AEA',
     gradient: 'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)',
     features: ['Daily mood logging', 'Pattern recognition', 'Trigger identification', 'Progress visualization'],
@@ -27,7 +27,7 @@ const services = [
     id: 'community-support',
     title: 'Community Support',
     description: 'Connect with like-minded individuals in a safe, supportive environment designed to foster mental wellness and personal growth.',
-    icon: '🤝',
+    icon: '',
     color: '#805AD5',
     gradient: 'linear-gradient(135deg, #805AD5 0%, #2C7A7B 100%)',
     features: ['Peer support', 'Group discussions', 'Expert guidance', 'Safe environment'],
@@ -37,7 +37,7 @@ const services = [
     id: 'mental-assessments',
     title: 'Mental Health Assessments',
     description: 'Comprehensive evaluations using clinically validated tools to assess your mental health status and provide personalized recommendations.',
-    icon: '🧠',
+    icon: '',
     color: '#2C7A7B',
     gradient: 'linear-gradient(135deg, #2C7A7B 0%, #9F7AEA 100%)',
     features: ['Clinical tools', 'Personalized reports', 'Action plans', 'Progress tracking'],
@@ -47,7 +47,7 @@ const services = [
     id: 'ai-chatbot',
     title: 'AI Wellness Assistant',
     description: '24/7 intelligent chatbot providing immediate support, guidance, and resources for your mental health journey.',
-    icon: '🤖',
+    icon: '',
     color: '#9F7AEA',
     gradient: 'linear-gradient(135deg, #9F7AEA 0%, #2C7A7B 100%)',
     features: ['24/7 availability', 'Instant responses', 'Resource library', 'Crisis support'],
@@ -57,7 +57,7 @@ const services = [
     id: 'progress-analytics',
     title: 'Progress Analytics',
     description: 'Comprehensive dashboard showing your mental wellness journey with detailed insights, trends, and achievement tracking.',
-    icon: '📈',
+    icon: '',
     color: '#805AD5',
     gradient: 'linear-gradient(135deg, #805AD5 0%, #9F7AEA 100%)',
     features: ['Visual insights', 'Trend analysis', 'Goal tracking', 'Achievement badges'],
@@ -91,9 +91,6 @@ const ServicesSection = () => {
         <div className="featured-service">
           <div className="featured-content">
             <div className="featured-info">
-              <div className="featured-icon" style={{ background: services[activeService].gradient }}>
-                <span className="icon-emoji">{services[activeService].icon}</span>
-              </div>
               <h3 className="featured-title">{services[activeService].title}</h3>
               <p className="featured-description">{services[activeService].description}</p>
               <div className="featured-features">
@@ -122,20 +119,6 @@ const ServicesSection = () => {
               </div>
             </div>
           </div>
-          
-          {/* Service navigation dots */}
-          <div className="service-dots">
-            {services.map((service, index) => (
-              <button
-                key={service.id}
-                className={`dot ${index === activeService ? 'active' : ''}`}
-                onClick={() => setActiveService(index)}
-                style={{ '--dot-color': service.color }}
-              >
-                <span className="dot-icon">{service.icon}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Header text - Now positioned above the feature cards */}
@@ -158,9 +141,6 @@ const ServicesSection = () => {
               onMouseEnter={() => setActiveService(index)}
             >
               <div className="service-header">
-                <div className="service-icon" style={{ background: service.gradient }}>
-                  <span className="icon-emoji">{service.icon}</span>
-                </div>
                 <div className="service-badge">Featured</div>
               </div>
               
@@ -184,22 +164,67 @@ const ServicesSection = () => {
           ))}
         </div>
 
-        {/* Call to action */}
-        <div className="services-cta">
-          <div className="cta-content">
-            <h3 className="cta-title">Ready to Start Your Journey?</h3>
-            <p className="cta-description">
-              Join thousands of users who have transformed their mental health with GlowSpace
-            </p>
-            <div className="cta-buttons">
-              <Link to="/register" className="cta-button primary">
-                <span className="button-text">Get Started Free</span>
-                <span className="button-icon">🚀</span>
-              </Link>
-              <Link to="/demo" className="cta-button secondary">
-                <span className="button-text">Watch Demo</span>
-                <span className="button-icon">▶️</span>
-              </Link>
+        {/* Journey Roadmap */}
+        <div className="journey-roadmap">
+          <div className="roadmap-content">
+            {/* Inspirational Quote */}
+            <div className="roadmap-quote">
+              <p className="quote-text">
+                "Every journey begins with a single step. Your path to mental wellness starts here."
+              </p>
+            </div>
+
+            {/* Roadmap Steps */}
+            <div className="roadmap-container">
+              <h3 className="roadmap-title">Your Journey to Wellness</h3>
+              
+              <div className="roadmap-path">
+                {/* Top Row - Steps 1, 2, 3 */}
+                <div className="roadmap-row roadmap-row-top">
+                  <div className="roadmap-step" data-step="1">
+                    <div className="step-number">01</div>
+                    <div className="step-content">
+                      <h4 className="step-title">Create Account</h4>
+                      <p className="step-description">Sign up and log in securely</p>
+                    </div>
+                  </div>
+                  <div className="step-arrow">→</div>
+                  <div className="roadmap-step" data-step="2">
+                    <div className="step-number">02</div>
+                    <div className="step-content">
+                      <h4 className="step-title">Take Assessment</h4>
+                      <p className="step-description">Complete mental health evaluation</p>
+                    </div>
+                  </div>
+                  <div className="step-arrow">→</div>
+                  <div className="roadmap-step" data-step="3">
+                    <div className="step-number">03</div>
+                    <div className="step-content">
+                      <h4 className="step-title">Get AI Insights</h4>
+                      <p className="step-description">Receive personalized recommendations</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Row - Steps 4, 5 */}
+                <div className="roadmap-row roadmap-row-bottom">
+                  <div className="roadmap-step" data-step="4">
+                    <div className="step-number">04</div>
+                    <div className="step-content">
+                      <h4 className="step-title">Track Progress</h4>
+                      <p className="step-description">Analyze and improve consistently</p>
+                    </div>
+                  </div>
+                  <div className="step-arrow">←</div>
+                  <div className="roadmap-step" data-step="5">
+                    <div className="step-number">05</div>
+                    <div className="step-content">
+                      <h4 className="step-title">Join Challenges</h4>
+                      <p className="step-description">Build lasting wellness habits</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

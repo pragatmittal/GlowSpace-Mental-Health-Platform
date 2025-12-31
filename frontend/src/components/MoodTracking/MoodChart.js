@@ -442,21 +442,18 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
     if (change > 0.5) {
       return (
         <div className="trend-up">
-          <span>📈</span>
           <span>Mood Improving</span>
         </div>
       );
     } else if (change < -0.5) {
       return (
         <div className="trend-down">
-          <span>📉</span>
           <span>Mood Declining</span>
         </div>
       );
     } else {
       return (
         <div className="trend-stable">
-          <span>➡️</span>
           <span>Mood Stable</span>
         </div>
       );
@@ -501,7 +498,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
     return (
       <div className="mood-chart-container">
         <div className="chart-header">
-          <h2>📈 Mood Trends</h2>
+          <h2>Mood Trends</h2>
           <p>Loading your mood data...</p>
         </div>
         <div className="loading-state">
@@ -517,11 +514,11 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
     return (
       <div className="mood-chart-container">
         <div className="chart-header">
-          <h2>📈 Mood Trends</h2>
+          <h2>Mood Trends</h2>
           <p>Unable to load mood data</p>
         </div>
         <div className="error-state">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon"></div>
           <p>{error}</p>
           {lastError && (
             <div className="rate-limit-info">
@@ -556,7 +553,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
   // Empty state component
   const EmptyState = () => (
     <div className="empty-chart">
-      <div className="empty-chart-icon">📊</div>
+      <div className="empty-chart-icon"></div>
       <h4>No mood data yet</h4>
       <p>Start tracking your mood to see trends and patterns here.</p>
     </div>
@@ -633,7 +630,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
         <div className="chart-content">
           {!shouldShowChart || processedChartData.length === 0 ? (
             <div className="empty-chart">
-              <div className="empty-chart-icon">📊</div>
+              <div className="empty-chart-icon"></div>
               <h4>No mood data available</h4>
               <p>
                 {processedChartData.length === 0 
@@ -662,7 +659,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
                   <h4 style={{ 
                     margin: '0', 
                     color: isDarkMode ? 'var(--text-primary)' : '#495057' 
-                  }}>📊 Mood Distribution</h4>
+                  }}>Mood Distribution</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ 
                       fontSize: '12px', 
@@ -692,7 +689,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
                         fontWeight: '600'
                       }}
                     >
-                      🔄 Refresh
+                      Refresh
                     </button>
                   </div>
                 </div>
@@ -757,7 +754,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
                 <h4 style={{ 
                   margin: '0 0 15px 0', 
                   color: isDarkMode ? 'var(--text-primary)' : '#495057' 
-                }}>📝 Individual Mood Entries (All {processedChartData.length} Entries)</h4>
+                }}>Individual Mood Entries (All {processedChartData.length} Entries)</h4>
                 
                 {/* Show all individual entries */}
                 <div style={{ display: 'grid', gap: '12px' }}>
@@ -792,13 +789,13 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
                           color: isDarkMode ? 'var(--text-secondary)' : '#6c757d', 
                           marginTop: '4px' 
                         }}>
-                          📅 {entry.formatted_date}
+                          {entry.formatted_date}
                         </div>
                         <div style={{ 
                           fontSize: '12px', 
                           color: isDarkMode ? 'var(--text-secondary)' : '#6c757d' 
                         }}>
-                          🕐 {entry.timeOfDay} • 🎯 {entry.activity}
+                          {entry.timeOfDay} • {entry.activity}
                         </div>
                         {entry.notes && (
                           <div style={{ 
@@ -807,7 +804,7 @@ const MoodChart = ({ refreshTrigger, isDarkMode = false }) => {
                             marginTop: '4px', 
                             fontStyle: 'italic' 
                           }}>
-                            💭 {entry.notes}
+                            {entry.notes}
                           </div>
                         )}
                       </div>

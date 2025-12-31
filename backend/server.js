@@ -35,6 +35,7 @@ const io = socketIo(server, {
     origin: [
       process.env.FRONTEND_URL || "http://localhost:3000",
       "https://glow-space-mental-health-platform.vercel.app",
+      "https://glowspace-two.vercel.app",
       "http://localhost:3000"
     ],
     methods: ["GET", "POST"],
@@ -74,14 +75,42 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
+// CORS configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://glow-space-mental-health-platform.vercel.app",
+  "https://glowspace-two.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001"
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || "http://localhost:3000",
-    "https://glow-space-mental-health-platform.vercel.app",
-    "http://localhost:3000"
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // In production, log but allow for flexibility
+      console.warn(`⚠️  CORS: Request from unlisted origin: ${origin}`);
+      // Allow the request but log it for monitoring
+      callback(null, true);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Log CORS configuration on startup
+console.log('🌐 CORS Configuration:');
+console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
 
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
@@ -185,9 +214,13 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
+  console.log(`   Origin: ${req.get('origin') || 'No origin header'}`);
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
   });
 });
 

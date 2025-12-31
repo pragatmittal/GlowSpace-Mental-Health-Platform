@@ -5,7 +5,6 @@ import Navbar from '../../components/Navbar';
 import HeroSection from './HeroSection';
 import ServicesSection from './ServicesSection';
 import PositiveStreakSection from './PositiveStreakSection';
-import TestimonialsSection from './TestimonialsSection';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -44,19 +43,6 @@ const Home = () => {
         }
       });
 
-      // Testimonials animation
-      gsap.from('.testimonial-card', {
-        opacity: 0,
-        scale: 0.9,
-        duration: 0.6,
-        stagger: 0.2,
-        scrollTrigger: {
-          trigger: '.testimonials-container',
-          start: 'top 70%',
-          end: 'bottom 30%',
-          toggleActions: 'play none none reverse'
-        }
-      });
     }, homeRef);
 
     return () => ctx.revert();
@@ -69,7 +55,6 @@ const Home = () => {
         <HeroSection />
         <ServicesSection />
         <PositiveStreakSection />
-        <TestimonialsSection />
       </main>
     </div>
   );

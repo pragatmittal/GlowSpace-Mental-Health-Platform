@@ -9,6 +9,7 @@ const Navbar = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -41,6 +42,61 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const toggleUserMenu = (e) => {
+    e.stopPropagation();
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const userMenu = document.querySelector('.user-menu');
+      if (isUserMenuOpen && userMenu && !userMenu.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      // Use a small delay to avoid immediate closure
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
+  // Close user menu when navigating
+  const handleUserMenuClick = () => {
+    setIsUserMenuOpen(false);
+  };
+
+  // Scroll to home hero section
+  const scrollToHome = (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Scroll to features section
+  const scrollToFeatures = (e) => {
+    e.preventDefault();
+    const featuresSection = document.querySelector('.services-section');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // If not on home page, navigate to home and then scroll
+      navigate('/');
+      setTimeout(() => {
+        const section = document.querySelector('.services-section');
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  };
+
   return (
     <nav className={`navbar ${isVisible ? 'visible' : ''} ${isScrolled ? 'scrolled' : ''} ${isDarkMode ? 'dark' : ''}`}>
       <div className="navbar-container">
@@ -50,10 +106,11 @@ const Navbar = () => {
         </Link>
 
         <div className="navbar-links">
-          <Link to="/features" className="nav-link">Features</Link>
-          <Link to="/about" className="nav-link">About</Link>
-          <Link to="/blog" className="nav-link">Blog</Link>
-          <Link to="/contact" className="nav-link">Contact</Link>
+          <a href="/" onClick={scrollToHome} className="nav-link">Home</a>
+          <a href="/" onClick={scrollToFeatures} className="nav-link">Features</a>
+          {user && (
+            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          )}
         </div>
 
         <div className="navbar-auth">
@@ -67,7 +124,7 @@ const Navbar = () => {
 
           {user ? (
             <div className="user-menu">
-              <button className="profile-button" onClick={toggleMenu}>
+              <button className="profile-button" onClick={toggleUserMenu}>
                 <img 
                   src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
                   alt={user.name}
@@ -75,38 +132,20 @@ const Navbar = () => {
                 />
                 <span className="profile-name">{user.name}</span>
               </button>
-              {isMenuOpen && (
-                <div className="dropdown-menu">
-                  <Link to="/dashboard" className="menu-item">
-                    <i className="fas fa-columns"></i>
-                    Dashboard
-                  </Link>
-                  <Link to="/assessments" className="menu-item">
-                    <i className="fas fa-clipboard-list"></i>
-                    Mental Health Assessments
-                  </Link>
-                  <Link to="/moodtracking" className="menu-item">
-                    <i className="fas fa-heart"></i>
-                    Mood Tracking
-                  </Link>
-                  <Link to="/community" className="menu-item">
-                    <i className="fas fa-users"></i>
-                    Community
-                  </Link>
-                  <Link to="/profile" className="menu-item">
-                    <i className="fas fa-user"></i>
-                    Profile
-                  </Link>
-                  <Link to="/settings" className="menu-item">
-                    <i className="fas fa-cog"></i>
-                    Settings
-                  </Link>
-                  <button onClick={handleLogout} className="menu-item logout">
-                    <i className="fas fa-sign-out-alt"></i>
-                    Logout
-                  </button>
-                </div>
-              )}
+              <div className={`dropdown-menu ${isUserMenuOpen ? 'show' : ''}`}>
+                <Link to="/" className="menu-item" onClick={handleUserMenuClick}>
+                  <i className="fas fa-home"></i>
+                  Home
+                </Link>
+                <Link to="/dashboard" className="menu-item" onClick={handleUserMenuClick}>
+                  <i className="fas fa-columns"></i>
+                  Dashboard
+                </Link>
+                <button onClick={() => { handleLogout(); handleUserMenuClick(); }} className="menu-item logout">
+                  <i className="fas fa-sign-out-alt"></i>
+                  Logout
+                </button>
+              </div>
             </div>
           ) : (
             <div className="auth-buttons">
@@ -132,10 +171,11 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="mobile-menu">
-          <Link to="/features" className="mobile-link">Features</Link>
-          <Link to="/about" className="mobile-link">About</Link>
-          <Link to="/blog" className="mobile-link">Blog</Link>
-          <Link to="/contact" className="mobile-link">Contact</Link>
+          <a href="/" onClick={(e) => { scrollToHome(e); setIsMenuOpen(false); }} className="mobile-link">Home</a>
+          <a href="/" onClick={(e) => { scrollToFeatures(e); setIsMenuOpen(false); }} className="mobile-link">Features</a>
+          {user && (
+            <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="mobile-link">Dashboard</Link>
+          )}
           {!user && (
             <div className="mobile-auth">
               <Link to="/login" className="mobile-login">Sign In</Link>

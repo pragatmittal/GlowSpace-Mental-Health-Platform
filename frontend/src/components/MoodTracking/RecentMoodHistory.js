@@ -107,7 +107,7 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
     return (
       <div className="recent-mood-history">
         <div className="recent-mood-header">
-          <h3>📝 Recent Mood</h3>
+          <h3>Recent Mood</h3>
         </div>
         <div className="loading-state">
           <div className="loading-spinner-small"></div>
@@ -121,10 +121,10 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
     return (
       <div className="recent-mood-history">
         <div className="recent-mood-header">
-          <h3>📝 Recent Mood</h3>
+          <h3>Recent Mood</h3>
         </div>
         <div className="error-state">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon"></div>
           <p>{error}</p>
           <button onClick={fetchRecentMood} className="retry-button">
             Try Again
@@ -137,7 +137,7 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
   return (
     <div className="recent-mood-history">
       <div className="recent-mood-header">
-        <h3>📝 Recent Mood</h3>
+        <h3>Recent Mood</h3>
         <p>Your latest mood entry</p>
       </div>
 
@@ -175,7 +175,7 @@ const RecentMoodHistory = ({ refreshTrigger }) => {
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">🎭</div>
+            <div className="empty-icon"></div>
             <h4>No mood entries yet</h4>
             <p>Start tracking your mood to see your latest entry here!</p>
           </div>

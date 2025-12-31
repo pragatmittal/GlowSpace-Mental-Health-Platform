@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import './PositiveStreakSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -36,6 +37,7 @@ const challenges = [
 
 const PositiveStreakSection = () => {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const sectionRef = useRef(null);
   const cardsRef = useRef([]);
 
@@ -151,7 +153,7 @@ const PositiveStreakSection = () => {
               Join thousands of users who have already started their mental wellness journey. 
               Every challenge completed brings you closer to a healthier, happier you.
             </p>
-            <Link to="/register" className="cta-button">
+            <Link to={user ? "/assessments" : "/login"} className="cta-button">
               Get Started Today
             </Link>
           </div>
