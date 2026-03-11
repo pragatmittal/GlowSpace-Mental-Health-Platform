@@ -8,32 +8,6 @@ import './PositiveStreakSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const challenges = [
-  {
-    id: '7-day',
-    title: '7-Day Challenge',
-    description: 'Perfect for beginners. Build a foundation for mental wellness with daily mindfulness exercises.',
-    icon: '🌱',
-    duration: '7 days',
-    difficulty: 'Beginner'
-  },
-  {
-    id: '21-day',
-    title: '21-Day Transformation',
-    description: 'Create lasting habits with our most popular program. Includes guided meditation and mood tracking.',
-    icon: '🌟',
-    duration: '21 days',
-    difficulty: 'Intermediate'
-  },
-  {
-    id: '30-day',
-    title: '30-Day Mastery',
-    description: 'Advanced program for deep emotional intelligence development and lasting transformation.',
-    icon: '🎯',
-    duration: '30 days',
-    difficulty: 'Advanced'
-  }
-];
 
 const PositiveStreakSection = () => {
   const { isDarkMode } = useTheme();
@@ -112,39 +86,6 @@ const PositiveStreakSection = () => {
       <div className="deco-line line-2"></div>
 
       <div className="section-content">
-        <h2 className="section-title">Start Your Positive Streak</h2>
-        <p className="section-subtitle">
-          Choose a challenge that matches your goals and experience level.
-          Our structured programs help you build lasting mental wellness habits.
-        </p>
-
-        <div className="challenges-grid">
-          {challenges.map((challenge, index) => (
-            <div
-              key={challenge.id}
-              ref={el => cardsRef.current[index] = el}
-              className="challenge-card"
-            >
-              <div className="challenge-icon">
-                <span>{challenge.icon}</span>
-              </div>
-              <h3 className="challenge-title">{challenge.title}</h3>
-              <p className="challenge-description">{challenge.description}</p>
-              <div className="challenge-meta">
-                <span className="duration">
-                  <i className="far fa-clock"></i> {challenge.duration}
-                </span>
-                <span className="difficulty">
-                  <i className="far fa-star"></i> {challenge.difficulty}
-                </span>
-              </div>
-              <Link to={`/challenge/${challenge.id}`} className="start-challenge-btn">
-                Start Challenge
-              </Link>
-            </div>
-          ))}
-        </div>
-
         {/* Call to Action Section */}
         <div className="cta-section">
           <div className="cta-content">
