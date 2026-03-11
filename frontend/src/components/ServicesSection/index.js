@@ -16,7 +16,7 @@ const services = [
   {
     id: 'mood-tracking',
     title: 'Smart Mood Tracking',
-    description: 'Intelligent mood monitoring with AI-powered insights, helping you understand patterns and triggers in your emotional wellbeing.',
+    description: 'Smart mood tracking via analytics and rule based guidance to help you understand your mood patterns and triggers.',
     icon: '',
     color: '#9F7AEA',
     gradient: 'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)',
