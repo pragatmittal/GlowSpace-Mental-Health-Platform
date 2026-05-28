@@ -39,6 +39,135 @@ A comprehensive MERN stack mental wellness platform that supports emotional well
 - Appointments and assessments
 - Gamification data
 
+### Database Design
+GlowSpace uses MongoDB to store user data and application state in a document-based model. The database is organized into collections that map directly to major features.
+
+Key collections and their purpose:
+- `users`: stores account, profile, authentication, and privacy settings.
+- `mood_entries`: saves daily mood check-ins, intensity, notes, tags, and timestamps.
+- `assessments`: records completed mental health surveys, responses, scores, and summaries.
+- `community_posts`: holds community discussion posts, categories, status, and author references.
+- `community_comments`: contains comments linked to community posts for conversation threads.
+- `appointments`: tracks booking details, provider/user relations, schedules, and appointment status.
+- `emotion_data`: stores AI emotion detection results including inferred emotion labels, confidence, and source metadata.
+- `messages`: logs chat messages for real-time support and conversation history.
+
+Why this design matters for public users:
+- It keeps the platform modular and easy to extend. Each feature has its own collection, so new features like recommendations or peer groups can be added without changing existing data structures.
+- It supports fast lookups for user history, dashboard summaries, and chat retrieval by indexing core fields such as `userId`, `createdAt`, and `conversationId`.
+- Sensitive mental health and personal data are separated by collection and accessed through authenticated backend routes, which makes the app easier to secure and audit.
+
+How the data connects:
+- A single user can have many mood entries, assessments, posts, appointments, detected emotion sessions, and messages.
+- Community posts and comments are linked by `postId`, creating a thread model for group support.
+- Appointments and messages link back to users to support scheduling and chat workflows.
+
+#### Database Diagram
+Below is the GlowSpace database ER diagram, showing collections and the relationships between users, mood data, community posts, appointments, emotion sessions, messages, and conversations.
+
+```mermaid
+erDiagram
+    USER {
+        string id PK
+        string email
+        string passwordHash
+        string displayName
+        string role
+        json privacySettings
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    MOOD_ENTRY {
+        string id PK
+        string userId FK
+        date date
+        string moodType
+        int intensity
+        text note
+        json tags
+        timestamp createdAt
+    }
+    ASSESSMENT {
+        string id PK
+        string userId FK
+        string assessmentType
+        json responses
+        float score
+        text resultSummary
+        timestamp completedAt
+    }
+    COMMUNITY_POST {
+        string id PK
+        string userId FK
+        string title
+        text content
+        string category
+        string status
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    COMMUNITY_COMMENT {
+        string id PK
+        string postId FK
+        string userId FK
+        text content
+        timestamp createdAt
+    }
+    APPOINTMENT {
+        string id PK
+        string userId FK
+        string providerId FK
+        timestamp startTime
+        timestamp endTime
+        string status
+        text notes
+        timestamp createdAt
+    }
+    EMOTION_DATA {
+        string id PK
+        string userId FK
+        string sessionId
+        string detectedEmotion
+        float confidence
+        string sourceType
+        json metadata
+        timestamp capturedAt
+    }
+    MESSAGE {
+        string id PK
+        string senderId FK
+        string receiverId FK
+        string conversationId FK
+        text content
+        string status
+        timestamp sentAt
+    }
+    CONVERSATION {
+        string id PK
+        timestamp createdAt
+    }
+    CONVERSATION_PARTICIPANT {
+        string conversationId FK
+        string userId FK
+    }
+
+    USER ||--o{ MOOD_ENTRY : has
+    USER ||--o{ ASSESSMENT : completes
+    USER ||--o{ COMMUNITY_POST : authors
+    COMMUNITY_POST ||--o{ COMMUNITY_COMMENT : has
+    USER ||--o{ COMMUNITY_COMMENT : writes
+    USER ||--o{ APPOINTMENT : books
+    USER ||--o{ EMOTION_DATA : records
+    USER ||--o{ MESSAGE : sends
+    USER ||--o{ MESSAGE : receives
+    APPOINTMENT }o--|| USER : provider
+    CONVERSATION ||--o{ MESSAGE : contains
+    CONVERSATION ||--o{ CONVERSATION_PARTICIPANT : includes
+    USER ||--o{ CONVERSATION_PARTICIPANT : joins
+```
+
+This design is intentional for a mental wellness platform: it balances flexible schema support with clear boundaries between features, while still enabling strong user-specific reporting and analytics.
+
 ## 📁 Project Structure
 
 ```
