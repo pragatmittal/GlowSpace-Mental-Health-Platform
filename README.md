@@ -166,6 +166,74 @@ erDiagram
     USER ||--o{ CONVERSATION_PARTICIPANT : joins
 ```
 
+### High-Level Architecture
+GlowSpace is built as a modern web application with three main zones: frontend, backend, and database. The frontend is a React SPA that handles user interaction, TensorFlow emotion capture, and live updates. The backend is an Express API that manages business logic, authentication, real-time chat, and external services. MongoDB stores the platform's data.
+
+```mermaid
+flowchart LR
+    subgraph Frontend
+        A[React SPA]
+        A --> B[UI Components]
+        A --> C[TensorFlow Emotion Engine]
+        A --> D[Socket.IO Client]
+    end
+    subgraph Backend
+        E[Express API]
+        F[JWT Auth]
+        G[Socket.IO Server]
+        H[OpenAI & Email Integrations]
+    end
+    subgraph Database
+        I[MongoDB]
+    end
+    subgraph External
+        J[Google OAuth]
+        K[Email Service]
+    end
+
+    B --> E
+    C --> E
+    D --> G
+    E --> I
+    G --> I
+    E --> H
+    E --> J
+    E --> K
+```
+
+### Low-Level Design
+At the low level, GlowSpace maps UI features to backend controllers and database collections. This structure makes it easy to understand how data flows from the client through the API to the database and back.
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant Frontend as React App
+    participant Backend as Express API
+    participant DB as MongoDB
+    participant Socket as Socket.IO
+
+    User->>Frontend: open mood tracker
+    Frontend->>Backend: GET /api/moods
+    Backend->>DB: query mood_entries by userId
+    DB-->>Backend: return entries
+    Backend-->>Frontend: mood history
+
+    User->>Frontend: submit new mood entry
+    Frontend->>Backend: POST /api/moods
+    Backend->>DB: insert mood entry
+    DB-->>Backend: saved
+    Backend-->>Frontend: confirmation
+
+    User->>Frontend: send chat message
+    Frontend->>Socket: emit message
+    Socket->>Backend: receive event
+    Backend->>DB: insert message
+    Backend->>Socket: broadcast to recipient
+    Socket-->>Frontend: new message event
+```
+
+These diagrams help public users understand both the broad architecture and the detailed runtime flow behind GlowSpace.
+
 This design is intentional for a mental wellness platform: it balances flexible schema support with clear boundaries between features, while still enabling strong user-specific reporting and analytics.
 
 ## 📁 Project Structure
