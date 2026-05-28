@@ -15,6 +15,32 @@ A comprehensive MERN stack mental wellness platform that supports emotional well
 - **Gamified Healing**: Interactive healing games and positive streak challenges
 - **Multi-auth Support**: Email/password and Google OAuth authentication
 
+## ✅ Functional Requirements
+GlowSpace must allow users to register, log in, and securely manage their mental wellness profile.
+
+- User authentication and authorization with email/password and Google OAuth.
+- Profile management with display name, bio, privacy settings, and notification preferences.
+- Mood tracking workflows for creating, editing, deleting, and viewing mood check-ins.
+- Assessment workflows for completing questionnaires, saving responses, and reviewing results.
+- Community posting and commenting for peer support and moderated discussions.
+- Real-time chat messaging between users or support personnel via Socket.IO.
+- Appointment scheduling, rescheduling, cancellation, and reminders for counseling sessions.
+- Emotion detection capture from video or camera input with AI-assisted labeling.
+- Dashboard analytics showing trend summaries, streaks, and wellbeing insights.
+- REST API endpoints for frontend interactions and integrations with external services.
+
+## ⚙️ Non-Functional Requirements
+GlowSpace must be secure, responsive, and reliable while protecting sensitive user and mental health data.
+
+- Performance: fast page loads (<2s), quick API response times, and efficient dashboard rendering.
+- Security: HTTPS transport, JWT session security, data validation, and protection against XSS/CSRF/injection attacks.
+- Privacy: limited collection of personal data, user consent, and support for data deletion/export requests.
+- Scalability: ability to grow with more users, chat volume, and data without major rearchitecture.
+- Availability: reliable operation for core features, graceful degradation for non-critical services, and error monitoring.
+- Accessibility: keyboard navigation, screen reader compatibility, adequate contrast, and mobile responsiveness.
+- Maintainability: clean modular code, documented API and architecture, and reusable components.
+- Compliance: consider GDPR/HIPAA-style protections for sensitive health and emotional data.
+
 ## 🏗️ Architecture
 
 ### Frontend (React)
